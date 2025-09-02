@@ -39,18 +39,21 @@
     }
     
     header{
-	    left: 50%;
-		margin: auto;
-	    white-space: nowrap;
-	    background: rgba(0,0,0,0.6);
-	    border-radius: 50px;
-	    height: 70px;
-      width: 85%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 2%;
-      transition: all .50s ease;
+	        left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 50px;
+    height: 70px;
+    position: fixed;
+    width: 85%;
+    top: 20px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 2%;
+    transition: all .50s ease;
     }
     
     .logo{
@@ -248,7 +251,7 @@ svg {
 }
 </style>
   </head>
-  <body><a href="/" class=""><img src="bottle.png" style="
+  <body><div><a href="/" class=""><img src="bottle.png" style="
     width: 50px; display:none;
 "><img src="caledon.png" alt="Caledon Transit" style="
     width: 150px;
@@ -260,14 +263,11 @@ svg {
     <li><a href="/redirect?discord">Discord Server</a></li>
       <li><a href="/redirect?roblox">Roblox Group</a></li>
     <li><a href="/redirect?youtube">YouTube</a></li>
-    <li><a href="/redirect?x">Our <i class="fa-brands fa-x-twitter" aria-hidden="true"></i></a></li>
-<li class="emp-button" style="position: absolute;left: 20px;bottom: 220px;"><a href="#"><i class="bx bxl-discord-alt" style="font-size: 30px;"></i></a></li>
-    <li class="emp-button" style="position: absolute;left: 50%;transform: translateX(-50%);bottom: 220px;"><a href="#"><i class="bx bxl-discord-alt" style="font-size: 30px;bottom: 220px;"></i></a></li>
-    <li class="emp-button" style="position: absolute;right: 20px;bottom: 220px;"><a href="#"><i class="bx bxl-discord-alt" style="font-size: 30px;"></i></a></li>    </ul>
+    <li><a href="/redirect?x">Our <i class="fa-brands fa-x-twitter" aria-hidden="true"></i></a></li>    </ul>
     
     <div class="main">
 <i class="bx bx-menu-alt-right" id="menu-icon"></i>    </div>
-    </header>
+    </header></div>
 	  <script>
         let menu = document.querySelector('#menu-icon');
       let navbar = document.querySelector('.navbar');
