@@ -556,7 +556,7 @@ const routes = [
 
     // Step 1: Trips for Route 41 (route_id = 501)
     const route41Trips = new Set(
-      trips.filter(t => t.route_id === "501").map(t => t.trip_id)
+      trips.filter(t => t.route_id === "41").map(t => t.trip_id)
     );
 
     // Step 2: Stop IDs used by those trips
@@ -573,9 +573,9 @@ const routes = [
         if (!lat || !lon) return;
 
         const icon = document.createElement("img");
-        icon.src = "https://placehold.co/600x400"; // bus stop icon
-        icon.style.width = "25px";
-        icon.style.height = "25px";
+        icon.src = "/caledontransit/New Project (9).png"; // bus stop icon
+        icon.style.width = "10px";
+        icon.style.height = "10px";
 
         new tt.Marker({ element: icon })
           .setLngLat([lon, lat])
