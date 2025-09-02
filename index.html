@@ -555,6 +555,39 @@ async function buildTripDirectionMap() {
 }
 
 // Load stops
+async function getStopDepartures(stopId) {
+  try {
+    const response = await fetch("https://caledon.nathanplayzofficial.workers.dev/tripupdates"); // replace with actual TripUpdates JSON URL
+    const data = await response.json();
+
+    // collect departures for this stop
+    const departures = [];
+    data.entity.forEach(ent => {
+      const updates = ent.trip_update?.stop_time_update;
+      if (!updates) return;
+      updates.forEach(u => {
+        if (u.stop_id === stopId) {
+          const ts = u.departure?.time || u.arrival?.time;
+          if (ts) {
+            departures.push({
+              tripId: ent.trip_update.trip.trip_id,
+              routeId: ent.trip_update.trip.route_id,
+              time: new Date(ts * 1000)
+            });
+          }
+        }
+      });
+    });
+
+    // sort and take next 3
+    departures.sort((a, b) => a.time - b.time);
+    return departures.slice(0, 3);
+  } catch (e) {
+    console.error("Failed to load departures:", e);
+    return [];
+  }
+}
+
 async function loadRoute41Stops() {
   const [stopTimesRes, stopsRes] = await Promise.all([
     fetch("https://nathandevstuffs.github.io/caledontransit/stop_times.txt"),
@@ -576,10 +609,42 @@ async function loadRoute41Stops() {
     icon.style.width = "10px";
     icon.style.height = "10px";
 
-    new tt.Marker({ element: icon })
-      .setLngLat([lon, lat])
-      .setPopup(new tt.Popup().setHTML(`<b>${stop.stop_name}</b>`))
-      .addTo(map);
+    const marker = new tt.Marker({ element: icon }).setLngLat([lon, lat]).addTo(map);
+
+    marker.getElement().addEventListener("click", async () => {
+      // figure out direction (look at any trip for this stop)
+      const st = stopTimes.find(st => st.stop_id === stop.stop_id && route41Trips.has(st.trip_id));
+      const shape = tripDirectionMap[st.trip_id];
+      const directionLabel = shape === "410008" ? "Northbound" : "Southbound";
+
+      // get next departures
+      const departures = await getStopDepartures(stop.stop_id);
+
+      let depHtml = departures.length
+        ? departures.map(d => `
+          <li style="display:flex; align-items:center; justify-content:space-between; padding:4px 0; border-top:1px solid #eee;">
+            <span style="font-weight:600; padding:2px 6px; border-radius:6px; background:#222; color:#fff;">${d.routeId}</span>
+            <span style="flex:1; margin:0 6px;">Bolton</span>
+            <span style="font-weight:600; white-space:nowrap;">${d.time.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+          </li>`).join("")
+        : `<li style="padding:6px 0;">No upcoming departures</li>`;
+
+      const popupHTML = `
+        <div style="font-family: system-ui, sans-serif; font-size:14px; min-width:240px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <b style="font-size:15px;">${stop.stop_name}</b>
+          </div>
+          <div style="margin-bottom:6px; font-size:13px; color:#444;">
+            <span style="padding:2px 6px; border-radius:10px; background:#f1f1f1;">${directionLabel}</span>
+          </div>
+          <ul style="list-style:none; padding:0; margin:0;">${depHtml}</ul>
+          <div style="margin-top:6px; font-size:12px; color:#666;">
+            Updated ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+          </div>
+        </div>`;
+
+      new tt.Popup().setLngLat([lon, lat]).setHTML(popupHTML).addTo(map);
+    });
   });
 }
 
