@@ -694,7 +694,7 @@ async function updateBusPositions() {
     const data = await response.json();
 
     data.entity
-      .filter(ent => ent.vehicle?.trip?.route_id === "501")
+      .filter(ent => ent.vehicle?.trip?.route_id === "41")
       .forEach(ent => {
         const veh = ent.vehicle;
         const id = veh.vehicle?.id || veh.id;
