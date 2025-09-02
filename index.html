@@ -1,281 +1,239 @@
 <!DOCTYPE html>
-<html><head>
-	  <meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Icon Libraries -->
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.2.0/fonts/remixicon.css" rel="stylesheet">
- <link rel="stylesheet" href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
+
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500&display=swap" rel="stylesheet">
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
-	
-    <title>Caledon Transit – Bus Routes &amp; Info for Bolton, ON (Route 41 - BT)</title>
-    <style>
-      body {
-        background: #fafafa;
-      }
-    </style>
-    <style>  <style>
-    *{
-      padding: 0;
-      margin: 0;
-      box-sizing: border-box;
-      text-decoration: none;
-      list-style: none;
-    }
-    
-    :root{
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+
+  <title>Caledon Transit – Bus Routes & Info for Bolton, ON (Route 41 - BT)</title>
+
+  <!-- Main Styles -->
+  <style>
+    :root {
       --bg-color: #fafafa;
       --text-color: #fff;
       --main-color: #3366CC;
     }
-    
-    body{
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      text-decoration: none;
+      list-style: none;
+    }
+
+    body {
+      background: var(--bg-color);
       min-height: 100vh;
+      font-family: 'Montserrat', sans-serif;
       color: var(--text-color);
-      font-family: Montserrat;
     }
-    
-    header{
-	        left: 50%;
-    transform: translateX(-50%);
-    white-space: nowrap;
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 50px;
-    height: 70px;
-    position: fixed;
-    width: 85%;
-    top: 20px;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 2%;
-    transition: all .50s ease;
-    }
-    
-    .logo{
+
+    /* Header Wrapper */
+    .header-wrapper {
       display: flex;
       align-items: center;
-        color: var(--text-color);
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      width: 90%;
     }
-    
-    .logo span{
-        color: var(--text-color);
-      font-size: 1.4rem;
+
+    /* Logo */
+    .logo-outside {
+      display: flex;
+      align-items: center;
+      margin-right: 20px;
+      color: black;
+      font-family: 'Montserrat', sans-serif;
       font-weight: 600;
+      font-size: 1.2rem;
     }
-    
+
+    .logo-outside img {
+      height: 40px;
+      margin-right: 10px;
+    }
+
+    /* Header Bar */
+    header {
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 50px;
+      height: 70px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 2%;
+      transition: all 0.5s ease;
+      position: static;
+    }
+
+    /* Navbar */
     .navbar {
       display: flex;
     }
-    
-     .navbar a{
-     color: var(--text-color);
-       font-size: 1.1rem;
-       font-weight: 500;
-       padding: 5px 0;
-       margin: 0px 30px;
-         transition: all .50s ease;
-    }
-    
-    .navbar a:hover{
-     color: var(--main-color)
-    }
-    
-    .navbar active{
-     color: var(--main-color)
-    }
-    
-    .main {
-      display: none;
-      background-color: #060e1a;
-      border-radius: 50px;
-      height: 50px;
-      width: 50px;
-      align-items: center;
-    }
-    
-    
-    .main a{
-		text-decoration: none;
-      margin-right: 25px;
-      margin-left: 10px;
+
+    .navbar a {
       color: var(--text-color);
       font-size: 1.1rem;
       font-weight: 500;
-      transition: all .50s ease;
+      margin: 0 30px;
+      transition: all 0.5s ease;
     }
-    
-    .main a:hover{
 
+    .navbar a:hover {
       color: var(--main-color);
-
     }
 
-    .emp-button {
- background-color: #5865F2;
- border-radius: 50px;
- width: 250px;
- text-align: center;
- font-family: 'Rubik';
- height: 50px;
- float: left; 
-display: none;
+    .topli {
+      margin-top: unset;
     }
 
-.topli {
-  margin-top: unset;
-}
-
-a {
-	text-decoration: none;
-}
-    
-    #menu-icon{
-      margin: auto;
+    /* Mobile Menu Icon */
+    #menu-icon {
       font-size: 35px;
       color: var(--text-color);
       cursor: pointer;
       z-index: 10001;
       display: none;
-        
     }
-    
-    @media (max-width: 1280px){
-      header{
-        padding: 14px 2%;
-        transition: .2s;
-      }
-      .navbar a{
-        padding: 5px 0;
-        margin: 0px 20px;
+
+    .main {
+      display: none;
+      align-items: center;
+      background-color: #060e1a;
+      border-radius: 50px;
+      height: 50px;
+      width: 50px;
+    }
+
+    /* Mobile Styles */
+    @media (max-width: 1280px) {
+      .navbar a {
+        margin: 0 20px;
       }
     }
-    
-    @media (max-width: 1090px){
 
-.emp-button {
-  display: block;
-}
-
-.topli {
-  margin-top: 25px;
-}
+    @media (max-width: 1090px) {
+      .emp-button {
+        display: block;
+      }
 
       li {
-		  list-style-type: none;
-margin-bottom: 20px;
-background-color: #060e1a;
- border-radius: 50px; 
-width: 250px; 
-text-align: center; 
-font-family: 'Rubik'; 
-height: 50px;
-}
-      #menu-icon{
+        list-style-type: none;
+        margin-bottom: 20px;
+        background-color: #060e1a;
+        border-radius: 50px;
+        width: 250px;
+        text-align: center;
+        font-family: 'Rubik', sans-serif;
+        height: 50px;
+      }
+
+      #menu-icon {
         display: block;
       }
 
       .main {
         display: flex;
       }
-      
-      .navbar{
+
+      .navbar {
         position: absolute;
         top: 100%;
         right: -100%;
         flex-direction: column;
         justify-content: flex-start;
-        border-radius: 10px;
-        transition: all .50s ease;
         align-items: center;
         background-color: transparent;
         backdrop-filter: blur(6.9px);
         width: 100%;
         height: 100vh;
+        transition: all 0.5s ease;
       }
-      
-      
-      .navbar a{
+
+      .navbar a {
         display: block;
         margin: 12px 0;
-        padding: 0px 25px;
-        transition: all .50s ease;
-      
+        padding: 0 25px;
+        transition: all 0.5s ease;
       }
-      
-      .navbar a:hover{
+
+      .navbar a:hover {
         color: var(--text-color);
-      transform: translateY(5px);
+        transform: translateY(5px);
       }
-      
-      .navbar a.active{
-        color: var(--text-color);
-      
-      }
-      
-      .navbar.open{
-        right: 0%;
+
+      .navbar.open {
+        right: 0;
       }
     }
-    </style>
- <style>
 
+    /* Headings */
+    h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 3rem;
+      color: var(--text-color);
+    }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+    svg {
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
 
+  <div class="header-wrapper">
+    <!-- Logo (outside header) -->
+    <a href="/" class="logo-outside">
+      <img src="caledon.png" alt="Caledon Transit">
+      <span>Caledon Transit</span>
+    </a>
 
+    <!-- Navigation Header -->
+    <header>
+      <ul class="navbar">
+        <li class="topli"><a href="#" class="active">Home</a></li>
+        <li><a href="#">Support</a></li>
+        <li><a href="/redirect?discord">Discord Server</a></li>
+        <li><a href="/redirect?roblox">Roblox Group</a></li>
+        <li><a href="/redirect?youtube">YouTube</a></li>
+        <li><a href="/redirect?x">Our <i class="fa-brands fa-x-twitter" aria-hidden="true"></i></a></li>
+      </ul>
 
+      <!-- Mobile Menu Button -->
+      <div class="main">
+        <i class="bx bx-menu-alt-right" id="menu-icon"></i>
+      </div>
+    </header>
+  </div>
 
-h2 {
-    font-family: 'Outfit', sans-serif;
-    font-size: 2.5rem;
-    font-weight: 700;
-    text-align: center;
-    margin-bottom: 3rem;
-    color: var(--text-color);
-}
+  <!-- Mobile Nav Toggle Script -->
+  <script>
+    const menu = document.querySelector('#menu-icon');
+    const navbar = document.querySelector('.navbar');
 
-
-
-/* SVG Styles */
-svg {
-    vertical-align: middle;
-}
-</style>
-  </head>
-  <body><div><a href="/" class=""><img src="bottle.png" style="
-    width: 50px; display:none;
-"><img src="caledon.png" alt="Caledon Transit" style="
-    width: 150px;
-"></a><header style="white-space: nowrap;">
-      
-    <ul class="navbar" style="list-style-type: none;">
-    <li class="topli"><a href="#" class="active">Home</a></li>
-    <li><a href="#">Support</a></li>
-    <li><a href="/redirect?discord">Discord Server</a></li>
-      <li><a href="/redirect?roblox">Roblox Group</a></li>
-    <li><a href="/redirect?youtube">YouTube</a></li>
-    <li><a href="/redirect?x">Our <i class="fa-brands fa-x-twitter" aria-hidden="true"></i></a></li>    </ul>
-    
-    <div class="main">
-<i class="bx bx-menu-alt-right" id="menu-icon"></i>    </div>
-    </header></div>
-	  <script>
-        let menu = document.querySelector('#menu-icon');
-      let navbar = document.querySelector('.navbar');
-      
-      menu.onclick = () => {
-        menu.classList.toggle('bx-x');
-        navbar.classList.toggle('open');
-      }
+    menu.onclick = () => {
+      menu.classList.toggle('bx-x');
+      navbar.classList.toggle('open');
+    }
   </script>
 
-</body></html>
+</body>
+</html>
