@@ -663,8 +663,8 @@ async function updateBusPositions() {
         if (!busMarkers[id]) {
           const icon = document.createElement("img");
           icon.src = "/caledontransit/New Project (8).png";
-          icon.style.width = "32px";
-          icon.style.height = "32px";
+          icon.style.width = "40px";
+          icon.style.height = "40px";
 
           busMarkers[id] = new tt.Marker({ element: icon })
             .setLngLat([lon, lat])
