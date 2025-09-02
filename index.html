@@ -11,6 +11,60 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
 	  <link rel="stylesheet" href="https://api.tomtom.com/maps-sdk-for-web/cdn/6.x/6.15.0/maps/maps.css" />
+	  <style>
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    .card {
+      flex: 1 1 300px;
+      max-width: 600px;
+      min-width: 280px;
+      background-color: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    .card img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .card-content {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      color: white;
+      text-shadow: 0 0 4px rgba(0, 0, 0, 0.7);
+    }
+
+    .card-content h2 {
+      margin: 0 0 10px;
+      font-size: 24px;
+    }
+
+    .card-content p {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    @media (max-width: 600px) {
+      .card-content h2 {
+        font-size: 20px;
+      }
+      .card-content p {
+        font-size: 14px;
+      }
+    }
+  </style>
 	<style>    #map { width: 85%; height: 500px; margin: auto; border-radius: 25px;}
     .tt-popup {
       background: white;
@@ -633,6 +687,25 @@ async function updateBusPositions() {
 updateBusPositions();
 setInterval(updateBusPositions, 15000);
 	  </script>
+	  <br>
+	  <br>
+	  <div class="container">
+    <div class="card">
+      <img src="https://placehold.co/600x400" alt="Paying Your Fare">
+      <div class="card-content">
+        <h2>Paying Your Fare</h2>
+        <p>Ready to ride? Learn how to pay →</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <img src="https://placehold.co/600x400" alt="Service Routes">
+      <div class="card-content">
+        <h2>Contact Brampton Transit</h2>
+        <p>Get in touch with Brampton Transit →</p>
+      </div>
+    </div>
+  </div>
 </main>
 	  <script>
         let menu = document.querySelector('#menu-icon');
