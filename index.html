@@ -408,7 +408,7 @@ svg {
   <span class="dot active" onclick="currentSlide(2)"></span> 
   <span class="dot" onclick="currentSlide(3)"></span> 
   <a class="next" onclick="plusSlides(1)"><i class="ri-arrow-right-line"></i></a>
-</div>
+</div><br><br>
 
 <script>
 let slideIndex = 1;
@@ -437,12 +437,30 @@ function showSlides(n) {
   slides[slideIndex-1].style.display = "block";  
   dots[slideIndex-1].className += " active";
 }
-</script>
-	  <label for="directionSelect">Direction:</label>
-<select id="directionSelect">
-  <option value="410008">Northbound</option>
-  <option value="410007">Southbound</option>
-</select>
+</script><h1 style="
+    color: black;
+    font-family: Outfit;
+    text-align: center;
+">Route Map &amp; Live Bus Positions</h1>
+	  
+<h4 style="
+    color: black;
+    font-family: Outfit;
+    text-align: center;
+    font-weight: 400;
+">See real-time bus locations on the map below. Route 41 is operated by Brampton Transit</h4><br><select id="directionSelect" style="
+    padding: 10px;
+    border: none;
+    font-family: 'Montserrat';
+    font-weight: bold;
+    border-radius: 50px;
+    background: #dddddd;
+    display: flex;
+    margin: auto;
+">
+  <option value="410008">Route 41: Northbound</option>
+  <option value="410007">Route 41: Southbound</option>
+</select><br>
 
 <div id="map"></div>
 	  <script src="https://api.tomtom.com/maps-sdk-for-web/cdn/6.x/6.15.0/maps/maps-web.min.js"></script>
