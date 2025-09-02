@@ -316,7 +316,7 @@ svg {
 }
 </style>
   </head>
-  <body><header style="white-space: nowrap;">
+ <body><header style="white-space: nowrap;">
       <a href="/" class=""><img src="caledon.png" alt="Caledon Transit" style="
     width: 150px;
 "></a>
@@ -331,18 +331,20 @@ svg {
     <div class="main">
 <i class="bx bx-menu-alt-right" id="menu-icon"></i>    </div>
     </header>
-  </div>
+  <main style="
+    padding-top: 100px;
+">
 	  <div class="slideshow-container" style="border-radius: 50px; width: 75%;">
 
-<div class="mySlides fade">
+<div class="mySlides fade" style="display: none;">
   <img src="img_nature_wide.jpg" style="width:100%" class="slideimg">
 </div>
 
-<div class="mySlides fade">
+<div class="mySlides fade" style="display: block;">
   <img src="img_snow_wide.jpg" style="width:100%" class="slideimg">
 </div>
 
-<div class="mySlides fade">
+<div class="mySlides fade" style="display: none;">
   <img src="img_mountains_wide.jpg" style="width:100%" class="slideimg">
 </div>
 
@@ -355,7 +357,7 @@ svg {
 <a class="prev" onclick="plusSlides(-1)"><i class="ri-arrow-left-line"></i></a>
 
   <span class="dot" onclick="currentSlide(1)"></span> 
-  <span class="dot" onclick="currentSlide(2)"></span> 
+  <span class="dot active" onclick="currentSlide(2)"></span> 
   <span class="dot" onclick="currentSlide(3)"></span> 
   <a class="next" onclick="plusSlides(1)"><i class="ri-arrow-right-line"></i></a>
 </div>
@@ -388,6 +390,7 @@ function showSlides(n) {
   dots[slideIndex-1].className += " active";
 }
 </script>
+</main>
 	  <script>
         let menu = document.querySelector('#menu-icon');
       let navbar = document.querySelector('.navbar');
@@ -397,5 +400,6 @@ function showSlides(n) {
         navbar.classList.toggle('open');
       }
   </script>
+
 
 </body></html>
