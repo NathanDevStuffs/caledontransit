@@ -693,6 +693,8 @@ async function updateBusPositions() {
 
     const data = await response.json();
 
+    const activeBusIds = new Set();
+
     data.entity
       .filter(ent => ent.vehicle?.trip?.route_id === "41")
       .forEach(ent => {
@@ -703,7 +705,9 @@ async function updateBusPositions() {
 
         if (!lat || !lon) return;
 
-        // Create custom icon
+        activeBusIds.add(id);
+
+        // Create new marker if it doesn't exist
         if (!busMarkers[id]) {
           const icon = document.createElement("img");
           icon.src = "/caledontransit/New Project (8).png";
@@ -715,10 +719,18 @@ async function updateBusPositions() {
             .setPopup(new tt.Popup().setHTML(`<b>Bus ${veh.vehicle?.label || id}</b>`))
             .addTo(map);
         } else {
-          // Update existing marker
+          // Update existing marker position
           busMarkers[id].setLngLat([lon, lat]);
         }
       });
+
+    // Remove markers for buses not active anymore
+    for (const id in busMarkers) {
+      if (!activeBusIds.has(id)) {
+        busMarkers[id].remove(); // remove from map
+        delete busMarkers[id];   // delete from memory
+      }
+    }
 
   } catch (err) {
     console.error("Bus update failed:", err);
@@ -728,6 +740,7 @@ async function updateBusPositions() {
 // run immediately + every 15s
 updateBusPositions();
 setInterval(updateBusPositions, 15000);
+
 	  </script>
 	  <br>
 	  <br>
