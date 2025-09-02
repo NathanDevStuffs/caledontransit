@@ -541,8 +541,56 @@ const routes = [
   { id: '410007', color: '#3399FF', label: 'Southbound' }
 ];
 
+	async function loadRoute41Stops() {
+  try {
+    // Fetch all GTFS files
+    const [tripsRes, stopTimesRes, stopsRes] = await Promise.all([
+      fetch("https://nathandevstuffs.github.io/caledontransit/trips.txt"),
+      fetch("https://nathandevstuffs.github.io/caledontransit/stop_times.txt"),
+      fetch("https://nathandevstuffs.github.io/caledontransit/stops.txt")
+    ]);
+
+    const trips = parseCSV(await tripsRes.text());
+    const stopTimes = parseCSV(await stopTimesRes.text());
+    const stops = parseCSV(await stopsRes.text());
+
+    // Step 1: Trips for Route 41 (route_id = 501)
+    const route41Trips = new Set(
+      trips.filter(t => t.route_id === "501").map(t => t.trip_id)
+    );
+
+    // Step 2: Stop IDs used by those trips
+    const route41Stops = new Set(
+      stopTimes.filter(st => route41Trips.has(st.trip_id)).map(st => st.stop_id)
+    );
+
+    // Step 3: Match stops and add markers
+    stops
+      .filter(s => route41Stops.has(s.stop_id))
+      .forEach(stop => {
+        const lat = parseFloat(stop.stop_lat);
+        const lon = parseFloat(stop.stop_lon);
+        if (!lat || !lon) return;
+
+        const icon = document.createElement("img");
+        icon.src = "https://placehold.co/600x400"; // bus stop icon
+        icon.style.width = "25px";
+        icon.style.height = "25px";
+
+        new tt.Marker({ element: icon })
+          .setLngLat([lon, lat])
+          .setPopup(new tt.Popup().setHTML(`<b>${stop.stop_name}</b>`))
+          .addTo(map);
+      });
+
+  } catch (err) {
+    console.error("Failed to load Route 41 stops:", err);
+  }
+}
+
 map.on('load', async () => {
   try {
+	  loadRoute41Stops();
     const response = await fetch('https://nathandevstuffs.github.io/caledontransit/shapes.txt');
     if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
 
