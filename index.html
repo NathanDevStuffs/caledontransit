@@ -511,236 +511,129 @@ function showSlides(n) {
 </select><br>
 
 <div id="map"></div>
-	  <script src="https://api.tomtom.com/maps-sdk-for-web/cdn/6.x/6.15.0/maps/maps-web.min.js"></script>
+<!-- Scripts -->
+<script src="https://api.tomtom.com/maps-sdk-for-web/cdn/6.x/6.15.0/maps/maps-web.min.js"></script>
 <script>
-const map = tt.map({
-  key: 'XVUXC7GLhrBCR47wKHSTSabpLRTnEzv2',
-  container: 'map',
-  center: [-79.8, 43.7],
-  zoom: 12
-});
+// Header menu toggle
+let menu = document.querySelector('#menu-icon');
+let navbar = document.querySelector('.navbar');
+menu.onclick = () => { menu.classList.toggle('bx-x'); navbar.classList.toggle('open'); };
 
-map.addControl(new tt.NavigationControl());
-const popup = new tt.Popup({ closeButton: true, closeOnClick: true });
+// Slideshow
+let slideIndex = 1;
+function plusSlides(n){ showSlides(slideIndex += n); }
+function currentSlide(n){ showSlides(slideIndex = n); }
+function showSlides(n){
+  let slides = document.getElementsByClassName("mySlides");
+  let dots = document.getElementsByClassName("dot");
+  if(n>slides.length) slideIndex=1; if(n<1) slideIndex=slides.length;
+  for(let i=0;i<slides.length;i++){ slides[i].style.display="none"; }
+  for(let i=0;i<dots.length;i++){ dots[i].className=dots[i].className.replace(" active",""); }
+  slides[slideIndex-1].style.display="block"; dots[slideIndex-1].className += " active";
+}
 
-// CSV parser
-function parseCSV(csv) {
-  const lines = csv.trim().split('\n');
-  const headers = lines.shift().split(',');
-  return lines.map(line => {
-    const parts = line.split(',');
-    return headers.reduce((obj, header, i) => {
-      obj[header] = parts[i];
-      return obj;
-    }, {});
+// Map & GTFS buses
+const mapObj = tt.map({ key:'XVUXC7GLhrBCR47wKHSTSabpLRTnEzv2', container:'map', center:[-79.8,43.7], zoom:12 });
+mapObj.addControl(new tt.NavigationControl());
+const popup = new tt.Popup({ closeButton:true, closeOnClick:true });
+const routes = [ { id:'410008', color:'#FF3399', label:'Northbound' }, { id:'410007', color:'#3399FF', label:'Southbound' } ];
+let tripDirectionMap={}, busMarkers={}, selectedDirection='410008';
+
+// Parse CSV
+function parseCSV(csv){
+  const lines = csv.trim().split('\n'); const headers=lines.shift().split(',');
+  return lines.map(line=>{ const parts=line.split(','); return headers.reduce((obj,h,i)=>{ obj[h]=parts[i]; return obj; },{}); });
+}
+
+// Build trip → shape_id map
+async function buildTripDirectionMap(){
+  const tripsRes = await fetch("https://nathandevstuffs.github.io/caledontransit/trips.txt");
+  const trips = parseCSV(await tripsRes.text());
+  trips.forEach(t=>{ if(t.route_id==="41") tripDirectionMap[t.trip_id]=t.shape_id; });
+}
+
+// Load stops
+async function loadRoute41Stops(){
+  const [stopTimesRes, stopsRes] = await Promise.all([
+    fetch("https://nathandevstuffs.github.io/caledontransit/stop_times.txt"),
+    fetch("https://nathandevstuffs.github.io/caledontransit/stops.txt")
+  ]);
+  const stopTimes=parseCSV(await stopTimesRes.text());
+  const stops=parseCSV(await stopsRes.text());
+  const route41Trips = new Set(Object.keys(tripDirectionMap));
+  const route41StopIds = new Set(stopTimes.filter(st=>route41Trips.has(st.trip_id)).map(st=>st.stop_id));
+  stops.filter(s=>route41StopIds.has(s.stop_id)).forEach(stop=>{
+    const lat=parseFloat(stop.stop_lat), lon=parseFloat(stop.stop_lon);
+    if(!lat||!lon) return;
+    const icon=document.createElement("img");
+    icon.src="/caledontransit/New Project (9).png";
+    icon.style.width="10px"; icon.style.height="10px";
+    new tt.Marker({ element:icon }).setLngLat([lon,lat]).setPopup(new tt.Popup().setHTML(`<b>${stop.stop_name}</b>`)).addTo(mapObj);
   });
 }
 
-const routes = [
-  { id: '410008', color: '#FF3399', label: 'Northbound' },
-  { id: '410007', color: '#3399FF', label: 'Southbound' }
-];
-
-	async function loadRoute41Stops() {
-  try {
-    // Fetch all GTFS files
-    const [tripsRes, stopTimesRes, stopsRes] = await Promise.all([
-      fetch("https://nathandevstuffs.github.io/caledontransit/trips.txt"),
-      fetch("https://nathandevstuffs.github.io/caledontransit/stop_times.txt"),
-      fetch("https://nathandevstuffs.github.io/caledontransit/stops.txt")
-    ]);
-
-    const trips = parseCSV(await tripsRes.text());
-    const stopTimes = parseCSV(await stopTimesRes.text());
-    const stops = parseCSV(await stopsRes.text());
-
-    // Step 1: Trips for Route 41 (route_id = 501)
-    const route41Trips = new Set(
-      trips.filter(t => t.route_id === "41").map(t => t.trip_id)
-    );
-
-    // Step 2: Stop IDs used by those trips
-    const route41Stops = new Set(
-      stopTimes.filter(st => route41Trips.has(st.trip_id)).map(st => st.stop_id)
-    );
-
-    // Step 3: Match stops and add markers
-    stops
-      .filter(s => route41Stops.has(s.stop_id))
-      .forEach(stop => {
-        const lat = parseFloat(stop.stop_lat);
-        const lon = parseFloat(stop.stop_lon);
-        if (!lat || !lon) return;
-
-        const icon = document.createElement("img");
-        icon.src = "/caledontransit/New Project (9).png"; // bus stop icon
-        icon.style.width = "10px";
-        icon.style.height = "10px";
-
-        new tt.Marker({ element: icon })
-          .setLngLat([lon, lat])
-          .setPopup(new tt.Popup().setHTML(`<b>${stop.stop_name}</b>`))
-          .addTo(map);
-      });
-
-  } catch (err) {
-    console.error("Failed to load Route 41 stops:", err);
+// Load route shapes
+async function loadRoutes(){
+  const response=await fetch('https://nathandevstuffs.github.io/caledontransit/shapes.txt');
+  const parsed= parseCSV(await response.text());
+  for(const {id,color,label} of routes){
+    const shapePoints=parsed.filter(r=>r.shape_id===id).sort((a,b)=>Number(a.shape_pt_sequence)-Number(b.shape_pt_sequence)).map(pt=>[Number(pt.shape_pt_lon),Number(pt.shape_pt_lat)]);
+    if(!shapePoints.length) continue;
+    mapObj.addSource(`route-${id}`, { type:'geojson', data:{ type:'Feature', geometry:{ type:'LineString', coordinates:shapePoints } } });
+    mapObj.addLayer({ id:`routeLineLayer-${id}`, type:'line', source:`route-${id}`, layout:{'line-join':'round','line-cap':'round','visibility':'none'}, paint:{'line-color':color,'line-width':5} });
+    const marker = new tt.Marker().setLngLat(shapePoints[0]).addTo(mapObj);
+    marker.getElement().style.display='none';
+    routes.find(r=>r.id===id).marker=marker;
+    routes.find(r=>r.id===id).startCoord=shapePoints[0];
+    mapObj.on('click',`routeLineLayer-${id}`,e=>popup.setLngLat(e.lngLat).setHTML(`<div class="tt-popup"><strong>Route 41 - ${label}</strong></div>`).addTo(mapObj));
   }
 }
 
-map.on('load', async () => {
-  try {
-	  loadRoute41Stops();
-    const response = await fetch('https://nathandevstuffs.github.io/caledontransit/shapes.txt');
-    if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-
-    const csvText = await response.text();
-    const parsed = parseCSV(csvText);
-
-    for (const { id, color, label } of routes) {
-      const shapePoints = parsed
-        .filter(row => row.shape_id === id)
-        .sort((a, b) => Number(a.shape_pt_sequence) - Number(b.shape_pt_sequence))
-        .map(pt => [Number(pt.shape_pt_lon), Number(pt.shape_pt_lat)]);
-
-      if (!shapePoints.length) {
-        console.warn('Shape ID not found:', id);
-        continue;
-      }
-
-      map.addSource(`route-${id}`, {
-        type: 'geojson',
-        data: {
-          type: 'Feature',
-          geometry: {
-            type: 'LineString',
-            coordinates: shapePoints
-          }
-        }
-      });
-
-      map.addLayer({
-        id: `routeLineLayer-${id}`,
-        type: 'line',
-        source: `route-${id}`,
-        layout: {
-          'line-join': 'round',
-          'line-cap': 'round',
-          visibility: 'none' // start hidden
-        },
-        paint: {
-          'line-color': color,
-          'line-width': 5
-        }
-      });
-
-      // Marker at start
-      const marker = new tt.Marker().setLngLat(shapePoints[0]);
-      marker.addTo(map);
-      marker.getElement().style.display = 'none'; // hide initially
-      routes.find(r => r.id === id).marker = marker;
-
-      // Add popup on click
-      map.on('click', `routeLineLayer-${id}`, e => {
-        popup
-          .setLngLat(e.lngLat)
-          .setHTML(`<div class="tt-popup"><strong>Route 41 - ${label}</strong><br>Shape ID: ${id}</div>`)
-          .addTo(map);
-      });
-
-      // Store coordinates for flyTo
-      routes.find(r => r.id === id).startCoord = shapePoints[0];
-    }
-
-    // Show default selected route
-    updateRouteDisplay(document.getElementById('directionSelect').value);
-
-  } catch (err) {
-    console.error('Failed to load route:', err);
-    alert('Error loading route.');
-  }
-});
-
-// Change route when dropdown changes
-document.getElementById('directionSelect').addEventListener('change', e => {
-  updateRouteDisplay(e.target.value);
-});
-
-function updateRouteDisplay(selectedId) {
-  routes.forEach(({ id, marker, startCoord }) => {
-    const visibility = id === selectedId ? 'visible' : 'none';
-    if (map.getLayer(`routeLineLayer-${id}`)) {
-      map.setLayoutProperty(`routeLineLayer-${id}`, 'visibility', visibility);
-    }
-    if (marker) {
-      marker.getElement().style.display = visibility === 'visible' ? 'block' : 'none';
-    }
+// Update route display
+function updateRouteDisplay(selectedId){
+  routes.forEach(({id, marker, startCoord})=>{
+    const visibility = id===selectedId?'visible':'none';
+    if(mapObj.getLayer(`routeLineLayer-${id}`)) mapObj.setLayoutProperty(`routeLineLayer-${id}`,'visibility',visibility);
+    if(marker) marker.getElement().style.display = visibility==='visible'?'block':'none';
   });
-
-  const selected = routes.find(r => r.id === selectedId);
-  if (selected && selected.startCoord) {
-    map.flyTo({ center: selected.startCoord, zoom: 13 });
-  }
+  const selected = routes.find(r=>r.id===selectedId);
+  if(selected && selected.startCoord) mapObj.flyTo({ center:selected.startCoord, zoom:13 });
+  selectedDirection=selectedId;
+  updateBusPositions();
 }
-</script>
-	  <script>
-		  const busMarkers = {}; // store bus markers by vehicle ID
 
-async function updateBusPositions() {
-  try {
+// Update GTFS bus positions
+async function updateBusPositions(){
+  try{
     const response = await fetch("https://caledon.nathanplayzofficial.workers.dev/");
-    if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-
     const data = await response.json();
-
-    const activeBusIds = new Set();
-
-    data.entity
-      .filter(ent => ent.vehicle?.trip?.route_id === "41")
-      .forEach(ent => {
-        const veh = ent.vehicle;
-        const id = veh.vehicle?.id || veh.id;
-        const lat = veh.position?.latitude;
-        const lon = veh.position?.longitude;
-
-        if (!lat || !lon) return;
-
-        activeBusIds.add(id);
-
-        // Create new marker if it doesn't exist
-        if (!busMarkers[id]) {
-          const icon = document.createElement("img");
-          icon.src = "/caledontransit/New Project (8).png";
-          icon.style.width = "40px";
-          icon.style.height = "40px";
-
-          busMarkers[id] = new tt.Marker({ element: icon })
-            .setLngLat([lon, lat])
-            .setPopup(new tt.Popup().setHTML(`<b>Bus ${veh.vehicle?.label || id}</b>`))
-            .addTo(map);
-        } else {
-          // Update existing marker position
-          busMarkers[id].setLngLat([lon, lat]);
-        }
-      });
-
-    // Remove markers for buses not active anymore
-    for (const id in busMarkers) {
-      if (!activeBusIds.has(id)) {
-        busMarkers[id].remove(); // remove from map
-        delete busMarkers[id];   // delete from memory
-      }
-    }
-
-  } catch (err) {
-    console.error("Bus update failed:", err);
-  }
+    data.entity.filter(ent=>ent.vehicle?.trip?.route_id==="41").forEach(ent=>{
+      const veh=ent.vehicle; const id=veh.vehicle?.id||veh.id;
+      const tripId=veh.trip?.trip_id; const lat=veh.position?.latitude; const lon=veh.position?.longitude;
+      if(!lat||!lon) return;
+      const direction=tripDirectionMap[tripId];
+      if(direction!==selectedDirection){ if(busMarkers[id]) busMarkers[id].getElement().style.display='none'; return; }
+      if(!busMarkers[id]){
+        const icon=document.createElement("img"); icon.src="/caledontransit/New Project (8).png"; icon.style.width="40px"; icon.style.height="40px";
+        busMarkers[id] = new tt.Marker({ element:icon }).setLngLat([lon,lat]).setPopup(new tt.Popup().setHTML(`<b>Bus ${veh.vehicle?.label||id}</b>`)).addTo(mapObj);
+      }else{ busMarkers[id].setLngLat([lon,lat]); busMarkers[id].getElement().style.display='block'; }
+    });
+  }catch(err){ console.error("Bus update failed:",err); }
 }
 
-// run immediately + every 15s
-updateBusPositions();
-setInterval(updateBusPositions, 15000);
+// Dropdown change
+document.getElementById('directionSelect').addEventListener('change', e=>{ updateRouteDisplay(e.target.value); });
 
+// Initialize
+mapObj.on('load', async ()=>{
+  await buildTripDirectionMap();
+  await loadRoute41Stops();
+  await loadRoutes();
+  updateRouteDisplay(selectedDirection);
+  updateBusPositions();
+  setInterval(updateBusPositions, 15000);
+});
+</script>
 	  </script>
 	  <br>
 	  <br>
