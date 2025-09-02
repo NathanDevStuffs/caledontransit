@@ -329,6 +329,40 @@ svg {
     vertical-align: middle;
 }
 </style>
+	<style>
+.status-btn {
+  position: fixed;
+  bottom: 0;
+  right: 50px;
+  padding: 15px;
+  z-index: 5000000;
+  border: none;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 25px;
+  width: 400px;
+  background: rgb(248, 195, 0);
+  transition: all 0.2s ease;
+}
+
+/* Hover effect */
+.status-btn:hover {
+  background: rgb(220, 170, 0);
+}
+
+/* Mobile view */
+@media (max-width: 768px) {
+  .status-btn {
+    right: 0;
+    width: 100%;
+    border-radius: 0;
+    font-size: 16px;
+    text-align: center;
+    font-family: 'Montserrat', sans-serif;
+  }
+}
+</style>
   </head>
  <body><header style="white-space: nowrap;">
       <a href="/" class=""><img src="caledon.png" alt="Caledon Transit" style="
@@ -344,6 +378,7 @@ svg {
     <div class="main">
 <i class="bx bx-menu-alt-right" id="menu-icon"></i>    </div>
     </header>
+	 <button class="status-btn">Live Service Alerts / Route Status</button>
   <main style="
     padding-top: 100px;
 ">
