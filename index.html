@@ -218,12 +218,12 @@ height: 50px;
     }
     </style></style>
   </head>
-  <body><header style="white-space: nowrap;">
-      <a href="#" class="logo"><img src="bottle.png" style="
+  <body><a href="/" class=""><img src="bottle.png" style="
     width: 50px; display:none;
-"><img src="bottolpridewhite.png" alt="OnBottol" style="
+"><img src="caledon.png" alt="Caledon Transit" style="
     width: 150px;
-"></a>
+"></a><header style="white-space: nowrap;">
+      
     <ul class="navbar">
     <li class="topli"><a href="#" class="active">Home</a></li>
     <li><a href="#">Support</a></li>
@@ -237,5 +237,14 @@ height: 50px;
     
     <div class="main">
 <i class="bx bx-menu-alt-right" id="menu-icon"></i>    </div>
-    </header></body>
+    </header>
+	  <script>
+        let menu = document.querySelector('#menu-icon');
+      let navbar = document.querySelector('.navbar');
+      
+      menu.onclick = () => {
+        menu.classList.toggle('bx-x');
+        navbar.classList.toggle('open');
+      }
+  </script></body>
 </html>
