@@ -1,813 +1,291 @@
 <!DOCTYPE html>
-<html><head>
-	  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.2.0/fonts/remixicon.css" rel="stylesheet">
- <link rel="stylesheet" href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Caledon Transit – Bus Routes & Info for Bolton, ON (Route 41 - BT)</title>
+
+<!-- Fonts & Icons -->
+<link href="https://cdn.jsdelivr.net/npm/remixicon@3.2.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500&display=swap" rel="stylesheet">
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
-	  <link rel="stylesheet" href="https://api.tomtom.com/maps-sdk-for-web/cdn/6.x/6.15.0/maps/maps.css" />
-	  <style>
 
-    .container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      padding: 20px;
-      gap: 20px;
-    }
+<!-- TomTom Maps -->
+<link rel="stylesheet" href="https://api.tomtom.com/maps-sdk-for-web/cdn/6.x/6.15.0/maps/maps.css" />
 
-    .card {
-      flex: 1 1 300px;
-      max-width: 600px;
-      min-width: 280px;
-      background-color: #fff;
-      border-radius: 10px;
-      overflow: hidden;
-      position: relative;
-    }
+<style>
+/* General */
+body { background: #fafafa; font-family: 'Montserrat', sans-serif; margin: 0; padding: 0; }
+a { text-decoration: none; color: inherit; }
 
-    .card img {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-
-    .card-content {
-      position: absolute;
-      bottom: 20px;
-      left: 20px;
-      color: white;
-      text-shadow: 0 0 4px rgba(0, 0, 0, 0.7);
-    }
-
-    .card-content h2 {
-      margin: 0 0 10px;
-      font-size: 24px;
-    }
-
-    .card-content p {
-      margin: 0;
-      font-size: 16px;
-    }
-
-    @media (max-width: 600px) {
-      .card-content h2 {
-        font-size: 20px;
-      }
-      .card-content p {
-        font-size: 14px;
-      }
-    }
-  </style>
-	<style>    #map { width: 85%; height: 50vh; margin: auto; border-radius: 25px;}
-    .tt-popup {
-      background: white;
-      padding: 10px;
-      border-radius: 5px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    }
-  </style>
-	
-    <title>Caledon Transit – Bus Routes &amp; Info for Bolton, ON (Route 41 - BT)</title>
-	<style>
-.mySlides {display: none}
-img {vertical-align: middle;}
-
-/* Slideshow container */
-.slideshow-container {
-  max-width: 1000px;
-  position: relative;
-  margin: auto;
-}
-
-/* Next & previous buttons */
-.prev, .next {
-	padding:50px;
-  cursor: pointer;
-  width: auto;
-  color: black;
-  font-weight: bold;
-  font-size: 18px;
-  transition: 0.6s ease;
-  border-radius: 0 3px 3px 0;
-  user-select: none;
-}
-
-/* Position the "next button" to the right */
-
-/* On hover, add a black background color with a little bit see-through */
-
-
-/* The dots/bullets/indicators */
-.dot {
-  cursor: pointer;
-  height: 15px;
-  width: 15px;
-  margin: 0 2px;
-  background-color: #bbb;
-  border-radius: 50%;
-  display: inline-block;
-  transition: background-color 0.6s ease;
-}
-
-.active, .dot:hover {
-  background-color: #717171;
-}
-
-/* Fading animation */
-.fade {
-  animation-name: fade;
-  animation-duration: 1.5s;
-}
-
-@keyframes fade {
-  from {opacity: .4} 
-  to {opacity: 1}
-}
-
-.slideimg {
-	border-radius: 25px;
-	    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    width: 50%;
-	max-width: 500px;
-    }
-
-/* On smaller screens, decrease text size */
-@media only screen and (max-width: 300px) {
-  .prev, .next,.text {font-size: 11px}
-}
-</style>
-    <style>
-      body {
-        background: #fafafa;
-      }
-    </style>
-    <style>  <style>
-    *{
-      padding: 0;
-      margin: 0;
-      box-sizing: border-box;
-      text-decoration: none;
-      list-style: none;
-    }
-    
-    :root{
-      --bg-color: #fafafa;
-      --text-color: #fff;
-      --main-color: #3366CC;
-    }
-    
-    body{
-      min-height: 100vh;
-      font-family: Montserrat;
-    }
-    
-    header{
-	        left: 50%;
-    transform: translateX(-50%);
+/* Header */
+header {
+    left: 50%; transform: translateX(-50%);
     white-space: nowrap;
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 50px;
-    height: 70px;
-    position: fixed;
-    width: 85%;
-    top: 20px;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 2%;
-    transition: all .50s ease;
-    }
-    
-    .logo{
-      display: flex;
-      align-items: center;
-        color: var(--text-color);
-    }
-    
-    .logo span{
-        color: var(--text-color);
-      font-size: 1.4rem;
-      font-weight: 600;
-    }
-    
-    .navbar {
-      display: flex;
-    }
-    
-     .navbar a{
-     color: var(--text-color);
-       font-size: 1.1rem;
-       font-weight: 500;
-       padding: 5px 0;
-       margin: 0px 30px;
-         transition: all .50s ease;
-    }
-    
-    .navbar a:hover{
-     color: var(--main-color)
-    }
-    
-    
-    .main {
-      display: none;
-      background-color: #060e1a;
-      border-radius: 50px;
-      height: 50px;
-      width: 50px;
-      align-items: center;
-    }
-    
-    
-    .main a{
-		text-decoration: none;
-      margin-right: 25px;
-      margin-left: 10px;
-      color: var(--text-color);
-      font-size: 1.1rem;
-      font-weight: 500;
-      transition: all .50s ease;
-    }
-    
-    .main a:hover{
-
-      color: var(--main-color);
-
-    }
-
-    .emp-button {
- background-color: #5865F2;
- border-radius: 50px;
- width: 250px;
- text-align: center;
- font-family: 'Rubik';
- height: 50px;
- float: left; 
-display: none;
-    }
-
-.topli {
-  margin-top: unset;
+    background: rgba(0,0,0,0.6);
+    border-radius: 50px; height: 70px;
+    position: fixed; top: 20px; width: 85%; z-index: 1000;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 2%; transition: all .5s ease;
 }
+header .logo img { width: 150px; }
+.navbar { display: flex; list-style: none; margin: 0; padding: 0; }
+.navbar li { margin: 0 15px; }
+.navbar a { color: #fff; font-weight: 500; transition: .3s; }
+.navbar a:hover { color: #ffc300; }
 
-a {
-	text-decoration: none;
-}
-    
-    #menu-icon{
-      margin: auto;
-      font-size: 35px;
-      color: var(--text-color);
-      cursor: pointer;
-      z-index: 10001;
-      display: none;
-        
-    }
-    
-    @media (max-width: 1280px){
-      header{
-        padding: 14px 2%;
-        transition: .2s;
-      }
-      .navbar a{
-        padding: 5px 0;
-        margin: 0px 20px;
-      }
-    }
-    
-    @media (max-width: 1090px){
+.main { display: none; }
+#menu-icon { font-size: 35px; color: #fff; cursor: pointer; display: none; }
 
-.emp-button {
-  display: block;
-}
+/* Slideshow */
+.slideshow-container { max-width: 1000px; position: relative; margin: auto; border-radius: 50px; }
+.mySlides { display: none; }
+.slideimg { border-radius: 25px; display: block; margin-left: auto; margin-right: auto; width: 50%; max-width: 500px; }
+.prev, .next { cursor: pointer; font-weight: bold; font-size: 18px; padding: 50px; color: black; }
+.dot { cursor: pointer; height: 15px; width: 15px; margin: 0 2px; background-color: #bbb; border-radius: 50%; display: inline-block; transition: background-color 0.6s ease; }
+.active, .dot:hover { background-color: #717171; }
 
-.topli {
-  margin-top: 25px;
-}
+/* Map */
+#map { width: 85%; height: 50vh; margin: auto; border-radius: 25px; }
+.tt-popup { background: white; padding: 10px; border-radius: 5px; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+#directionSelect { padding: 10px; border: none; font-weight: bold; border-radius: 50px; display: block; margin: 20px auto; background: #ddd; }
 
-      li {
-		  list-style-type: none;
-margin-bottom: 20px;
-background-color: #060e1a;
- border-radius: 50px; 
-width: 250px; 
-text-align: center; 
-font-family: 'Rubik'; 
-height: 50px;
-}
-      #menu-icon{
-        display: block;
-      }
+/* Cards */
+.container { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; padding: 20px; }
+.card { flex: 1 1 300px; max-width: 600px; min-width: 280px; background: #fff; border-radius: 10px; overflow: hidden; position: relative; }
+.card img { width: 100%; display: block; }
+.card-content { position: absolute; bottom: 20px; left: 20px; color: white; text-shadow: 0 0 4px rgba(0,0,0,0.7); }
+.card-content h2 { margin: 0 0 10px; font-size: 24px; }
+.card-content p { margin: 0; font-size: 16px; }
 
-      .main {
-        display: flex;
-      }
-      
-      .navbar{
-        position: absolute;
-        top: 100%;
-        right: -150%;
-        flex-direction: column;
-        justify-content: flex-start;
-        border-radius: 10px;
-        transition: all .50s ease;
-        align-items: center;
-        background-color: transparent;
-        backdrop-filter: blur(6.9px);
-        width: 100%;
-        height: 100vh;
-      }
-      
-      
-      .navbar a{
-        display: block;
-        margin: 12px 0;
-        padding: 0px 25px;
-        transition: all .50s ease;
-      
-      }
-      
-      .navbar a:hover{
-        color: var(--text-color);
-      transform: translateY(5px);
-      }
-      
-      .navbar a.active{
-        color: var(--text-color);
-      
-      }
-      
-      .navbar.open{
-        right: 0%;
-      }
-    }
-    </style>
- <style>
+/* Footer */
+footer { background-color: #f5f5f5; padding: 30px 20px; text-align: center; font-family: 'Montserrat', sans-serif; }
+footer img { max-width: 150px; }
 
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-
-
-
-h2 {
-    font-family: 'Outfit', sans-serif;
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 3rem;
-    color: var(--text-color);
-}
-
-
-
-/* SVG Styles */
-svg {
-    vertical-align: middle;
-}
-</style>
-	<style>
+/* Live Status Button */
 .status-btn {
-  position: fixed;
-  bottom: 0;
-  right: 50px;
-  padding: 15px;
-  z-index: 5000000;
-  border: none;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: bold;
-  cursor: pointer;
-  border-radius: 25px;
-  width: 400px;
-  background: rgb(248, 195, 0);
-  transition: all 0.2s ease;
+  position: fixed; bottom: 0; right: 50px; padding: 15px; z-index: 5000000;
+  border: none; font-weight: bold; cursor: pointer; border-radius: 25px; width: 400px;
+  background: rgb(248, 195, 0); font-family: 'Montserrat';
 }
+.status-btn:hover { background: rgb(220, 170, 0); }
+@media (max-width: 768px) { .status-btn { right:0; width:100%; border-radius:0; font-size:16px; } }
 
-/* Hover effect */
-.status-btn:hover {
-  background: rgb(220, 170, 0);
-}
-
-/* Mobile view */
-@media (max-width: 768px) {
-  .status-btn {
-    right: 0;
-    width: 100%;
-    border-radius: 0;
-    font-size: 16px;
-    text-align: center;
-    font-family: 'Montserrat', sans-serif;
-  }
-}
 </style>
-  </head>
- <body><header style="white-space: nowrap;">
-      <a href="/" class=""><img src="caledon.png" alt="Caledon Transit" style="
-    width: 150px;
-"></a>
-    <ul class="navbar" style="list-style-type: none;">
-    <li class="topli"><a href="#" class="active">Home</a></li>
+</head>
+<body>
+
+<header>
+  <a href="/"><img src="caledon.png" alt="Caledon Transit"></a>
+  <ul class="navbar">
+    <li><a href="#" class="active">Home</a></li>
     <li><a href="#">Schedules and Maps</a></li>
     <li><a href="/redirect?discord">Fare Info</a></li>
-      <li><a href="/redirect?roblox">Customer Service</a></li>
-    <li><a href="/redirect?youtube">About Us</a></li>   </ul>
-    
-    <div class="main">
-<i class="bx bx-menu-alt-right" id="menu-icon"></i>    </div>
-    </header>
-	 <button class="status-btn">Live Service Alerts / Route Status</button>
-  <main style="
-    padding-top: 100px;
-">
-	  <div class="slideshow-container" style="border-radius: 50px; width: 75%;">
+    <li><a href="/redirect?roblox">Customer Service</a></li>
+    <li><a href="/redirect?youtube">About Us</a></li>
+  </ul>
+  <div class="main"><i class="bx bx-menu-alt-right" id="menu-icon"></i></div>
+</header>
 
-<div class="mySlides fade" style="display: none;">
-  <img src="/caledontransit/ad (1).png" style="width:100%" class="slideimg">
-</div>
+<button class="status-btn">Live Service Alerts / Route Status</button>
 
-<div class="mySlides fade" style="display: block;">
-  <img src="/caledontransit/psd.png" style="width:100%" class="slideimg">
-</div>
+<main style="padding-top:100px;">
+  <!-- Slideshow -->
+  <div class="slideshow-container">
+    <div class="mySlides fade"><img src="/caledontransit/ad (1).png" class="slideimg"></div>
+    <div class="mySlides fade" style="display:block;"><img src="/caledontransit/psd.png" class="slideimg"></div>
+    <div class="mySlides fade"><img src="/caledontransit/New Project (7).png" class="slideimg"></div>
+  </div>
+  <br>
+  <div style="text-align:center">
+    <a class="prev" onclick="plusSlides(-1)"><i class="ri-arrow-left-line"></i></a>
+    <span class="dot" onclick="currentSlide(1)"></span>
+    <span class="dot active" onclick="currentSlide(2)"></span>
+    <span class="dot" onclick="currentSlide(3)"></span>
+    <a class="next" onclick="plusSlides(1)"><i class="ri-arrow-right-line"></i></a>
+  </div>
+  <br>
 
-<div class="mySlides fade" style="display: none;">
-  <img src="/caledontransit/New Project (7).png" style="width:100%" class="slideimg">
-</div>
+  <h1 style="color:black; text-align:center; font-family:Outfit;">Route Map & Live Bus Positions</h1>
+  <h4 style="color:black; text-align:center; font-family:Outfit; font-weight:400;">See real-time bus locations on the map below. Route 41 is operated by Brampton Transit</h4>
 
+  <!-- Map & Dropdown -->
+  <select id="directionSelect">
+    <option value="410008">Route 41: Northbound</option>
+    <option value="410007">Route 41: Southbound</option>
+  </select>
+  <div id="map"></div>
 
-
-</div>
-<br>
-
-<div style="text-align:center">
-<a class="prev" onclick="plusSlides(-1)"><i class="ri-arrow-left-line"></i></a>
-
-  <span class="dot" onclick="currentSlide(1)"></span> 
-  <span class="dot active" onclick="currentSlide(2)"></span> 
-  <span class="dot" onclick="currentSlide(3)"></span> 
-  <a class="next" onclick="plusSlides(1)"><i class="ri-arrow-right-line"></i></a>
-</div><br><br>
-
-<script>
-let slideIndex = 1;
-showSlides(slideIndex);
-
-function plusSlides(n) {
-  showSlides(slideIndex += n);
-}
-
-function currentSlide(n) {
-  showSlides(slideIndex = n);
-}
-
-function showSlides(n) {
-  let i;
-  let slides = document.getElementsByClassName("mySlides");
-  let dots = document.getElementsByClassName("dot");
-  if (n > slides.length) {slideIndex = 1}    
-  if (n < 1) {slideIndex = slides.length}
-  for (i = 0; i < slides.length; i++) {
-    slides[i].style.display = "none";  
-  }
-  for (i = 0; i < dots.length; i++) {
-    dots[i].className = dots[i].className.replace(" active", "");
-  }
-  slides[slideIndex-1].style.display = "block";  
-  dots[slideIndex-1].className += " active";
-}
-</script><h1 style="
-    color: black;
-    font-family: Outfit;
-    text-align: center;
-">Route Map &amp; Live Bus Positions</h1>
-	  
-<h4 style="
-    color: black;
-    font-family: Outfit;
-    text-align: center;
-    font-weight: 400;
-">See real-time bus locations on the map below. Route 41 is operated by Brampton Transit</h4><br><select id="directionSelect" style="
-    padding: 10px;
-    border: none;
-    font-family: 'Montserrat';
-    font-weight: bold;
-    border-radius: 50px;
-    background: #dddddd;
-    display: flex;
-    margin: auto;
-">
-  <option value="410008">Route 41: Northbound</option>
-  <option value="410007">Route 41: Southbound</option>
-</select><br>
-
-<div id="map"></div>
-	  <script src="https://api.tomtom.com/maps-sdk-for-web/cdn/6.x/6.15.0/maps/maps-web.min.js"></script>
-<script>
-const map = tt.map({
-  key: 'XVUXC7GLhrBCR47wKHSTSabpLRTnEzv2',
-  container: 'map',
-  center: [-79.8, 43.7],
-  zoom: 12
-});
-
-map.addControl(new tt.NavigationControl());
-const popup = new tt.Popup({ closeButton: true, closeOnClick: true });
-
-// CSV parser
-function parseCSV(csv) {
-  const lines = csv.trim().split('\n');
-  const headers = lines.shift().split(',');
-  return lines.map(line => {
-    const parts = line.split(',');
-    return headers.reduce((obj, header, i) => {
-      obj[header] = parts[i];
-      return obj;
-    }, {});
-  });
-}
-
-const routes = [
-  { id: '410008', color: '#FF3399', label: 'Northbound' },
-  { id: '410007', color: '#3399FF', label: 'Southbound' }
-];
-
-	async function loadRoute41Stops() {
-  try {
-    // Fetch all GTFS files
-    const [tripsRes, stopTimesRes, stopsRes] = await Promise.all([
-      fetch("https://nathandevstuffs.github.io/caledontransit/trips.txt"),
-      fetch("https://nathandevstuffs.github.io/caledontransit/stop_times.txt"),
-      fetch("https://nathandevstuffs.github.io/caledontransit/stops.txt")
-    ]);
-
-    const trips = parseCSV(await tripsRes.text());
-    const stopTimes = parseCSV(await stopTimesRes.text());
-    const stops = parseCSV(await stopsRes.text());
-
-    // Step 1: Trips for Route 41 (route_id = 501)
-    const route41Trips = new Set(
-      trips.filter(t => t.route_id === "41").map(t => t.trip_id)
-    );
-
-    // Step 2: Stop IDs used by those trips
-    const route41Stops = new Set(
-      stopTimes.filter(st => route41Trips.has(st.trip_id)).map(st => st.stop_id)
-    );
-
-    // Step 3: Match stops and add markers
-    stops
-      .filter(s => route41Stops.has(s.stop_id))
-      .forEach(stop => {
-        const lat = parseFloat(stop.stop_lat);
-        const lon = parseFloat(stop.stop_lon);
-        if (!lat || !lon) return;
-
-        const icon = document.createElement("img");
-        icon.src = "/caledontransit/New Project (9).png"; // bus stop icon
-        icon.style.width = "10px";
-        icon.style.height = "10px";
-
-        new tt.Marker({ element: icon })
-          .setLngLat([lon, lat])
-          .setPopup(new tt.Popup().setHTML(`<b>${stop.stop_name}</b>`))
-          .addTo(map);
-      });
-
-  } catch (err) {
-    console.error("Failed to load Route 41 stops:", err);
-  }
-}
-
-map.on('load', async () => {
-  try {
-	  loadRoute41Stops();
-    const response = await fetch('https://nathandevstuffs.github.io/caledontransit/shapes.txt');
-    if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-
-    const csvText = await response.text();
-    const parsed = parseCSV(csvText);
-
-    for (const { id, color, label } of routes) {
-      const shapePoints = parsed
-        .filter(row => row.shape_id === id)
-        .sort((a, b) => Number(a.shape_pt_sequence) - Number(b.shape_pt_sequence))
-        .map(pt => [Number(pt.shape_pt_lon), Number(pt.shape_pt_lat)]);
-
-      if (!shapePoints.length) {
-        console.warn('Shape ID not found:', id);
-        continue;
-      }
-
-      map.addSource(`route-${id}`, {
-        type: 'geojson',
-        data: {
-          type: 'Feature',
-          geometry: {
-            type: 'LineString',
-            coordinates: shapePoints
-          }
-        }
-      });
-
-      map.addLayer({
-        id: `routeLineLayer-${id}`,
-        type: 'line',
-        source: `route-${id}`,
-        layout: {
-          'line-join': 'round',
-          'line-cap': 'round',
-          visibility: 'none' // start hidden
-        },
-        paint: {
-          'line-color': color,
-          'line-width': 5
-        }
-      });
-
-      // Marker at start
-      const marker = new tt.Marker().setLngLat(shapePoints[0]);
-      marker.addTo(map);
-      marker.getElement().style.display = 'none'; // hide initially
-      routes.find(r => r.id === id).marker = marker;
-
-      // Add popup on click
-      map.on('click', `routeLineLayer-${id}`, e => {
-        popup
-          .setLngLat(e.lngLat)
-          .setHTML(`<div class="tt-popup"><strong>Route 41 - ${label}</strong><br>Shape ID: ${id}</div>`)
-          .addTo(map);
-      });
-
-      // Store coordinates for flyTo
-      routes.find(r => r.id === id).startCoord = shapePoints[0];
-    }
-
-    // Show default selected route
-    updateRouteDisplay(document.getElementById('directionSelect').value);
-
-  } catch (err) {
-    console.error('Failed to load route:', err);
-    alert('Error loading route.');
-  }
-});
-
-// Change route when dropdown changes
-document.getElementById('directionSelect').addEventListener('change', e => {
-  updateRouteDisplay(e.target.value);
-});
-
-function updateRouteDisplay(selectedId) {
-  routes.forEach(({ id, marker, startCoord }) => {
-    const visibility = id === selectedId ? 'visible' : 'none';
-    if (map.getLayer(`routeLineLayer-${id}`)) {
-      map.setLayoutProperty(`routeLineLayer-${id}`, 'visibility', visibility);
-    }
-    if (marker) {
-      marker.getElement().style.display = visibility === 'visible' ? 'block' : 'none';
-    }
-  });
-
-  const selected = routes.find(r => r.id === selectedId);
-  if (selected && selected.startCoord) {
-    map.flyTo({ center: selected.startCoord, zoom: 13 });
-  }
-}
-</script>
-	  <script>
-		  const busMarkers = {}; // store bus markers by vehicle ID
-
-async function updateBusPositions() {
-  try {
-    const response = await fetch("https://caledon.nathanplayzofficial.workers.dev/");
-    if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-
-    const data = await response.json();
-
-    const activeBusIds = new Set();
-
-    data.entity
-      .filter(ent => ent.vehicle?.trip?.route_id === "41")
-      .forEach(ent => {
-        const veh = ent.vehicle;
-        const id = veh.vehicle?.id || veh.id;
-        const lat = veh.position?.latitude;
-        const lon = veh.position?.longitude;
-
-        if (!lat || !lon) return;
-
-        activeBusIds.add(id);
-
-        // Create new marker if it doesn't exist
-        if (!busMarkers[id]) {
-          const icon = document.createElement("img");
-          icon.src = "/caledontransit/New Project (8).png";
-          icon.style.width = "40px";
-          icon.style.height = "40px";
-
-          busMarkers[id] = new tt.Marker({ element: icon })
-            .setLngLat([lon, lat])
-            .setPopup(new tt.Popup().setHTML(`<b>Bus ${veh.vehicle?.label || id}</b>`))
-            .addTo(map);
-        } else {
-          // Update existing marker position
-          busMarkers[id].setLngLat([lon, lat]);
-        }
-      });
-
-    // Remove markers for buses not active anymore
-    for (const id in busMarkers) {
-      if (!activeBusIds.has(id)) {
-        busMarkers[id].remove(); // remove from map
-        delete busMarkers[id];   // delete from memory
-      }
-    }
-
-  } catch (err) {
-    console.error("Bus update failed:", err);
-  }
-}
-
-// run immediately + every 15s
-updateBusPositions();
-setInterval(updateBusPositions, 15000);
-
-	  </script>
-	  <br>
-	  <br>
-	  <div class="container">
+  <!-- Cards -->
+  <div class="container">
     <div class="card">
       <img src="/caledontransit/New Project (6).png" alt="Paying Your Fare">
-      <div class="card-content">
-        <h2>Paying Your Fare</h2>
-        <p>Ready to ride? Learn how to pay →</p>
-      </div>
-    </div>
-<div class="card">
-      <img src="/caledontransit/plantrip.png" alt="Plan a Trip">
-      <div class="card-content">
-        <h2>Plan a Trip</h2>
-        <p>Quickly Plan Your Transit Ride →</p>
-      </div>
+      <div class="card-content"><h2>Paying Your Fare</h2><p>Ready to ride? Learn how to pay →</p></div>
     </div>
     <div class="card">
-      <img src="/caledontransit/cust.png" alt="Service Routes">
-      <div class="card-content">
-        <h2>Contact Brampton Transit</h2>
-        <p>Get in touch with Brampton Transit →</p>
-      </div>
+      <img src="/caledontransit/plantrip.png" alt="Plan a Trip">
+      <div class="card-content"><h2>Plan a Trip</h2><p>Quickly Plan Your Transit Ride →</p></div>
+    </div>
+    <div class="card">
+      <img src="/caledontransit/cust.png" alt="Contact Brampton Transit">
+      <div class="card-content"><h2>Contact Brampton Transit</h2><p>Get in touch with Brampton Transit →</p></div>
     </div>
   </div>
 </main>
-	 <footer style="background-color: #f5f5f5; padding: 30px 20px; text-align: center; font-family: 'Montserrat', sans-serif;">
-  <div style="display: flex; justify-content: space-between; max-width: 1200px; margin: auto; flex-wrap: wrap;">
-    
-    <!-- Left Section: Logo and Social Links -->
-    <div style="flex: 1; padding: 10px; max-width: 200px;">
-      <img src="https://nathandevstuffs.github.io/caledontransit/caledon.png">
-      <p style="font-size: 16px; margin-bottom: 10px;">Operated by Brampton Transit</p>
-      
-    </div>
-    
-    <!-- Middle Section: Contact Information -->
-    <div style="flex: 1; padding: 10px; max-width: 300px;">
-      <h3 style="font-size: 20px; margin-bottom: 15px;">Contact Centre</h3>
-      <p style="font-size: 16px; margin-bottom: 10px;">Town of Caledon: 1-888-225-3366</p>
-      <p style="font-size: 16px; margin-bottom: 10px;">Brampton Transit: 905.874.2999</p>
-      <p style="font-size: 16px; margin-bottom: 10px;">Emergency: 911</p>
-      <p style="font-size: 16px; margin-bottom: 10px;">Disclaimer: This website is not affiliated with, endorsed by, or officially connected to the Town of Caledon or Brampton Transit.</p>
-    </div>
 
-    <!-- Right Section: Quick Links -->
-    <div style="flex: 1; padding: 10px; max-width: 300px;">
-      <h3 style="font-size: 20px; margin-bottom: 15px;">Quick Links</h3>
-      <ul style="list-style: none; padding: 0;">
-        <li style="margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;"><a href="#" style="color: #333; text-decoration: none; font-size: 16px;">Schedules and Maps</a></li>
-        <li style="margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;"><a href="#" style="color: #333; text-decoration: none; font-size: 16px;">Fare Info</a></li>
-        <li style="margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;"><a href="#" style="color: #333; text-decoration: none; font-size: 16px;">Trip Planner</a></li>
-        <li style="margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;"><a href="#" style="color: #333; text-decoration: none; font-size: 16px;">About Us</a></li>
+<!-- Footer -->
+<footer>
+  <div style="display:flex; justify-content:space-between; max-width:1200px; margin:auto; flex-wrap:wrap;">
+    <div style="flex:1; padding:10px; max-width:200px;">
+      <img src="https://nathandevstuffs.github.io/caledontransit/caledon.png">
+      <p style="font-size:16px;">Operated by Brampton Transit</p>
+    </div>
+    <div style="flex:1; padding:10px; max-width:300px;">
+      <h3>Contact Centre</h3>
+      <p>Town of Caledon: 1-888-225-3366</p>
+      <p>Brampton Transit: 905.874.2999</p>
+      <p>Emergency: 911</p>
+      <p>Disclaimer: This website is not affiliated with, endorsed by, or officially connected to the Town of Caledon or Brampton Transit.</p>
+    </div>
+    <div style="flex:1; padding:10px; max-width:300px;">
+      <h3>Quick Links</h3>
+      <ul style="list-style:none; padding:0;">
+        <li><a href="#">Schedules and Maps</a></li>
+        <li><a href="#">Fare Info</a></li>
+        <li><a href="#">Trip Planner</a></li>
+        <li><a href="#">About Us</a></li>
       </ul>
     </div>
   </div>
 </footer>
-	  <script>
-        let menu = document.querySelector('#menu-icon');
-      let navbar = document.querySelector('.navbar');
-      
-      menu.onclick = () => {
-        menu.classList.toggle('bx-x');
-        navbar.classList.toggle('open');
-      }
-  </script>
 
+<!-- Scripts -->
+<script src="https://api.tomtom.com/maps-sdk-for-web/cdn/6.x/6.15.0/maps/maps-web.min.js"></script>
+<script>
+// Header menu toggle
+let menu = document.querySelector('#menu-icon');
+let navbar = document.querySelector('.navbar');
+menu.onclick = () => { menu.classList.toggle('bx-x'); navbar.classList.toggle('open'); };
 
-</body></html>
+// Slideshow
+let slideIndex = 1;
+function plusSlides(n){ showSlides(slideIndex += n); }
+function currentSlide(n){ showSlides(slideIndex = n); }
+function showSlides(n){
+  let slides = document.getElementsByClassName("mySlides");
+  let dots = document.getElementsByClassName("dot");
+  if(n>slides.length) slideIndex=1; if(n<1) slideIndex=slides.length;
+  for(let i=0;i<slides.length;i++){ slides[i].style.display="none"; }
+  for(let i=0;i<dots.length;i++){ dots[i].className=dots[i].className.replace(" active",""); }
+  slides[slideIndex-1].style.display="block"; dots[slideIndex-1].className += " active";
+}
+
+// Map & GTFS buses
+const mapObj = tt.map({ key:'XVUXC7GLhrBCR47wKHSTSabpLRTnEzv2', container:'map', center:[-79.8,43.7], zoom:12 });
+mapObj.addControl(new tt.NavigationControl());
+const popup = new tt.Popup({ closeButton:true, closeOnClick:true });
+const routes = [ { id:'410008', color:'#FF3399', label:'Northbound' }, { id:'410007', color:'#3399FF', label:'Southbound' } ];
+let tripDirectionMap={}, busMarkers={}, selectedDirection='410008';
+
+// Parse CSV
+function parseCSV(csv){
+  const lines = csv.trim().split('\n'); const headers=lines.shift().split(',');
+  return lines.map(line=>{ const parts=line.split(','); return headers.reduce((obj,h,i)=>{ obj[h]=parts[i]; return obj; },{}); });
+}
+
+// Build trip → shape_id map
+async function buildTripDirectionMap(){
+  const tripsRes = await fetch("https://nathandevstuffs.github.io/caledontransit/trips.txt");
+  const trips = parseCSV(await tripsRes.text());
+  trips.forEach(t=>{ if(t.route_id==="41") tripDirectionMap[t.trip_id]=t.shape_id; });
+}
+
+// Load stops
+async function loadRoute41Stops(){
+  const [stopTimesRes, stopsRes] = await Promise.all([
+    fetch("https://nathandevstuffs.github.io/caledontransit/stop_times.txt"),
+    fetch("https://nathandevstuffs.github.io/caledontransit/stops.txt")
+  ]);
+  const stopTimes=parseCSV(await stopTimesRes.text());
+  const stops=parseCSV(await stopsRes.text());
+  const route41Trips = new Set(Object.keys(tripDirectionMap));
+  const route41StopIds = new Set(stopTimes.filter(st=>route41Trips.has(st.trip_id)).map(st=>st.stop_id));
+  stops.filter(s=>route41StopIds.has(s.stop_id)).forEach(stop=>{
+    const lat=parseFloat(stop.stop_lat), lon=parseFloat(stop.stop_lon);
+    if(!lat||!lon) return;
+    const icon=document.createElement("img");
+    icon.src="/caledontransit/New Project (9).png";
+    icon.style.width="10px"; icon.style.height="10px";
+    new tt.Marker({ element:icon }).setLngLat([lon,lat]).setPopup(new tt.Popup().setHTML(`<b>${stop.stop_name}</b>`)).addTo(mapObj);
+  });
+}
+
+// Load route shapes
+async function loadRoutes(){
+  const response=await fetch('https://nathandevstuffs.github.io/caledontransit/shapes.txt');
+  const parsed= parseCSV(await response.text());
+  for(const {id,color,label} of routes){
+    const shapePoints=parsed.filter(r=>r.shape_id===id).sort((a,b)=>Number(a.shape_pt_sequence)-Number(b.shape_pt_sequence)).map(pt=>[Number(pt.shape_pt_lon),Number(pt.shape_pt_lat)]);
+    if(!shapePoints.length) continue;
+    mapObj.addSource(`route-${id}`, { type:'geojson', data:{ type:'Feature', geometry:{ type:'LineString', coordinates:shapePoints } } });
+    mapObj.addLayer({ id:`routeLineLayer-${id}`, type:'line', source:`route-${id}`, layout:{'line-join':'round','line-cap':'round','visibility':'none'}, paint:{'line-color':color,'line-width':5} });
+    const marker = new tt.Marker().setLngLat(shapePoints[0]).addTo(mapObj);
+    marker.getElement().style.display='none';
+    routes.find(r=>r.id===id).marker=marker;
+    routes.find(r=>r.id===id).startCoord=shapePoints[0];
+    mapObj.on('click',`routeLineLayer-${id}`,e=>popup.setLngLat(e.lngLat).setHTML(`<div class="tt-popup"><strong>Route 41 - ${label}</strong></div>`).addTo(mapObj));
+  }
+}
+
+// Update route display
+function updateRouteDisplay(selectedId){
+  routes.forEach(({id, marker, startCoord})=>{
+    const visibility = id===selectedId?'visible':'none';
+    if(mapObj.getLayer(`routeLineLayer-${id}`)) mapObj.setLayoutProperty(`routeLineLayer-${id}`,'visibility',visibility);
+    if(marker) marker.getElement().style.display = visibility==='visible'?'block':'none';
+  });
+  const selected = routes.find(r=>r.id===selectedId);
+  if(selected && selected.startCoord) mapObj.flyTo({ center:selected.startCoord, zoom:13 });
+  selectedDirection=selectedId;
+  updateBusPositions();
+}
+
+// Update GTFS bus positions
+async function updateBusPositions(){
+  try{
+    const response = await fetch("https://caledon.nathanplayzofficial.workers.dev/");
+    const data = await response.json();
+    data.entity.filter(ent=>ent.vehicle?.trip?.route_id==="41").forEach(ent=>{
+      const veh=ent.vehicle; const id=veh.vehicle?.id||veh.id;
+      const tripId=veh.trip?.trip_id; const lat=veh.position?.latitude; const lon=veh.position?.longitude;
+      if(!lat||!lon) return;
+      const direction=tripDirectionMap[tripId];
+      if(direction!==selectedDirection){ if(busMarkers[id]) busMarkers[id].getElement().style.display='none'; return; }
+      if(!busMarkers[id]){
+        const icon=document.createElement("img"); icon.src="/caledontransit/New Project (8).png"; icon.style.width="40px"; icon.style.height="40px";
+        busMarkers[id] = new tt.Marker({ element:icon }).setLngLat([lon,lat]).setPopup(new tt.Popup().setHTML(`<b>Bus ${veh.vehicle?.label||id}</b>`)).addTo(mapObj);
+      }else{ busMarkers[id].setLngLat([lon,lat]); busMarkers[id].getElement().style.display='block'; }
+    });
+  }catch(err){ console.error("Bus update failed:",err); }
+}
+
+// Dropdown change
+document.getElementById('directionSelect').addEventListener('change', e=>{ updateRouteDisplay(e.target.value); });
+
+// Initialize
+mapObj.on('load', async ()=>{
+  await buildTripDirectionMap();
+  await loadRoute41Stops();
+  await loadRoutes();
+  updateRouteDisplay(selectedDirection);
+  updateBusPositions();
+  setInterval(updateBusPositions, 15000);
+});
+</script>
+
+</body>
+</html>
