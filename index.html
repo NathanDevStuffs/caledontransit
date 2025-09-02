@@ -7,6 +7,235 @@
         background: #fafafa;
       }
     </style>
+    <style>  <style>
+    *{
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+      text-decoration: none;
+      list-style: none;
+    }
+    
+    :root{
+      --bg-color: #222327;
+      --text-color: #fff;
+      --main-color: #83fc47;
+    }
+    
+    body{
+      min-height: 100vh;
+      background-color: rgb(7,23,43);
+      color: var(--text-color);
+      font-family: Montserrat;
+    }
+    
+    header{
+	    left: 50%;
+    transform: translateX(-50%);
+	    white-space: nowrap;
+	    background: rgba(0,0,0,0.6);
+	    border-radius: 50px;
+	    height: 70px;
+      position: fixed;
+      width: 95%;
+      top: 20px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 2%;
+      transition: all .50s ease;
+    }
+    
+    .logo{
+      display: flex;
+      align-items: center;
+        color: var(--text-color);
+    }
+    
+    .logo span{
+        color: var(--text-color);
+      font-size: 1.4rem;
+      font-weight: 600;
+    }
+    
+    .navbar {
+      display: flex;
+    }
+    
+     .navbar a{
+     color: var(--text-color);
+       font-size: 1.1rem;
+       font-weight: 500;
+       padding: 5px 0;
+       margin: 0px 30px;
+         transition: all .50s ease;
+    }
+    
+    .navbar a:hover{
+     color: var(--main-color)
+    }
+    
+    .navbar active{
+     color: var(--main-color)
+    }
+    
+    .main {
+      display: none;
+      background-color: #060e1a;
+      border-radius: 50px;
+      height: 50px;
+      width: 50px;
+      align-items: center;
+    }
+    
+    
+    .main a{
+      margin-right: 25px;
+      margin-left: 10px;
+      color: var(--text-color);
+      font-size: 1.1rem;
+      font-weight: 500;
+      transition: all .50s ease;
+    }
+    
+    .main a:hover{
+
+      color: var(--main-color);
+
+    }
+
+    .emp-button {
+ background-color: #5865F2;
+ border-radius: 50px;
+ width: 250px;
+ text-align: center;
+ font-family: 'Rubik';
+ height: 50px;
+ float: left; 
+display: none;
+    }
+
+.topli {
+  margin-top: unset;
+}
+
+li {
+margin-bottom: unset;
+background-color: unset;
+ border-radius: unset; 
+width: unset; 
+text-align: unset; 
+font-family: unset; 
+height: unset;
+}
+    
+    #menu-icon{
+      margin: auto;
+      font-size: 35px;
+      color: var(--text-color);
+      cursor: pointer;
+      z-index: 10001;
+      display: none;
+        
+    }
+    
+    @media (max-width: 1280px){
+      header{
+        padding: 14px 2%;
+        transition: .2s;
+      }
+      .navbar a{
+        padding: 5px 0;
+        margin: 0px 20px;
+      }
+    }
+    
+    @media (max-width: 1090px){
+
+.emp-button {
+  display: block;
+}
+
+.topli {
+  margin-top: 25px;
+}
+
+      li {
+margin-bottom: 20px;
+background-color: #060e1a;
+ border-radius: 50px; 
+width: 250px; 
+text-align: center; 
+font-family: 'Rubik'; 
+height: 50px;
+}
+      #menu-icon{
+        display: block;
+      }
+
+      .main {
+        display: flex;
+      }
+      
+      .navbar{
+        position: absolute;
+        top: 100%;
+        right: -100%;
+        flex-direction: column;
+        justify-content: flex-start;
+        border-radius: 10px;
+        transition: all .50s ease;
+        align-items: center;
+        background-color: transparent;
+        backdrop-filter: blur(6.9px);
+        width: 100%;
+        height: 100vh;
+      }
+      
+      
+      .navbar a{
+        display: block;
+        margin: 12px 0;
+        padding: 0px 25px;
+        transition: all .50s ease;
+      
+      }
+      
+      .navbar a:hover{
+        color: var(--text-color);
+      transform: translateY(5px);
+      }
+      
+      .navbar a.active{
+        color: var(--text-color);
+      
+      }
+      
+      .navbar.open{
+        right: 0%;
+      }
+    }
+    </style></style>
   </head>
-  <body></body>
+  <body><header style="white-space: nowrap;">
+      <a href="#" class="logo"><img src="bottle.png" style="
+    width: 50px; display:none;
+"><img src="bottolpridewhite.png" alt="OnBottol" style="
+    width: 150px;
+"></a>
+    <ul class="navbar">
+    <li class="topli"><a href="#" class="active">Home</a></li>
+    <li><a href="#">Support</a></li>
+    <li><a href="/redirect?discord">Discord Server</a></li>
+      <li><a href="/redirect?roblox">Roblox Group</a></li>
+    <li><a href="/redirect?youtube">YouTube</a></li>
+    <li><a href="/redirect?x">Our <i class="fa-brands fa-x-twitter" aria-hidden="true"></i></a></li>
+<li class="emp-button" style="position: absolute;left: 20px;bottom: 220px;"><a href="#"><i class="bx bxl-discord-alt" style="font-size: 30px;"></i></a></li>
+    <li class="emp-button" style="position: absolute;left: 50%;transform: translateX(-50%);bottom: 220px;"><a href="#"><i class="bx bxl-discord-alt" style="font-size: 30px;bottom: 220px;"></i></a></li>
+    <li class="emp-button" style="position: absolute;right: 20px;bottom: 220px;"><a href="#"><i class="bx bxl-discord-alt" style="font-size: 30px;"></i></a></li>    </ul>
+    
+    <div class="main">
+<i class="bx bx-menu-alt-right" id="menu-icon"></i>    </div>
+    </header></body>
 </html>
