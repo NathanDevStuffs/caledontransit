@@ -581,7 +581,7 @@ async function getStopDepartures(stopId) {
 
     const now = new Date();
     const departures = stopTimes
-      .filter(st => st.stop_id === stopId && tripMap[st.trip_id] === "41") // filter to route 501
+      .filter(st => st.stop_id === stopId && tripMap[st.trip_id] === "41") // filter to route 41
       .map(st => ({
         tripId: st.trip_id,
         routeId: tripMap[st.trip_id],
@@ -589,20 +589,11 @@ async function getStopDepartures(stopId) {
       }))
       .filter(d => d.time > now) // only future
       .sort((a, b) => a.time - b.time)
-      .slice(0, 1); // next 3
+      .slice(0, 3); // ✅ get next 3 departures
 
     return departures;
   } catch (e) {
     console.error("Failed to load stop_times departures:", e);
-    return [];
-  }
-}
-
-    // sort and take next 3
-    departures.sort((a, b) => a.time - b.time);
-    return departures.slice(0, 3);
-  } catch (e) {
-    console.error("Failed to load departures:", e);
     return [];
   }
 }
