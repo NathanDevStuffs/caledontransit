@@ -555,7 +555,6 @@ document.getElementById('locateBtn').addEventListener('click', () => {
 						icon2.className = 'material-symbols-outlined';
 						icon2.textContent = 'explore_nearby';
 
-    const marker = new tt.Marker({ element: icon2 }).setLngLat([lon, lat]).addTo(map);
                     userMarker = new tt.Marker({ color: 'blue' })
                         .setLngLat(lastPosition)
                         .addTo(map);
