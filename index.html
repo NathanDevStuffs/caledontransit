@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
 	  <link rel="stylesheet" href="https://api.tomtom.com/maps-sdk-for-web/cdn/6.x/6.15.0/maps/maps.css" />
-	<script>myUndefinedFunction();</script>
+	
 	  <style>
 
     .container {
@@ -415,11 +415,11 @@ svg {
     width: 150px;
 "></a>
     <ul class="navbar" style="list-style-type: none;">
-    <li class="topli"><a href="#" class="active">Home</a></li>
-    <li><a href="#">Schedules and Maps</a></li>
+    <li class="topli"><a href="/" class="active">Home</a></li>
+    <li><a href="/plan-your-trip">Plan a Trip</a></li>
     <li><a href="/redirect?discord">Fare Info</a></li>
       <li><a href="/redirect?roblox">Customer Service</a></li>
-    <li><a href="/redirect?youtube">About Us</a></li>   </ul>
+    <li><a href="https://www.brampton.ca/EN/residents/transit">BT Website</a></li>   </ul>
     
     <div class="main">
 <i class="bx bx-menu-alt-right" id="menu-icon"></i>    </div>
@@ -781,14 +781,14 @@ map.on('load', async () => {
         <p>Ready to ride? Learn how to pay →</p>
       </div>
     </div>
-<div class="card">
+<div class="card" onclick="window.location.href = '/plan-a-trip'" style="cursor: pointer;">
       <img src="/caledontransit/plantrip.png" alt="Plan a Trip">
       <div class="card-content">
         <h2>Plan a Trip</h2>
         <p>Quickly Plan Your Transit Ride →</p>
       </div>
     </div>
-    <div class="card">
+    <div class="card" onclick="window.location.href = 'https://www.brampton.ca/EN/residents/transit/Contact-Us/pages/customer-service.aspx'" style="cursor: pointer;">
       <img src="/caledontransit/cust.png" alt="Service Routes">
       <div class="card-content">
         <h2>Contact Brampton Transit</h2>
