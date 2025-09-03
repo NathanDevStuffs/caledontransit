@@ -555,29 +555,48 @@ async function buildTripDirectionMap() {
 }
 
 // Load stops
+function parseTimeToDate(timeStr) {
+  // stop_times.txt uses HH:MM:SS, can go past 24:00:00 for late night
+  const [h, m, s] = timeStr.split(":").map(Number);
+  const now = new Date();
+  const dep = new Date(now);
+  dep.setHours(h, m, s || 0, 0);
+  // handle times >= 24h by rolling into next day
+  if (h >= 24) dep.setDate(dep.getDate() + 1);
+  return dep;
+}
+
 async function getStopDepartures(stopId) {
   try {
-    const response = await fetch("https://caledon.nathanplayzofficial.workers.dev/tripupdates"); // replace with actual TripUpdates JSON URL
-    const data = await response.json();
+    const [stopTimesRes, tripsRes] = await Promise.all([
+      fetch("https://nathandevstuffs.github.io/caledontransit/stop_times.txt"),
+      fetch("https://nathandevstuffs.github.io/caledontransit/trips.txt")
+    ]);
+    const stopTimes = parseCSV(await stopTimesRes.text());
+    const trips = parseCSV(await tripsRes.text());
 
-    // collect departures for this stop
-    const departures = [];
-    data.entity.forEach(ent => {
-      const updates = ent.trip_update?.stop_time_update;
-      if (!updates) return;
-      updates.forEach(u => {
-        if (u.stop_id === stopId) {
-          const ts = u.departure?.time || u.arrival?.time;
-          if (ts) {
-            departures.push({
-              tripId: ent.trip_update.trip.trip_id,
-              routeId: ent.trip_update.trip.route_id,
-              time: new Date(ts * 1000)
-            });
-          }
-        }
-      });
-    });
+    // map trip_id -> route_id for reference
+    const tripMap = {};
+    trips.forEach(t => tripMap[t.trip_id] = t.route_id);
+
+    const now = new Date();
+    const departures = stopTimes
+      .filter(st => st.stop_id === stopId && tripMap[st.trip_id] === "41") // filter to route 501
+      .map(st => ({
+        tripId: st.trip_id,
+        routeId: tripMap[st.trip_id],
+        time: parseTimeToDate(st.departure_time)
+      }))
+      .filter(d => d.time > now) // only future
+      .sort((a, b) => a.time - b.time)
+      .slice(0, 1); // next 3
+
+    return departures;
+  } catch (e) {
+    console.error("Failed to load stop_times departures:", e);
+    return [];
+  }
+}
 
     // sort and take next 3
     departures.sort((a, b) => a.time - b.time);
@@ -622,7 +641,7 @@ async function loadRoute41Stops() {
 
       let depHtml = departures.length
         ? departures.map(d => `
-          <li style="display:flex; align-items:center; justify-content:space-between; padding:4px 0; border-top:1px solid #eee;">
+          <li style="display:flex; align-items:center; justify-content:space-between; padding:4px 0; border-top:1px solid #eee; list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
             <span style="font-weight:600; padding:2px 6px; border-radius:6px; background:#222; color:#fff;">${d.routeId}</span>
             <span style="flex:1; margin:0 6px;">Bolton</span>
             <span style="font-weight:600; white-space:nowrap;">${d.time.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
