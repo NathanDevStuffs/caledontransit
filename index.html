@@ -668,12 +668,12 @@ async function loadRoute41Stops() {
     const lon = parseFloat(stop.stop_lon);
     if (!lat || !lon) return;
 
-    const icon = document.createElement("img");
-    icon.src = "/caledontransit/New Project (9).png";
-    icon.style.width = "10px";
-    icon.style.height = "10px";
+    const icon2 = document.createElement("img");
+          icon2.src = "/caledontransit/locationpin.png";
+          icon2.style.width = "40px";
+          icon2.style.height = "40px";
 
-    const marker = new tt.Marker({ element: icon }).setLngLat([lon, lat]).addTo(map);
+    const marker = new tt.Marker({ element: icon2 }).setLngLat([lon, lat]).addTo(map);
 
     marker.getElement().addEventListener("click", async () => {
       // figure out direction (look at any trip for this stop)
