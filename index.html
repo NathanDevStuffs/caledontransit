@@ -551,14 +551,10 @@ document.getElementById('locateBtn').addEventListener('click', () => {
                 lastPosition = [userLng, userLat];
 
                 if (!userMarker) {
-					    const icon2 = document.createElement('span');
-icon2.className = 'material-symbols-outlined';
-icon2.textContent = 'explore_nearby';
-
-// Using style object
-icon2.style.background = 'white';
-icon2.style.padding = '10px';
-icon2.style.borderRadius = '50px';
+					    const icon2 = document.createElement("img");
+          icon2.src = "/caledontransit/locationpin.png";
+          icon2.style.width = "40px";
+          icon2.style.height = "40px";
 
 
                     userMarker = new tt.Marker({ element: icon2 })
@@ -668,12 +664,12 @@ async function loadRoute41Stops() {
     const lon = parseFloat(stop.stop_lon);
     if (!lat || !lon) return;
 
-    const icon2 = document.createElement("img");
-          icon2.src = "/caledontransit/locationpin.png";
-          icon2.style.width = "40px";
-          icon2.style.height = "40px";
+    const icon = document.createElement("img");
+          icon.src = "/caledontransit/New Project (9).png";
+          icon.style.width = "40px";
+          icon.style.height = "40px";
 
-    const marker = new tt.Marker({ element: icon2 }).setLngLat([lon, lat]).addTo(map);
+    const marker = new tt.Marker({ element: icon }).setLngLat([lon, lat]).addTo(map);
 
     marker.getElement().addEventListener("click", async () => {
       // figure out direction (look at any trip for this stop)
