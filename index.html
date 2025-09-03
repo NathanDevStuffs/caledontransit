@@ -529,7 +529,7 @@ my_location
 const map = tt.map({
   key: 'XVUXC7GLhrBCR47wKHSTSabpLRTnEzv2',
   container: 'map',
-  center: [-79.8, 43.7],
+  center: [-79.72748996039797, 43.872053075176915],
   zoom: 12
 });
 map.addControl(new tt.NavigationControl());
@@ -552,10 +552,16 @@ document.getElementById('locateBtn').addEventListener('click', () => {
 
                 if (!userMarker) {
 					    const icon2 = document.createElement('span');
-						icon2.className = 'material-symbols-outlined';
-						icon2.textContent = 'explore_nearby';
+icon2.className = 'material-symbols-outlined';
+icon2.textContent = 'explore_nearby';
 
-                    userMarker = new tt.Marker({ color: 'blue' })
+// Using style object
+icon2.style.background = 'white';
+icon2.style.padding = '10px';
+icon2.style.borderRadius = '50px';
+
+
+                    userMarker = new tt.Marker({ element: icon2 })
                         .setLngLat(lastPosition)
                         .addTo(map);
                 } else {
