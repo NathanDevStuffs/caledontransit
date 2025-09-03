@@ -487,7 +487,7 @@ function showSlides(n) {
     color: black;
     font-family: Outfit;
     text-align: center;
-">Route Map &amp; Live Bus Positions</h1>
+">Route Map &amp; Live Bus Locations</h1>
 	  
 <h4 style="
     color: black;
@@ -686,10 +686,10 @@ async function loadRoutes() {
       paint: { 'line-color': color, 'line-width': 5 }
     });
 
-    const marker = new tt.Marker().setLngLat(shapePoints[0]).addTo(map);
-    marker.getElement().style.display = 'none';
-    routes.find(r => r.id === id).marker = marker;
-    routes.find(r => r.id === id).startCoord = shapePoints[0];
+//    const marker = new tt.Marker().setLngLat(shapePoints[0]).addTo(map);
+//    marker.getElement().style.display = 'none';
+//    routes.find(r => r.id === id).marker = marker;
+//    routes.find(r => r.id === id).startCoord = shapePoints[0];
 
     map.on('click', `routeLineLayer-${id}`, e => {
       popup.setLngLat(e.lngLat).setHTML(`<div class="tt-popup"><strong>Route 41 - ${label}</strong></div>`).addTo(map);
