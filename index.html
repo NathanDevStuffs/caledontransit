@@ -11,6 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
 	  <link rel="stylesheet" href="https://api.tomtom.com/maps-sdk-for-web/cdn/6.x/6.15.0/maps/maps.css" />
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=my_location" />
 	
 	  <style>
 
@@ -494,19 +495,32 @@ function showSlides(n) {
     font-family: Outfit;
     text-align: center;
     font-weight: 400;
-">See real-time bus locations on the map below. Route 41 is operated by Brampton Transit</h4><br><select id="directionSelect" style="
+">See real-time bus locations on the map below. Route 41 is operated by Brampton Transit</h4><br><div style="margin: auto; text-align: center; "><select id="directionSelect" style="
     padding: 10px;
     border: none;
     font-family: 'Montserrat';
     font-weight: bold;
     border-radius: 50px;
     background: #dddddd;
-    display: flex;
+    display: inline-block;
     margin: auto;
 ">
   <option value="410008">Route 41: Northbound</option>
   <option value="410007">Route 41: Southbound</option>
-</select><br>
+</select><!-- Show My Location Button -->
+<button id="locateBtn" style="
+    display: inline-block;
+    margin: 10px auto;
+    padding: 10px 20px;
+    border-radius: 25px;
+    background-color: #0078ff;
+    color: white;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+"><span class="material-symbols-outlined">
+my_location
+</span></button></div><br>
 
 <div id="map"></div>
 <!-- Scripts -->
@@ -521,6 +535,43 @@ const map = tt.map({
 map.addControl(new tt.NavigationControl());
 const popup = new tt.Popup({ closeButton: true, closeOnClick: true });
 
+let userMarker = null;
+let watchId = null;
+let lastPosition = null;
+
+document.getElementById('locateBtn').addEventListener('click', () => {
+    if (!navigator.geolocation) return alert('Geolocation not supported.');
+
+    if (!watchId) {
+        // Start tracking user
+        watchId = navigator.geolocation.watchPosition(
+            (position) => {
+                const userLat = position.coords.latitude;
+                const userLng = position.coords.longitude;
+                lastPosition = [userLng, userLat];
+
+                if (!userMarker) {
+					    const icon2 = document.createElement('span');
+						icon2.className = 'material-symbols-outlined';
+						icon2.textContent = 'explore_nearby';
+
+    const marker = new tt.Marker({ element: icon2 }).setLngLat([lon, lat]).addTo(map);
+                    userMarker = new tt.Marker({ color: 'blue' })
+                        .setLngLat(lastPosition)
+                        .addTo(map);
+                } else {
+                    userMarker.setLngLat(lastPosition);
+                }
+            },
+            (error) => console.error('Location error:', error.message),
+            { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
+        );
+    } else if (lastPosition) {
+        // Already tracking → just recenter map
+        map.flyTo({ center: lastPosition, zoom: 15 });
+    }
+});
+	
 // CSV parser
 function parseCSV(csv) {
   const lines = csv.trim().split('\n');
