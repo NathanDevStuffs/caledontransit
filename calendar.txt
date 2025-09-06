@@ -1,0 +1,6 @@
+service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date
+250901-MULTI-Weekday-01,1,1,1,1,1,0,0,20250902,20251024
+250901-MULTI-Saturday-01,0,0,0,0,0,1,0,20250906,20251025
+250901-MULTI-Sunday-01,0,0,0,0,0,0,1,20250907,20251026
+250901-MULTI-Holiday1-01,1,1,1,1,1,1,1,20250901,20250901
+250901-MULTI-Holiday2-01,1,1,1,1,1,1,1,20251013,20251013
