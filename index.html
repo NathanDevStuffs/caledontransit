@@ -540,39 +540,36 @@ let watchId = null;
 let lastPosition = null;
 
 document.getElementById('locateBtn').addEventListener('click', () => {
-    if (!navigator.geolocation) return alert('Geolocation not supported.');
+  if (!navigator.geolocation) return alert('Geolocation not supported.');
 
-    if (!watchId) {
-        // Start tracking user
-        watchId = navigator.geolocation.watchPosition(
-            (position) => {
-                const userLat = position.coords.latitude;
-                const userLng = position.coords.longitude;
-                lastPosition = [userLng, userLat];
+  if (!watchId) {
+    watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        const userLat = position.coords.latitude;
+        const userLng = position.coords.longitude;
+        lastPosition = [userLng, userLat];
 
-                if (!userMarker) {
-					    const icon2 = document.createElement("img");
+        if (!userMarker) {
+          const icon2 = document.createElement("img");
           icon2.src = "/caledontransit/locationpin.png";
           icon2.style.width = "40px";
           icon2.style.height = "40px";
 
-
-                    userMarker = new tt.Marker({ element: icon2 })
-                        .setLngLat(lastPosition)
-                        .addTo(map);
-                } else {
-                    userMarker.setLngLat(lastPosition);
-                }
-            },
-            (error) => console.error('Location error:', error.message),
-            { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
-        );
-    } else if (lastPosition) {
-        // Already tracking → just recenter map
-        map.flyTo({ center: lastPosition, zoom: 15 });
-    }
+          userMarker = new tt.Marker({ element: icon2 })
+            .setLngLat(lastPosition)
+            .addTo(map);
+        } else {
+          userMarker.setLngLat(lastPosition);
+        }
+      },
+      (error) => console.error('Location error:', error.message),
+      { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
+    );
+  } else if (lastPosition) {
+    map.flyTo({ center: lastPosition, zoom: 15 });
+  }
 });
-	
+
 // CSV parser
 function parseCSV(csv) {
   const lines = csv.trim().split('\n');
@@ -586,17 +583,36 @@ function parseCSV(csv) {
   });
 }
 
-// Route definitions
-const routes = [
-  { id: '410008', color: '#FF3399', label: 'Northbound' },
-  { id: '410007', color: '#3399FF', label: 'Southbound' }
-];
+async function getServiceCalendar() {
+  const res = await fetch('https://nathandevstuffs.github.io/caledontransit/calendar.txt');
+  const calendar = parseCSV(await res.text());
+  const serviceMap = {};
+  calendar.forEach(svc => {
+    const start = svc.start_date ? new Date(svc.start_date.slice(0,4), svc.start_date.slice(4,6)-1, svc.start_date.slice(6,8)) : null;
+    const end = svc.end_date ? new Date(svc.end_date.slice(0,4), svc.end_date.slice(4,6)-1, svc.end_date.slice(6,8)) : null;
 
-// Trip → direction map
+    serviceMap[svc.service_id] = {
+      monday: svc.monday === '1',
+      tuesday: svc.tuesday === '1',
+      wednesday: svc.wednesday === '1',
+      thursday: svc.thursday === '1',
+      friday: svc.friday === '1',
+      saturday: svc.saturday === '1',
+      sunday: svc.sunday === '1',
+      startDate: start,
+      endDate: end
+    };
+  });
+  return serviceMap;
+}
+
+
 let tripDirectionMap = {};
+let serviceMap = {};
 
 // Build trip_id → shape_id mapping
 async function buildTripDirectionMap() {
+  [serviceMap] = await Promise.all([getServiceCalendar()]);
   const tripsRes = await fetch("https://nathandevstuffs.github.io/caledontransit/trips.txt");
   const trips = parseCSV(await tripsRes.text());
   trips.forEach(trip => {
@@ -604,18 +620,30 @@ async function buildTripDirectionMap() {
   });
 }
 
-// Load stops
+// Parse HH:MM:SS to Date
 function parseTimeToDate(timeStr) {
-  // stop_times.txt uses HH:MM:SS, can go past 24:00:00 for late night
   const [h, m, s] = timeStr.split(":").map(Number);
   const now = new Date();
   const dep = new Date(now);
   dep.setHours(h, m, s || 0, 0);
-  // handle times >= 24h by rolling into next day
   if (h >= 24) dep.setDate(dep.getDate() + 1);
   return dep;
 }
 
+// Check if trip is running today
+function isTripRunningToday(tripId) {
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun, 1=Mon...
+  const tripService = Object.keys(serviceMap).find(sid => sid === tripId || sid === tripId.slice(0,5));
+  if (!tripService) return false;
+  const svc = serviceMap[tripService];
+  const inDateRange = now >= svc.startDate && now <= svc.endDate;
+  if (!inDateRange) return false;
+  const dayMap = [svc.sunday, svc.monday, svc.tuesday, svc.wednesday, svc.thursday, svc.friday, svc.saturday];
+  return dayMap[day];
+}
+
+// Get next departures for stop
 async function getStopDepartures(stopId) {
   try {
     const [stopTimesRes, tripsRes] = await Promise.all([
@@ -624,22 +652,20 @@ async function getStopDepartures(stopId) {
     ]);
     const stopTimes = parseCSV(await stopTimesRes.text());
     const trips = parseCSV(await tripsRes.text());
-
-    // map trip_id -> route_id for reference
     const tripMap = {};
     trips.forEach(t => tripMap[t.trip_id] = t.route_id);
 
     const now = new Date();
     const departures = stopTimes
-      .filter(st => st.stop_id === stopId && tripMap[st.trip_id] === "41") // filter to route 41
+      .filter(st => st.stop_id === stopId && tripMap[st.trip_id] === "41" && isTripRunningToday(st.trip_id))
       .map(st => ({
         tripId: st.trip_id,
         routeId: tripMap[st.trip_id],
         time: parseTimeToDate(st.departure_time)
       }))
-      .filter(d => d.time > now) // only future
+      .filter(d => d.time > now)
       .sort((a, b) => a.time - b.time)
-      .slice(0, 3); // ✅ get next 3 departures
+      .slice(0, 3);
 
     return departures;
   } catch (e) {
@@ -648,6 +674,7 @@ async function getStopDepartures(stopId) {
   }
 }
 
+// Load stops
 async function loadRoute41Stops() {
   const [stopTimesRes, stopsRes] = await Promise.all([
     fetch("https://nathandevstuffs.github.io/caledontransit/stop_times.txt"),
@@ -655,7 +682,6 @@ async function loadRoute41Stops() {
   ]);
   const stopTimes = parseCSV(await stopTimesRes.text());
   const stops = parseCSV(await stopsRes.text());
-
   const route41Trips = new Set(Object.keys(tripDirectionMap));
   const route41StopIds = new Set(stopTimes.filter(st => route41Trips.has(st.trip_id)).map(st => st.stop_id));
 
@@ -665,19 +691,16 @@ async function loadRoute41Stops() {
     if (!lat || !lon) return;
 
     const icon = document.createElement("img");
-          icon.src = "/caledontransit/New Project (9).png";
-          icon.style.width = "10px";
-          icon.style.height = "10px";
+    icon.src = "/caledontransit/New Project (9).png";
+    icon.style.width = "10px";
+    icon.style.height = "10px";
 
     const marker = new tt.Marker({ element: icon }).setLngLat([lon, lat]).addTo(map);
 
     marker.getElement().addEventListener("click", async () => {
-      // figure out direction (look at any trip for this stop)
       const st = stopTimes.find(st => st.stop_id === stop.stop_id && route41Trips.has(st.trip_id));
       const shape = tripDirectionMap[st.trip_id];
       const directionLabel = shape === "410008" ? "Northbound" : "Southbound";
-
-      // get next departures
       const departures = await getStopDepartures(stop.stop_id);
 
       let depHtml = departures.length
@@ -687,7 +710,7 @@ async function loadRoute41Stops() {
             <span style="flex:1; margin:0 6px;">Bolton</span>
             <span style="font-weight:600; white-space:nowrap;">${d.time.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
           </li>`).join("")
-        : `<li style="padding:6px 0; margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;"><a href="/fare-info" style="color: #333; text-decoration: none; font-size: 16px;">No upcoming departures</li>`;
+        : `<li style="padding:6px 0; margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;"><a href="/fare-info" style="color:#333; text-decoration:none;">No upcoming departures</a></li>`;
 
       const popupHTML = `
         <div style="font-family: system-ui, sans-serif; font-size:14px; min-width:240px;">
@@ -702,32 +725,31 @@ async function loadRoute41Stops() {
             Updated ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
           </div>
         </div>`;
-
+      
       new tt.Popup().setLngLat([lon, lat]).setHTML(popupHTML).addTo(map);
     });
   });
 }
 
-// Load route shapes
+// Load routes
 async function loadRoutes() {
   const response = await fetch('https://nathandevstuffs.github.io/caledontransit/shapes.txt');
-  const csvText = await response.text();
-  const parsed = parseCSV(csvText);
+  const parsed = parseCSV(await response.text());
+  const routes = [
+    { id: '410008', color: '#FF3399', label: 'Northbound' },
+    { id: '410007', color: '#3399FF', label: 'Southbound' }
+  ];
 
   for (const { id, color, label } of routes) {
     const shapePoints = parsed
       .filter(row => row.shape_id === id)
       .sort((a, b) => Number(a.shape_pt_sequence) - Number(b.shape_pt_sequence))
       .map(pt => [Number(pt.shape_pt_lon), Number(pt.shape_pt_lat)]);
-
     if (!shapePoints.length) continue;
 
     map.addSource(`route-${id}`, {
       type: 'geojson',
-      data: {
-        type: 'Feature',
-        geometry: { type: 'LineString', coordinates: shapePoints }
-      }
+      data: { type: 'Feature', geometry: { type: 'LineString', coordinates: shapePoints } }
     });
 
     map.addLayer({
@@ -738,11 +760,6 @@ async function loadRoutes() {
       paint: { 'line-color': color, 'line-width': 5 }
     });
 
-//    const marker = new tt.Marker().setLngLat(shapePoints[0]).addTo(map);
-//    marker.getElement().style.display = 'none';
-//    routes.find(r => r.id === id).marker = marker;
-//    routes.find(r => r.id === id).startCoord = shapePoints[0];
-
     map.on('click', `routeLineLayer-${id}`, e => {
       popup.setLngLat(e.lngLat).setHTML(`<div class="tt-popup"><strong>Route 41 - ${label}</strong></div>`).addTo(map);
     });
@@ -750,23 +767,19 @@ async function loadRoutes() {
 }
 
 // Show/hide route
+let selectedDirection = "410008";
 function updateRouteDisplay(selectedId) {
-  routes.forEach(({ id, marker, startCoord }) => {
+  const routes = ['410008','410007'];
+  routes.forEach(id => {
     const visibility = id === selectedId ? 'visible' : 'none';
     if (map.getLayer(`routeLineLayer-${id}`)) map.setLayoutProperty(`routeLineLayer-${id}`, 'visibility', visibility);
-    if (marker) marker.getElement().style.display = visibility === 'visible' ? 'block' : 'none';
   });
-
-  const selected = routes.find(r => r.id === selectedId);
-  if (selected && selected.startCoord) map.flyTo({ center: selected.startCoord, zoom: 13 });
   selectedDirection = selectedId;
   updateBusPositions();
 }
 
 // Live buses
-let selectedDirection = "410008";
 const busMarkers = {};
-
 async function updateBusPositions() {
   try {
     const response = await fetch("https://caledon.nathanplayzofficial.workers.dev/");
