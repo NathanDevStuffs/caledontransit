@@ -432,15 +432,15 @@ svg {
 	  <div class="slideshow-container" style="border-radius: 50px; width: 75%;">
 
 <div class="mySlides fade" style="display: none;">
-  <img src="/caledontransit/ad (1).png" style="width:100%" class="slideimg">
+  <img src="/ad (1).png" style="width:100%" class="slideimg">
 </div>
 
 <div class="mySlides fade" style="display: block;">
-  <img src="/caledontransit/psd.png" style="width:100%" class="slideimg">
+  <img src="/psd.png" style="width:100%" class="slideimg">
 </div>
 
 <div class="mySlides fade" style="display: none;">
-  <img src="/caledontransit/New Project (7).png" style="width:100%" class="slideimg">
+  <img src="/New Project (7).png" style="width:100%" class="slideimg">
 </div>
 
 
@@ -551,7 +551,7 @@ document.getElementById('locateBtn').addEventListener('click', () => {
 
         if (!userMarker) {
           const icon2 = document.createElement("img");
-          icon2.src = "/caledontransit/locationpin.png";
+          icon2.src = "/locationpin.png";
           icon2.style.width = "40px";
           icon2.style.height = "40px";
 
@@ -691,7 +691,7 @@ async function loadRoute41Stops() {
     if (!lat || !lon) return;
 
     const icon = document.createElement("img");
-    icon.src = "/caledontransit/New Project (9).png";
+    icon.src = "/New Project (9).png";
     icon.style.width = "10px";
     icon.style.height = "10px";
 
@@ -803,7 +803,7 @@ async function updateBusPositions() {
 
         if (!busMarkers[id]) {
           const icon = document.createElement("img");
-          icon.src = "/caledontransit/New Project (8).png";
+          icon.src = "/New Project (8).png";
           icon.style.width = "40px";
           icon.style.height = "40px";
           busMarkers[id] = new tt.Marker({ element: icon })
@@ -840,21 +840,21 @@ map.on('load', async () => {
 	  <br>
 	  <div class="container">
     <div class="card" onclick="window.location.href = '/fare-info'" style="cursor: pointer;">
-      <img src="/caledontransit/New Project (6).png" alt="Paying Your Fare">
+      <img src="/New Project (6).png" alt="Paying Your Fare">
       <div class="card-content">
         <h2>Paying Your Fare</h2>
         <p>Ready to ride? Learn how to pay →</p>
       </div>
     </div>
-<div class="card" onclick="window.location.href = '/plan-a-trip'" style="cursor: pointer;">
-      <img src="/caledontransit/plantrip.png" alt="Plan a Trip">
+<div class="card" onclick="window.location.href = '/plan-your-trip'" style="cursor: pointer;">
+      <img src="/plantrip.png" alt="Plan a Trip">
       <div class="card-content">
         <h2>Plan a Trip</h2>
         <p>Quickly Plan Your Transit Ride →</p>
       </div>
     </div>
     <div class="card" onclick="window.location.href = 'https://www.brampton.ca/EN/residents/transit/Contact-Us/pages/customer-service.aspx'" style="cursor: pointer;">
-      <img src="/caledontransit/cust.png" alt="Service Routes">
+      <img src="/cust.png" alt="Service Routes">
       <div class="card-content">
         <h2>Contact Brampton Transit</h2>
         <p>Get in touch with Brampton Transit →</p>
