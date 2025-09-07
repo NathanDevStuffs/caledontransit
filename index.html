@@ -584,7 +584,7 @@ function parseCSV(csv) {
 }
 
 async function getServiceCalendar() {
-  const res = await fetch('https://nathandevstuffs.github.io/caledontransit/calendar.txt');
+  const res = await fetch('/calendar.txt');
   const calendar = parseCSV(await res.text());
   const serviceMap = {};
   calendar.forEach(svc => {
@@ -613,7 +613,7 @@ let serviceMap = {};
 // Build trip_id → shape_id mapping
 async function buildTripDirectionMap() {
   [serviceMap] = await Promise.all([getServiceCalendar()]);
-  const tripsRes = await fetch("https://nathandevstuffs.github.io/caledontransit/trips.txt");
+  const tripsRes = await fetch("/trips.txt");
   const trips = parseCSV(await tripsRes.text());
   trips.forEach(trip => {
     if (trip.route_id === "41") tripDirectionMap[trip.trip_id] = trip.shape_id;
@@ -647,8 +647,8 @@ function isTripRunningToday(tripId) {
 async function getStopDepartures(stopId) {
   try {
     const [stopTimesRes, tripsRes] = await Promise.all([
-      fetch("https://nathandevstuffs.github.io/caledontransit/stop_times.txt"),
-      fetch("https://nathandevstuffs.github.io/caledontransit/trips.txt")
+      fetch("/stop_times.txt"),
+      fetch("/trips.txt")
     ]);
     const stopTimes = parseCSV(await stopTimesRes.text());
     const trips = parseCSV(await tripsRes.text());
@@ -677,8 +677,8 @@ async function getStopDepartures(stopId) {
 // Load stops
 async function loadRoute41Stops() {
   const [stopTimesRes, stopsRes] = await Promise.all([
-    fetch("https://nathandevstuffs.github.io/caledontransit/stop_times.txt"),
-    fetch("https://nathandevstuffs.github.io/caledontransit/stops.txt")
+    fetch("/stop_times.txt"),
+    fetch("/stops.txt")
   ]);
   const stopTimes = parseCSV(await stopTimesRes.text());
   const stops = parseCSV(await stopsRes.text());
@@ -733,7 +733,7 @@ async function loadRoute41Stops() {
 
 // Load routes
 async function loadRoutes() {
-  const response = await fetch('https://nathandevstuffs.github.io/caledontransit/shapes.txt');
+  const response = await fetch('/shapes.txt');
   const parsed = parseCSV(await response.text());
   const routes = [
     { id: '410008', color: '#FF3399', label: 'Northbound' },
@@ -867,7 +867,7 @@ map.on('load', async () => {
     
     <!-- Left Section: Logo and Social Links -->
     <div style="flex: 1; padding: 10px; max-width: 200px;">
-      <img src="https://nathandevstuffs.github.io/caledontransit/caledon.png">
+      <img src="/caledon.png">
       <p style="font-size: 16px; margin-bottom: 10px;">Operated by Brampton Transit</p>
       
     </div>
@@ -892,7 +892,7 @@ map.on('load', async () => {
         <li style="margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;"><a href="/fare-info" style="color: #333; text-decoration: none; font-size: 16px;">Fare Info</a></li>
         <li style="margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;"><a href="/plan-your-trip" style="color: #333; text-decoration: none; font-size: 16px;">Trip Planner</a></li>
         <li style="margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;"><a href="https://prestocard.ca/" style="color: #333; text-decoration: none; font-size: 16px;">PRESTO Card</a></li>
-		          <li style="margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;"><a href="https://nathandevstuffs.github.io/caledontransit/privacy-policy" style="color: #333; text-decoration: none; font-size: 16px;">Privacy Policy</a></li>
+		          <li style="margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;"><a href="/privacy-policy" style="color: #333; text-decoration: none; font-size: 16px;">Privacy Policy</a></li>
       </ul>
     </div>
   </div>
