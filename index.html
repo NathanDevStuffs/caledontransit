@@ -749,6 +749,7 @@ async function loadRoute41Stops() {
     const marker = new tt.Marker({ element: icon }).setLngLat([lon, lat]).addTo(map);
 
     marker.getElement().addEventListener("click", async () => {
+		console.log("clicked");
       const st = stopTimesCache.find(st => st.stop_id === stop.stop_id && route41Trips.has(st.trip_id));
       const shape = tripDirectionMap[st.trip_id];
       const directionLabel = shape === "410008" ? "Northbound" : "Southbound";
@@ -756,12 +757,22 @@ async function loadRoute41Stops() {
 
       let depHtml = departures.length
         ? departures.map(d => `
-          <li style="display:flex; align-items:center; justify-content:space-between; padding:4px 0; border-top:1px solid #eee; list-style-type: unset !important;">
-            <span style="font-weight:600; padding:2px 6px; border-radius:6px; background:#222; color:#fff;">${d.routeId}</span>
-            <span style="flex:1; margin:0 6px;">Bolton</span>
-            <span style="font-weight:600; white-space:nowrap;">${d.time.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+          <li style="padding:6px 0; margin-bottom: 10px; list-style-type: unset !important; 
+                     background-color: unset !important; border-radius: unset !important;
+                     width: unset !important; text-align: unset !important; font-family: unset !important;
+                     height: unset !important;">
+            <a href="/fare-info" style="color:#333; text-decoration:none; display:flex; justify-content:space-between; padding:4px 0;">
+              <span style="font-weight:600; padding:2px 6px; border-radius:6px; background:#222; color:#fff;">${d.routeId}</span>
+              <span style="flex:1; margin:0 6px;">Bolton</span>
+              <span style="font-weight:600; white-space:nowrap;">${d.time.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+            </a>
           </li>`).join("")
-        : `<li style="padding:6px 0;"><a href="/fare-info" style="color:#333; text-decoration:none;">No upcoming departures</a></li>`;
+        : `<li style="padding:6px 0; margin-bottom: 10px; list-style-type: unset !important; 
+                     background-color: unset !important; border-radius: unset !important;
+                     width: unset !important; text-align: unset !important; font-family: unset !important;
+                     height: unset !important;">
+             <a href="/fare-info" style="color:#333; text-decoration:none;">No upcoming departures</a>
+           </li>`;
 
       const popupHTML = `
         <div style="font-family: system-ui, sans-serif; font-size:14px; min-width:240px;">
@@ -897,8 +908,8 @@ map.on('load', async () => {
   updateBusPositions();
   setInterval(updateBusPositions, 15000);
 });
-
 </script>
+
 
 	  <br>
 	  <br>
