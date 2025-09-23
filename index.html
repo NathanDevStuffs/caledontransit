@@ -716,36 +716,77 @@ async function getStopDepartures(stopId) {
   }
 }
 
-// Load stops
+let selectedDirection = "410008"; // default direction: northbound
+
+// ---- Stop marker storage & guard ----
+const stopMarkers = { "410008": [], "410007": [] }; // northbound, southbound
+let stopsLoaded = false; // prevents double-loading
+
+// ---- loadRoute41Stops: loads stops and creates markers for every direction a stop is used ----
 async function loadRoute41Stops() {
+  if (stopsLoaded) return;
+  stopsLoaded = true;
+
   const [stopTimesRes, stopsRes] = await Promise.all([
     fetch("/stop_times.txt"),
     fetch("/stops.txt")
   ]);
+
   const stopTimes = parseCSV(await stopTimesRes.text());
   const stops = parseCSV(await stopsRes.text());
   const route41Trips = new Set(Object.keys(tripDirectionMap));
-  const route41StopIds = new Set(stopTimes.filter(st => route41Trips.has(st.trip_id)).map(st => st.stop_id));
+  const route41StopIds = new Set(
+    stopTimes.filter(st => route41Trips.has(st.trip_id)).map(st => st.stop_id)
+  );
 
+  // iterate only stops that belong to Route 41
   stops.filter(s => route41StopIds.has(s.stop_id)).forEach(stop => {
     const lat = parseFloat(stop.stop_lat);
     const lon = parseFloat(stop.stop_lon);
-    if (!lat || !lon) return;
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
 
-    const icon = document.createElement("img");
-    icon.src = "download (6).png";
-    icon.style.width = "12px";
-    icon.style.height = "12px";
+    // find all trips for this stop that are on Route 41
+    const stopTrips = stopTimes.filter(st => st.stop_id === stop.stop_id && route41Trips.has(st.trip_id));
 
-    const marker = new tt.Marker({ element: icon }).setLngLat([lon, lat]).addTo(map);
+    stopTrips.forEach(st => {
+      const direction = tripDirectionMap[st.trip_id];
+      if (!direction) return;
 
-    marker.getElement().addEventListener("click", async () => {
-      const st = stopTimes.find(st => st.stop_id === stop.stop_id && route41Trips.has(st.trip_id));
-      const shape = tripDirectionMap[st.trip_id];
-      const directionLabel = shape === "410008" ? "Northbound" : "Southbound";
-      const departures = await getStopDepartures(stop.stop_id);
+      // Avoid duplicate markers for same stop & direction using stop_id (reliable)
+      if (stopMarkers[direction].some(m => m.stopId === stop.stop_id)) return;
 
-      let depHtml = departures.length
+      // create marker element
+      const icon = document.createElement("img");
+      icon.src = "download (6).png";
+      icon.style.width = "12px";
+      icon.style.height = "12px";
+      icon.style.cursor = "pointer";
+
+      // add marker to map
+      const marker = new tt.Marker({ element: icon }).setLngLat([lon, lat]).addTo(map);
+
+      // attach metadata so toggling is easy
+      marker.stopId = stop.stop_id;
+      marker.direction = direction;
+      marker.coords = { lat, lon };
+
+      // store marker
+      stopMarkers[direction].push(marker);
+
+      // set initial visibility based on selectedDirection
+      if (direction !== selectedDirection) {
+        marker.getElement().style.display = "none";
+      } else {
+        // ensure visible if this direction is selected
+        marker.getElement().style.display = "block";
+      }
+
+      // popup listener (uses stop.stop_id for departures)
+      marker.getElement().addEventListener("click", async () => {
+        const directionLabel = direction === "410008" ? "Northbound" : "Southbound";
+        const departures = await getStopDepartures(stop.stop_id); // your existing function
+
+        let depHtml = departures.length
         ? departures.map(d => `
           <li style="display:flex; align-items:center; justify-content:space-between; padding:4px 0; border-top:1px solid #eee; list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
             <span style="font-weight:600; padding:2px 6px; border-radius:6px; background:#222; color:#fff;">${d.routeId}</span>
@@ -769,9 +810,11 @@ async function loadRoute41Stops() {
         </div>`;
       
       new tt.Popup().setLngLat([lon, lat]).setHTML(popupHTML).addTo(map);
+      });
     });
   });
 }
+
 
 // Load routes
 async function loadRoutes() {
@@ -809,17 +852,29 @@ async function loadRoutes() {
 }
 
 // Show/hide route
-let selectedDirection = "410008";
 function updateRouteDisplay(selectedId) {
-  const routes = ['410008','410007'];
+  const routes = ['410008', '410007'];
+
+  // toggle route line layers if they exist
   routes.forEach(id => {
     const visibility = id === selectedId ? 'visible' : 'none';
-    if (map.getLayer(`routeLineLayer-${id}`)) map.setLayoutProperty(`routeLineLayer-${id}`, 'visibility', visibility);
+    if (map.getLayer(`routeLineLayer-${id}`)) {
+      map.setLayoutProperty(`routeLineLayer-${id}`, 'visibility', visibility);
+    }
   });
-  selectedDirection = selectedId;
-  updateBusPositions();
-}
 
+  // toggle stop markers
+  routes.forEach(id => {
+    if (!stopMarkers[id]) return;
+    stopMarkers[id].forEach(marker => {
+      const el = marker.getElement();
+      el.style.display = (id === selectedId) ? 'block' : 'none';
+    });
+  });
+
+  selectedDirection = selectedId;
+  updateBusPositions(); // your live-bus update (keeps buses in sync)
+}
 // Live buses
 const busMarkers = {};
 async function updateBusPositions() {
