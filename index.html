@@ -731,7 +731,7 @@ async function getStopDepartures(stopId) {
 
         if (vehicleStop) {
           const remainingStops = trip.stopSeq - Number(vehicleStop.stop_sequence);
-          eta = new Date(Date.now() + remainingStops * 2 * 60 * 1000);
+          eta = new Date(Date.now() + remainingStops * 1 * 60 * 1000);
         } else {
           // fallback to scheduled
           const [h, m, s] = trip.arrivalTime.split(":").map(Number);
