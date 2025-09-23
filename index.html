@@ -695,6 +695,10 @@ async function getStopDepartures(stopId) {
     const stopTimesRes = await fetch("/stop_times.txt");
     const stopTimes = parseCSV(await stopTimesRes.text());
 
+    // Fetch static trips (for route_id lookup on scheduled trips)
+    const tripsRes = await fetch("/trips.txt");
+    const trips = parseCSV(await tripsRes.text());
+
     // Get all trips serving this stop
     const stopTrips = stopTimes
       .filter(st => st.stop_id === stopId)
@@ -707,51 +711,68 @@ async function getStopDepartures(stopId) {
     const now = new Date();
     const departures = [];
 
-    // Match GTFS-RT vehicles to trips
     for (const trip of stopTrips) {
       const vehicle = data.entity.find(
         ent => ent.vehicle?.trip?.trip_id === trip.tripId
       )?.vehicle;
 
-      if (!vehicle) continue;
-
-      // Estimate ETA
       let eta;
-      const vehicleStopId = vehicle.stop_id;
-      const vehicleStop = stopTimes.find(
-        st => st.trip_id === trip.tripId && st.stop_id === vehicleStopId
-      );
+      let routeId;
+      let isScheduled = false;
 
-      if (vehicleStop) {
-        const remainingStops = trip.stopSeq - Number(vehicleStop.stop_sequence);
-        // Simple ETA estimate: 2 min per remaining stop
-        eta = new Date(Date.now() + remainingStops * 2 * 60 * 1000);
+      if (vehicle) {
+        // If we have a live vehicle
+        routeId = vehicle.trip.route_id;
+
+        const vehicleStopId = vehicle.stop_id;
+        const vehicleStop = stopTimes.find(
+          st => st.trip_id === trip.tripId && st.stop_id === vehicleStopId
+        );
+
+        if (vehicleStop) {
+          const remainingStops = trip.stopSeq - Number(vehicleStop.stop_sequence);
+          eta = new Date(Date.now() + remainingStops * 2 * 60 * 1000);
+        } else {
+          // fallback to scheduled
+          const [h, m, s] = trip.arrivalTime.split(":").map(Number);
+          eta = new Date();
+          eta.setHours(h, m, s || 0, 0);
+          isScheduled = true;
+        }
       } else {
-        // Fallback to scheduled arrival time
+        // No live vehicle → scheduled only
         const [h, m, s] = trip.arrivalTime.split(":").map(Number);
         eta = new Date();
         eta.setHours(h, m, s || 0, 0);
+
+        const tripInfo = trips.find(t => t.trip_id === trip.tripId);
+        routeId = tripInfo ? tripInfo.route_id : "Unknown";
+
+        isScheduled = true;
       }
 
       if (eta > now) {
-  const minutesAway = Math.round((eta - now) / 60000); // difference in minutes
-  departures.push({
-    tripId: trip.tripId,
-    routeId: vehicle.trip.route_id,
-    time: eta,
-    status: vehicle.current_status,
-    displayTime: minutesAway === 0
-      ? 'Due'
-      : minutesAway < 60
-        ? `In ${minutesAway} min`
-        : eta.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })
-  });
-}
+        const minutesAway = Math.round((eta - now) / 60000);
+
+        departures.push({
+          tripId: trip.tripId,
+          routeId,
+          time: eta,
+          status: isScheduled ? "Scheduled" : "Live",
+          displayTime:
+            minutesAway === 0
+              ? "Due"
+              : minutesAway < 60
+              ? `In ${minutesAway} min${isScheduled ? " • Scheduled" : ""}`
+              : eta.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) +
+                (isScheduled ? " • Scheduled" : "")
+        });
+      }
     }
 
-    // Sort by ETA and return next 3 departures
+    // Sort by ETA and return next 5 (includes scheduled)
     departures.sort((a, b) => a.time - b.time);
-    return departures.slice(0, 3);
+    return departures.slice(0, 5);
 
   } catch (e) {
     console.error("Failed to fetch live departures:", e);
