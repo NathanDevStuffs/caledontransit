@@ -1200,17 +1200,19 @@
   color: black;
 }
 </style>
-  <script>
-    function redirect() {
-      const urlParams = window.location.search;
-      if (urlParams == "?4388") {
-        window.location.href = "https://caledontransit.com?utm_source=busshelter&utm_medium=offline&utm_campaign=busshelterads&utm_content=stop4388"
-        } else {
-            window.location.href = "https://caledontransit.com"
+ <script>
+  function redirect() {
+    // get everything after the "?" (without the "?")
+    const stopId = window.location.search.substring(1);
 
-      }
-      }
-  </script></head><body onload="redirect();">
+    if (stopId) {
+      window.location.href = `https://caledontransit.com?utm_source=busshelter&utm_medium=offline&utm_campaign=busshelterads&utm_content=stop${stopId}`;
+    } else {
+      window.location.href = "https://caledontransit.com";
+    }
+  }
+
+</script></head><body onload="redirect();">
   <div id="loader"><div class="dot-pulse"></div></div>
   
   </body>
