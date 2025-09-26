@@ -1103,9 +1103,14 @@ async function loadRoute41Stops() {
         <span style="padding:2px 6px; border-radius:10px; background:#f1f1f1;">${directionLabel}</span>
       </div>
       <ul style="list-style:none; padding:0; margin:0;">${depHtml}</ul>
-      <div style="margin-top:6px; font-size:12px; color:#666;">
+	  <div style="
+    display: flex;
+    justify-content: space-between;
+"><div style="margin-top:6px;font-size: 12px;color:#666;">
         Updated ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
-      </div>
+      </div><img src="/transit-api-badge.png" style="
+    width: 100px;
+" alt="Powered by Transit API"></div>
     </div>`;
 
   new tt.Popup().setLngLat([lon, lat]).setHTML(popupHTML).addTo(map);
