@@ -1000,7 +1000,7 @@ async function getStopDepartures(stopId) {
 let selectedDirection = "410008"; // default direction: northbound
 
 // ---- Stop marker storage & guard ----
-const stopMarkers = { "410008": [], "410007": [] }; // northbound, southbound
+const stopMarkers = { "410008": [], "410007": [], "810002": [], "810005": [] }; // northbound, southbound
 let stopsLoaded = false; // prevents double-loading
 
 
@@ -1133,7 +1133,9 @@ async function loadRoutes() {
   const parsed = parseCSV(await response.text());
   const routes = [
     { id: '410008', color: '#FF3399', label: 'Northbound' },
-    { id: '410007', color: '#3399FF', label: 'Southbound' }
+    { id: '410007', color: '#3399FF', label: 'Southbound' },
+	  { id: '810002', color: '#FF3399', label: 'Northbound' },
+    { id: '810005', color: '#3399FF', label: 'Southbound' }
   ];
 
   for (const { id, color, label } of routes) {
