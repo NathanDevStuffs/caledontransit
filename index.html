@@ -1179,7 +1179,7 @@ async function loadRoutes() {
 
 /* Show/hide route (unchanged) */
 function updateRouteDisplay(selectedId) {
-  const routes = ['410008', '410007'];
+  const routes = ['410008', '410007', '810002', '810005'];
 
   // toggle route line layers if they exist
   routes.forEach(id => {
@@ -1189,7 +1189,7 @@ function updateRouteDisplay(selectedId) {
     }
   });
 
-  // toggle stop markers
+  // toggle stop markers for all directions (41 & 81)
   routes.forEach(id => {
     if (!stopMarkers[id]) return;
     stopMarkers[id].forEach(marker => {
@@ -1201,6 +1201,7 @@ function updateRouteDisplay(selectedId) {
   selectedDirection = selectedId;
   updateBusPositions(); // keep buses in sync
 }
+
 
 /* Live buses (unchanged) */
 const busMarkers = {};
