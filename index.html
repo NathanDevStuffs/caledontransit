@@ -1172,8 +1172,10 @@ async function loadRoutes() {
     });
 
     map.on('click', `routeLineLayer-${id}`, e => {
-      popup.setLngLat(e.lngLat).setHTML(`<div class="tt-popup"><strong>Route 41 - ${label}</strong></div>`).addTo(map);
-    });
+  const routeNumber = id.startsWith('81') ? '81' : (id.startsWith('41') ? '41' : '');
+  popup.setLngLat(e.lngLat).setHTML(`<div class="tt-popup"><strong>Route ${routeNumber} - ${label}</strong></div>`).addTo(map);
+});
+
   }
 }
 
