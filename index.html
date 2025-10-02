@@ -439,7 +439,7 @@ svg {
 	  <div class="slideshow-container" style="border-radius: 50px; width: 75%; text-align: center;">
 
 <div class="mySlides fade" style="display: none;">
-  <img src="/ad (1).png" style="width:100%" class="slideimg">
+  <img src="/ad (1).png" style="width:100%" class="slideimg" alt="Advertisement">
 	<a href="/blog/helloooooo-bolton" style="
     cursor: pointer !important;
 "><button style="
@@ -455,7 +455,7 @@ svg {
 </div>
 
 <div class="mySlides fade" style="display: block;">
-  <img src="/psd.png" style="width:100%" class="slideimg">
+  <img src="/psd.png" style="width:100%" class="slideimg" alt="Advertisement">
 	<a href="/blog/connecting-bolton" style="
     cursor: pointer !important;
 "><button style="
@@ -471,7 +471,7 @@ svg {
 </div>
 
 <div class="mySlides fade" style="display: none;">
-  <img src="/New Project (7).png" style="width:100%" class="slideimg">
+  <img src="/New Project (7).png" style="width:100%" class="slideimg" alt="Advertisement">
 	<a href="/blog/bike" style="
     cursor: pointer !important;
 "><button style="
@@ -1060,6 +1060,7 @@ async function loadRoute41Stops() {
       icon.style.width = "12px";
       icon.style.height = "12px";
       icon.style.cursor = "pointer";
+		icon.alt = "Bus Stop Marker";
 
       // add marker to map
       const marker = new tt.Marker({ element: icon }).setLngLat([lon, lat]).addTo(map);
@@ -1285,7 +1286,7 @@ map.on('load', async () => {
       </div>
     </div>
     <div class="card" onclick="window.location.href = 'https://www.brampton.ca/EN/residents/transit/Contact-Us/pages/customer-service.aspx'" style="cursor: pointer;">
-      <img src="/cust.png" alt="Service Routes">
+      <img src="/cust.png" alt="Contact Brampton Transit">
       <div class="card-content">
         <h2>Contact Brampton Transit</h2>
         <p>Get in touch with Brampton Transit →</p>
@@ -1298,7 +1299,7 @@ map.on('load', async () => {
     
     <!-- Left Section: Logo and Social Links -->
     <div style="flex: 1; padding: 10px; max-width: 200px;">
-      <img src="/caledon.png">
+      <img src="/caledon.png"  alt="Caledon Transit">
       <p style="font-size: 16px; margin-bottom: 10px;">Operated by Brampton Transit</p>
       
     </div>
