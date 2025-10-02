@@ -559,8 +559,8 @@ function showSlides(n) {
 ">
   <option value="410008">Route 41: Northbound to Columbia Way</option>
   <option value="410007">Route 41: Southbound to Queen St / Highway 7</option>
-	<option value="810002">Route 81: Northbound</option>
-  <option value="810005">Route 81: Southbound</option>
+	<option value="810005">Route 81: Northbound</option>
+  <option value="810002">Route 81: Southbound</option>
 </select><!-- Show My Location Button -->
 <button id="locateBtn" style="
     display: inline-block;
@@ -1043,8 +1043,8 @@ async function loadRoute41Stops() {
   const shapeInfo = {
     '410008': { route: '41', dir: 'Northbound' },
     '410007': { route: '41', dir: 'Southbound' },
-    '810002': { route: '81', dir: 'Northbound' },
-    '810005': { route: '81', dir: 'Southbound' }
+    '810005': { route: '81', dir: 'Northbound' },
+    '810002': { route: '81', dir: 'Southbound' }
   };
 
   // iterate only stops that belong to these routes
@@ -1158,8 +1158,8 @@ async function loadRoutes() {
   const routes = [
     { id: '410008', color: '#FF3399', label: 'Northbound' },
     { id: '410007', color: '#3399FF', label: 'Southbound' },
-	  { id: '810002', color: '#FF3399', label: 'Northbound' },
-    { id: '810005', color: '#3399FF', label: 'Southbound' }
+	  { id: '810005', color: '#FF3399', label: 'Northbound' },
+    { id: '810002', color: '#3399FF', label: 'Southbound' }
   ];
 
   for (const { id, color, label } of routes) {
