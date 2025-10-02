@@ -13,7 +13,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
 	  <link rel="stylesheet" href="https://api.tomtom.com/maps-sdk-for-web/cdn/6.x/6.15.0/maps/maps.css" />
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=my_location" />
-	
+	<link rel="apple-touch-icon" href="/favicon.png">
+
 	  <style>
 
     .container {
@@ -67,7 +68,15 @@
       }
     }
   </style>
-	<style>    #map { width: 85%; height: 50vh; margin: auto; border-radius: 25px;}
+	<style>    #map {
+        display: block;
+        width: 85%;
+        max-width: 1200px;
+        height: 80vh;
+        min-height: 600px;
+        margin: 0 auto;
+        border-radius: 25px;
+        border: 1px solid #ddd;}
     .tt-popup {
       background: white;
       padding: 10px;
