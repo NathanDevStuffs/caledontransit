@@ -1228,8 +1228,11 @@ const DIRECTION_MAP = {
 // function pickDirectionByGeometry(routeId, pos /* {lat, lon} */) { ... return "410008" | "410007" | "810005" | "810002"; }
 
 async function updateBusPositions() {
+  // normalize Weekday/Saturday/Sunday/Holiday variants so RT + static trip_ids match
+  const normalizeTripId = (id) => (id || "").replace(/-(Weekday|Saturday|Sunday|Holiday)-/gi, "-");
+
   try {
-    const res = await fetch(WORKER_BASE); // same origin you use elsewhere
+    const res = await fetch(WORKER_BASE);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
 
@@ -1249,25 +1252,30 @@ async function updateBusPositions() {
         const lon = Number(veh?.position?.longitude);
         if (!Number.isFinite(lat) || !Number.isFinite(lon) || !id || !routeId) return;
 
-        // 1) Primary: from trips.txt mapping (trip_id → shape_id)
-        let direction = tripDirectionMap[tripId];
+        // 1) Primary: from trips.txt mapping (trip_id → shape_id), with RT/static day-token normalization
+        let direction =
+          tripDirectionMap[tripId] ||
+          tripDirectionMap[normalizeTripId(tripId)];
+		  console.log("used trips.txt");
 
         // 2) Fallback: use direction_id from realtime if available
         if (!direction) {
           const dirId = veh?.trip?.direction_id;
           if (dirId === 0 || dirId === 1 || dirId === "0" || dirId === "1") {
             direction = DIRECTION_MAP[routeId]?.[Number(dirId)];
+			  console.log("direc id");
+
           }
         }
 
-        // 3) Optional: geometry-based inference if still unknown (requires you to implement pickDirectionByGeometry)
+        // 3) Optional: geometry-based inference if still unknown (define pickDirectionByGeometry elsewhere)
         if (!direction && typeof pickDirectionByGeometry === "function") {
           direction = pickDirectionByGeometry(routeId, { lat, lon });
         }
 
         // Show policy:
         // - If we resolved a direction and it doesn't match the selectedDirection → hide.
-        // - If direction is unknown, we *still show* the bus so it doesn't vanish due to data mismatches.
+        // - If direction is unknown, still show the bus (prevents disappearing due to data mismatches).
         if (direction && direction !== selectedDirection) {
           if (busMarkers[id]) busMarkers[id].getElement().style.display = "none";
           return;
@@ -1301,7 +1309,7 @@ async function updateBusPositions() {
         seenIds.add(id);
       });
 
-    // Hide stale markers that weren't seen in this refresh (only visual hide; keeps marker objects cached)
+    // Hide stale markers not seen in this refresh
     for (const [id, marker] of Object.entries(busMarkers)) {
       if (!seenIds.has(id)) {
         marker.getElement().style.display = "none";
@@ -1311,6 +1319,7 @@ async function updateBusPositions() {
     console.error("Bus update failed:", err);
   }
 }
+
 
 /* Dropdown listener (unchanged) */
 document.getElementById('directionSelect').addEventListener('change', e => {
