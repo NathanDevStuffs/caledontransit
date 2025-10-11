@@ -85,15 +85,18 @@ async function getServiceCalendar() {
 let tripDirectionMap = {};
 let serviceMap = {};
 
-// Build trip_id → shape_id mapping (unchanged)
+// Build trip_id → shape_id mapping (now includes route 41 and route 81)
 async function buildTripDirectionMap() {
   [serviceMap] = await Promise.all([getServiceCalendar()]);
   const tripsRes = await fetch("/trips.txt");
   const trips = parseCSV(await tripsRes.text());
   trips.forEach(trip => {
-    if (trip.route_id === "41") tripDirectionMap[trip.trip_id] = trip.shape_id;
+    if (trip.route_id === "41" || trip.route_id === "81") {
+      tripDirectionMap[trip.trip_id] = trip.shape_id;
+    }
   });
 }
+
 
 // Parse HH:MM:SS to Date (unchanged)
 function parseTimeToDate(timeStr) {
@@ -368,6 +371,7 @@ async function fetchTransitDeparturesForGtfsStop(stop) {
 }
 
 // Fallback: get scheduled departures from GTFS files
+// Fallback: get scheduled departures from GTFS files (supports route 41 & 81)
 async function getStopDepartures(stopId) {
   try {
     const [stopTimesRes, tripsRes] = await Promise.all([
@@ -387,9 +391,10 @@ async function getStopDepartures(stopId) {
     });
 
     const now = new Date();
-
+    const allowedRoutes = new Set(['41', '81']); // allow both routes
+	console.log(isTripRunningToday(st.trip_id, tripServiceMap));
     const departures = stopTimes
-      .filter(st => st.stop_id === stopId && tripRouteMap[st.trip_id] === "41" && isTripRunningToday(st.trip_id, tripServiceMap))
+      .filter(st => st.stop_id === stopId && allowedRoutes.has(tripRouteMap[st.trip_id]) && isTripRunningToday(st.trip_id, tripServiceMap))
       .map(st => {
         const depTime = parseTimeToDate(st.departure_time);
         const minutesAway = Math.round((depTime - now) / 60000);
@@ -401,7 +406,7 @@ async function getStopDepartures(stopId) {
 
         return {
           tripId: st.trip_id,
-          routeId: tripRouteMap[st.trip_id],
+          routeId: tripRouteMap[st.trip_id], // will be "41" or "81"
           time: depTime,
           displayTime
         };
@@ -421,6 +426,7 @@ async function getStopDepartures(stopId) {
 
 
 
+
 /* -------------------------
    Stop markers, loadRoute41Stops (uses Transit API for departures)
    -------------------------*/
@@ -428,7 +434,7 @@ async function getStopDepartures(stopId) {
 let selectedDirection = "410008"; // default direction: northbound
 
 // ---- Stop marker storage & guard ----
-const stopMarkers = { "410008": [], "410007": [] }; // northbound, southbound
+const stopMarkers = { "410008": [], "410007": [], "810002": [], "810005": [] }; // northbound, southbound
 let stopsLoaded = false; // prevents double-loading
 
 
@@ -445,25 +451,34 @@ async function loadRoute41Stops() {
 
   const stopTimes = parseCSV(await stopTimesRes.text());
   const stops = parseCSV(await stopsRes.text());
-  const route41Trips = new Set(Object.keys(tripDirectionMap));
-  const route41StopIds = new Set(
-    stopTimes.filter(st => route41Trips.has(st.trip_id)).map(st => st.stop_id)
+
+  const routeTrips = new Set(Object.keys(tripDirectionMap)); // now contains trips for route 41 & 81
+  const routeStopIds = new Set(
+    stopTimes.filter(st => routeTrips.has(st.trip_id)).map(st => st.stop_id)
   );
 
-  // iterate only stops that belong to Route 41
-  stops.filter(s => route41StopIds.has(s.stop_id)).forEach(stop => {
+  // map shape_id to route number + direction label
+  const shapeInfo = {
+    '410008': { route: '41', dir: 'Northbound' },
+    '410007': { route: '41', dir: 'Southbound' },
+    '810005': { route: '81', dir: 'Northbound' },
+    '810002': { route: '81', dir: 'Southbound' }
+  };
+
+  // iterate only stops that belong to these routes
+  stops.filter(s => routeStopIds.has(s.stop_id)).forEach(stop => {
     const lat = parseFloat(stop.stop_lat);
     const lon = parseFloat(stop.stop_lon);
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
 
-    // find all trips for this stop that are on Route 41
-    const stopTrips = stopTimes.filter(st => st.stop_id === stop.stop_id && route41Trips.has(st.trip_id));
+    // find all trips for this stop that belong to routeTrips (41 or 81)
+    const stopTrips = stopTimes.filter(st => st.stop_id === stop.stop_id && routeTrips.has(st.trip_id));
 
     stopTrips.forEach(st => {
       const direction = tripDirectionMap[st.trip_id];
       if (!direction) return;
 
-      // Avoid duplicate markers for same stop & direction using stop_id (reliable)
+      // Avoid duplicate markers for same stop & direction using stop_id
       if (stopMarkers[direction].some(m => m.stopId === stop.stop_id)) return;
 
       // create marker element
@@ -472,13 +487,14 @@ async function loadRoute41Stops() {
       icon.style.width = "12px";
       icon.style.height = "12px";
       icon.style.cursor = "pointer";
+		icon.alt = "Bus Stop Marker";
 
       // add marker to map
       const marker = new tt.Marker({ element: icon }).setLngLat([lon, lat]).addTo(map);
 
       // attach metadata so toggling is easy
       marker.stopId = stop.stop_id;
-      marker.direction = direction;
+      marker.direction = direction; // shape_id like '410008' or '810002'
       marker.coords = { lat, lon };
       marker.stop = stop; // attach GTFS stop object for later use
 
@@ -486,33 +502,31 @@ async function loadRoute41Stops() {
       stopMarkers[direction].push(marker);
 
       // set initial visibility based on selectedDirection
-      if (direction !== selectedDirection) {
-        marker.getElement().style.display = "none";
-      } else {
-        // ensure visible if this direction is selected
-        marker.getElement().style.display = "block";
-      }
+      marker.getElement().style.display = (direction === selectedDirection) ? "block" : "none";
 
       // popup listener (uses Transit App via worker for departures)
       marker.getElement().addEventListener("click", async () => {
-  const st = stopTimes.find(st => st.stop_id === stop.stop_id && route41Trips.has(st.trip_id));
-  const shape = tripDirectionMap[st.trip_id];
-  const directionLabel = shape === "410008" ? "Northbound" : "Southbound";
+        // find a representative trip for this stop to determine shape/route
+        const rep = stopTrips.find(x => x.stop_id === stop.stop_id && routeTrips.has(x.trip_id));
+        const shape = tripDirectionMap[rep.trip_id];
+        const info = shapeInfo[shape] || { route: '', dir: 'Unknown' };
+        const directionLabel = `Route ${info.route} — ${info.dir}`;
 
-  let departures = [];
+        let departures = [];
 
-  // Try fetching real-time departures from Transit API
-  try {
-    departures = await fetchTransitDeparturesForGtfsStop(stop);
-  } catch (err) {
-    console.error("Transit API error:", err);
-    departures = [];
-  }
+        // Try fetching real-time departures from Transit API
+        try {
+          departures = await fetchTransitDeparturesForGtfsStop(stop);
+        } catch (err) {
+          console.error("Transit API error:", err);
+          departures = [];
+        }
 
-  // If Transit API fails or returns empty, fall back to GTFS schedule
-  if (!departures.length) {
-    departures = await getStopDepartures(stop.stop_id); // your old scheduled GTFS function
-  }
+        // If Transit API fails or returns empty, fall back to GTFS schedule
+        if (!departures.length) {
+          departures = await getStopDepartures(stop.stop_id);
+        }
+
 
   // Build HTML with your current styling
   const depHtml = departures.length
@@ -561,7 +575,9 @@ async function loadRoutes() {
   const parsed = parseCSV(await response.text());
   const routes = [
     { id: '410008', color: '#FF3399', label: 'Northbound' },
-    { id: '410007', color: '#3399FF', label: 'Southbound' }
+    { id: '410007', color: '#3399FF', label: 'Southbound' },
+	  { id: '810005', color: '#FF3399', label: 'Northbound' },
+    { id: '810002', color: '#3399FF', label: 'Southbound' }
   ];
 
   for (const { id, color, label } of routes) {
@@ -585,14 +601,16 @@ async function loadRoutes() {
     });
 
     map.on('click', `routeLineLayer-${id}`, e => {
-      popup.setLngLat(e.lngLat).setHTML(`<div class="tt-popup"><strong>Route 41 - ${label}</strong></div>`).addTo(map);
-    });
+  const routeNumber = id.startsWith('81') ? '81' : (id.startsWith('41') ? '41' : '');
+  popup.setLngLat(e.lngLat).setHTML(`<div class="tt-popup"><strong>Route ${routeNumber} - ${label}</strong></div>`).addTo(map);
+});
+
   }
 }
 
 /* Show/hide route (unchanged) */
 function updateRouteDisplay(selectedId) {
-  const routes = ['410008', '410007'];
+  const routes = ['410008', '410007', '810002', '810005'];
 
   // toggle route line layers if they exist
   routes.forEach(id => {
@@ -602,7 +620,7 @@ function updateRouteDisplay(selectedId) {
     }
   });
 
-  // toggle stop markers
+  // toggle stop markers for all directions (41 & 81)
   routes.forEach(id => {
     if (!stopMarkers[id]) return;
     stopMarkers[id].forEach(marker => {
@@ -615,6 +633,7 @@ function updateRouteDisplay(selectedId) {
   updateBusPositions(); // keep buses in sync
 }
 
+
 /* Live buses (unchanged) */
 const busMarkers = {};
 async function updateBusPositions() {
@@ -622,8 +641,9 @@ async function updateBusPositions() {
     const response = await fetch("https://caledon.nathanplayzofficial.workers.dev/");
     const data = await response.json();
 
+    // include both route 41 and 81 vehicles
     data.entity
-      .filter(ent => ent.vehicle?.trip?.route_id === "41")
+      .filter(ent => ent.vehicle?.trip?.route_id === "41" || ent.vehicle?.trip?.route_id === "81")
       .forEach(ent => {
         const veh = ent.vehicle;
         const id = veh.vehicle?.id || veh.id;
@@ -656,6 +676,7 @@ async function updateBusPositions() {
     console.error("Bus update failed:", err);
   }
 }
+
 
 /* Dropdown listener (unchanged) */
 document.getElementById('directionSelect').addEventListener('change', e => {
