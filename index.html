@@ -1219,102 +1219,42 @@ function updateRouteDisplay(selectedId) {
 
 /* Live buses (unchanged) */
 const busMarkers = {};
-const DIRECTION_MAP = {
-  "41": { 0: "410008", 1: "410007" }, // 41: 0 → Northbound, 1 → Southbound
-  "81": { 0: "810005", 1: "810002" }  // 81: 0 → Northbound, 1 → Southbound
-};
-
-// If you implement a geometry-based fallback, define this elsewhere:
-// function pickDirectionByGeometry(routeId, pos /* {lat, lon} */) { ... return "410008" | "410007" | "810005" | "810002"; }
-
 async function updateBusPositions() {
-  // normalize Weekday/Saturday/Sunday/Holiday variants so RT + static trip_ids match
-  const normalizeTripId = (id) => (id || "").replace(/-(Weekday|Saturday|Sunday|Holiday)-/gi, "-");
-
   try {
-    const res = await fetch(WORKER_BASE);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
+    const response = await fetch("https://caledon.nathanplayzofficial.workers.dev/");
+    const data = await response.json();
 
-    const entities = Array.isArray(data.entity) ? data.entity : [];
-    const seenIds = new Set();
-
-    // Only 41/81 vehicles
-    entities
-      .filter(ent => ent?.vehicle?.trip?.route_id === "41" || ent?.vehicle?.trip?.route_id === "81")
+    // include both route 41 and 81 vehicles
+    data.entity
+      .filter(ent => ent.vehicle?.trip?.route_id === "41" || ent.vehicle?.trip?.route_id === "81")
       .forEach(ent => {
         const veh = ent.vehicle;
-        const id = veh?.vehicle?.id || veh?.id;
-        const routeId = veh?.trip?.route_id;
-        const tripId  = veh?.trip?.trip_id;
+        const id = veh.vehicle?.id || veh.id;
+        const tripId = veh.trip?.trip_id;
+        const lat = veh.position?.latitude;
+        const lon = veh.position?.longitude;
+        if (!lat || !lon) return;
 
-        const lat = Number(veh?.position?.latitude);
-        const lon = Number(veh?.position?.longitude);
-        if (!Number.isFinite(lat) || !Number.isFinite(lon) || !id || !routeId) return;
-
-        // 1) Primary: from trips.txt mapping (trip_id → shape_id), with RT/static day-token normalization
-        let direction =
-          tripDirectionMap[tripId] ||
-          tripDirectionMap[normalizeTripId(tripId)];
-		  console.log("used trips.txt");
-
-        // 2) Fallback: use direction_id from realtime if available
-        if (!direction) {
-          const dirId = veh?.trip?.direction_id;
-          if (dirId === 0 || dirId === 1 || dirId === "0" || dirId === "1") {
-            direction = DIRECTION_MAP[routeId]?.[Number(dirId)];
-			  console.log("direc id");
-
-          }
-        }
-
-        // 3) Optional: geometry-based inference if still unknown (define pickDirectionByGeometry elsewhere)
-        if (!direction && typeof pickDirectionByGeometry === "function") {
-          direction = pickDirectionByGeometry(routeId, { lat, lon });
-        }
-
-        // Show policy:
-        // - If we resolved a direction and it doesn't match the selectedDirection → hide.
-        // - If direction is unknown, still show the bus (prevents disappearing due to data mismatches).
-        if (direction && direction !== selectedDirection) {
+        const direction = tripDirectionMap[tripId];
+        if (direction !== selectedDirection) {
           if (busMarkers[id]) busMarkers[id].getElement().style.display = "none";
           return;
         }
 
-        // Create or update marker
         if (!busMarkers[id]) {
           const icon = document.createElement("img");
           icon.src = "/New Project (8).png";
           icon.style.width = "40px";
           icon.style.height = "40px";
-          icon.alt = `Bus ${veh?.vehicle?.label || id}`;
-          icon.setAttribute("aria-label", icon.alt);
-
-          const marker = new tt.Marker({ element: icon })
+          busMarkers[id] = new tt.Marker({ element: icon })
             .setLngLat([lon, lat])
-            .setPopup(
-              new tt.Popup().setHTML(
-                `<b>Bus ${veh?.vehicle?.label || id}</b><br>` +
-                `Route ${routeId}${direction ? ` • ${direction}` : " • (direction unknown)"}`
-              )
-            )
+            .setPopup(new tt.Popup().setHTML(`<b>Bus ${veh.vehicle?.label || id}</b>`))
             .addTo(map);
-
-          busMarkers[id] = marker;
         } else {
           busMarkers[id].setLngLat([lon, lat]);
           busMarkers[id].getElement().style.display = "block";
         }
-
-        seenIds.add(id);
       });
-
-    // Hide stale markers not seen in this refresh
-    for (const [id, marker] of Object.entries(busMarkers)) {
-      if (!seenIds.has(id)) {
-        marker.getElement().style.display = "none";
-      }
-    }
   } catch (err) {
     console.error("Bus update failed:", err);
   }
@@ -1335,6 +1275,7 @@ map.on('load', async () => {
   updateBusPositions();
   setInterval(updateBusPositions, 15000);
 });
+
 </script>
 
 
