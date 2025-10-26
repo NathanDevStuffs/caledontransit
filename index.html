@@ -165,7 +165,7 @@ img {vertical-align: middle;}
         background: #fafafa;
       }
     </style>
-    <style>  <style>
+    <style>
     *{
       padding: 0;
       margin: 0;
@@ -558,8 +558,8 @@ function showSlides(n) {
     display: inline-block;
     margin: auto;
 ">
-  <option value="410008">Route 41: Northbound to Columbia Way</option>
-  <option value="410007">Route 41: Southbound to Queen St / Highway 7</option>
+  <option value="410010">Route 41: Northbound to Columbia Way</option>
+  <option value="410009">Route 41: Southbound to Queen St / Highway 7</option>
 	<option value="810005">Route 81: Northbound</option>
   <option value="810002">Route 81: Southbound</option>
 </select><!-- Show My Location Button -->
@@ -1017,7 +1017,7 @@ async function getStopDepartures(stopId) {
 let selectedDirection = "410008"; // default direction: northbound
 
 // ---- Stop marker storage & guard ----
-const stopMarkers = { "410008": [], "410007": [], "810002": [], "810005": [] }; // northbound, southbound
+const stopMarkers = { "410010": [], "410009": [], "810002": [], "810005": [] }; // northbound, southbound
 let stopsLoaded = false; // prevents double-loading
 
 
@@ -1042,8 +1042,8 @@ async function loadRoute41Stops() {
 
   // map shape_id to route number + direction label
   const shapeInfo = {
-    '410008': { route: '41', dir: 'Northbound' },
-    '410007': { route: '41', dir: 'Southbound' },
+    '410010': { route: '41', dir: 'Northbound' },
+    '410009': { route: '41', dir: 'Southbound' },
     '810005': { route: '81', dir: 'Northbound' },
     '810002': { route: '81', dir: 'Southbound' }
   };
@@ -1157,8 +1157,8 @@ async function loadRoutes() {
   const response = await fetch('/shapes.txt');
   const parsed = parseCSV(await response.text());
   const routes = [
-    { id: '410008', color: '#FF3399', label: 'Northbound' },
-    { id: '410007', color: '#3399FF', label: 'Southbound' },
+    { id: '410010', color: '#FF3399', label: 'Northbound' },
+    { id: '410009', color: '#3399FF', label: 'Southbound' },
 	  { id: '810005', color: '#FF3399', label: 'Northbound' },
     { id: '810002', color: '#3399FF', label: 'Southbound' }
   ];
@@ -1193,7 +1193,7 @@ async function loadRoutes() {
 
 /* Show/hide route (unchanged) */
 function updateRouteDisplay(selectedId) {
-  const routes = ['410008', '410007', '810002', '810005'];
+  const routes = ['410009', '410010', '810002', '810005'];
 
   // toggle route line layers if they exist
   routes.forEach(id => {
