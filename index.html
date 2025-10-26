@@ -1062,7 +1062,9 @@ async function loadRoute41Stops() {
       if (!direction) return;
 
       // Avoid duplicate markers for same stop & direction using stop_id
+      if (!stopMarkers[direction]) stopMarkers[direction] = [];
       if (stopMarkers[direction].some(m => m.stopId === stop.stop_id)) return;
+
 
       // create marker element
       const icon = document.createElement("img");
