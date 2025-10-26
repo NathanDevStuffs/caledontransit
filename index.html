@@ -558,8 +558,8 @@ function showSlides(n) {
     display: inline-block;
     margin: auto;
 ">
-  <option value="410010">Route 41: Northbound to Columbia Way</option>
   <option value="410009">Route 41: Southbound to Queen St / Highway 7</option>
+    <option value="410010">Route 41: Northbound to Columbia Way</option>
 	<option value="810005">Route 81: Northbound</option>
   <option value="810002">Route 81: Southbound</option>
 </select><!-- Show My Location Button -->
@@ -1014,7 +1014,7 @@ async function getStopDepartures(stopId) {
    Stop markers, loadRoute41Stops (uses Transit API for departures)
    -------------------------*/
 
-let selectedDirection = "410008"; // default direction: northbound
+let selectedDirection = "410009"; // default direction: northbound
 
 // ---- Stop marker storage & guard ----
 const stopMarkers = { "410010": [], "410009": [], "810002": [], "810005": [] }; // northbound, southbound
