@@ -559,8 +559,8 @@ function showSlides(n) {
     display: inline-block;
     margin: auto;
 ">
-  <option value="">Route 41 - Bolton</option>
-    <option value="">Route 81 - Mayfield West</option>
+  <option value="41">Route 41 - Bolton</option>
+    <option value="81">Route 81 - Mayfield West</option>
 </select> -->
 
 <!-- <select id="direction41select" style="
@@ -578,6 +578,7 @@ function showSlides(n) {
 </select>
 
 <select id="direction81select" style="
+display: none;
     padding: 10px;
     border: none;
     font-family: 'Montserrat';
@@ -587,8 +588,8 @@ function showSlides(n) {
     display: inline-block;
     margin: auto;
 ">
-  <option value="410009">Southbound</option>
-    <option value="410010">Northbound</option>
+  <option value="410009">Southbound to Sandalwood Loop</option>
+    <option value="410010">Northbound to Caledon</option>
 </select> -->
 
 <select id="directionSelect" style="
@@ -1307,9 +1308,36 @@ async function updateBusPositions() {
 
 
 /* Dropdown listener (unchanged) */
-document.getElementById('directionSelect').addEventListener('change', e => {
+/* document.getElementById('directionSelect').addEventListener('change', e => {
+  updateRouteDisplay(e.target.value);
+}); */
+
+const routeSelect = document.getElementById('routeSelect');
+const dir41 = document.getElementById('direction41select');
+const dir81 = document.getElementById('direction81select');
+
+// Show correct direction selector when route changes
+routeSelect.addEventListener('change', () => {
+  if (routeSelect.value === '41') {
+    dir41.style.display = 'inline-block';
+    dir81.style.display = 'none';
+    updateRouteDisplay(dir41.value);
+  } else {
+    dir41.style.display = 'none';
+    dir81.style.display = 'inline-block';
+    updateRouteDisplay(dir81.value);
+  }
+});
+
+// Update route when direction changes
+dir41.addEventListener('change', (e) => {
   updateRouteDisplay(e.target.value);
 });
+
+dir81.addEventListener('change', (e) => {
+  updateRouteDisplay(e.target.value);
+});
+
 
 /* Init */
 map.on('load', async () => {
