@@ -548,7 +548,11 @@ function showSlides(n) {
     font-family: Outfit;
     text-align: center;
     font-weight: 400;
-">See real-time bus locations on the map below for Caledon Transit. Route 41 is operated by Brampton Transit. Press on the bus stop markers to see real-time arrivals.</h4><br><div style="margin: auto; text-align: center; ">
+">See real-time bus locations on the map below for Caledon Transit. Route 41 is operated by Brampton Transit. Press on the bus stop markers to see real-time arrivals.</h4><br>
+<div id="accuracyWarning" style="background-color: #FF5F15; padding: 15px; width: 450px; margin: auto; height: 90px; border-radius: 25px; color:white; font-family: Outfit !important;display: none;"><span style="font-weight: 600;">Reduced real-time bus accuracy
+</span><p>We’re working with limited live data, so bus locations and arrivals may not be exact for now.</p></div>
+
+<div style="margin: auto; text-align: center; ">
 <select id="routeSelect" style="
     padding: 10px;
     border: none;
@@ -1294,6 +1298,8 @@ let direction = tripDirectionMap[tripId];
 
 // fallback: try the trip "stem" before the first dash (e.g. "24722862")
 if (!direction && tripId) {
+  const warning = window.getElementById('accuracyWarning');
+  warning.style.display = 'block';
   const stem = String(tripId).split('-')[0];
   direction = tripDirectionMap[stem];
   console.log(direction);
