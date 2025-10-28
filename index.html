@@ -1281,11 +1281,31 @@ async function updateBusPositions() {
         const lon = veh.position?.longitude;
         if (!lat || !lon) return;
 
-        const direction = tripDirectionMap[tripId];
-        if (direction !== selectedDirection) {
-          if (busMarkers[id]) busMarkers[id].getElement().style.display = "none";
-          return;
-        }
+        // const direction = tripDirectionMap[tripId];
+        // if (direction !== selectedDirection) {
+        //   if (busMarkers[id]) busMarkers[id].getElement().style.display = "none";
+        //   return;
+        // }
+
+let direction = tripDirectionMap[tripId];
+
+// fallback: try the trip "stem" before the first dash (e.g. "24722862")
+if (!direction && tripId) {
+  const stem = String(tripId).split('-')[0];
+  direction = tripDirectionMap[stem];
+}
+
+if (!direction) {
+  // no mapping found — hide marker if exists and skip
+  if (busMarkers[id]) busMarkers[id].getElement().style.display = "none";
+  return;
+}
+
+if (direction !== selectedDirection) {
+  if (busMarkers[id]) busMarkers[id].getElement().style.display = "none";
+  return;
+}
+
 
         if (!busMarkers[id]) {
           const icon = document.createElement("img");

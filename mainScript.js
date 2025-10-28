@@ -431,10 +431,10 @@ async function getStopDepartures(stopId) {
    Stop markers, loadRoute41Stops (uses Transit API for departures)
    -------------------------*/
 
-let selectedDirection = "410008"; // default direction: northbound
+let selectedDirection = "410009"; // default direction: northbound
 
 // ---- Stop marker storage & guard ----
-const stopMarkers = { "410008": [], "410007": [], "810002": [], "810005": [] }; // northbound, southbound
+const stopMarkers = { "410010": [], "410009": [], "810002": [], "810005": [] }; // northbound, southbound
 let stopsLoaded = false; // prevents double-loading
 
 
@@ -459,8 +459,8 @@ async function loadRoute41Stops() {
 
   // map shape_id to route number + direction label
   const shapeInfo = {
-    '410008': { route: '41', dir: 'Northbound' },
-    '410007': { route: '41', dir: 'Southbound' },
+    '410010': { route: '41', dir: 'Northbound' },
+    '410009': { route: '41', dir: 'Southbound' },
     '810005': { route: '81', dir: 'Northbound' },
     '810002': { route: '81', dir: 'Southbound' }
   };
@@ -479,7 +479,9 @@ async function loadRoute41Stops() {
       if (!direction) return;
 
       // Avoid duplicate markers for same stop & direction using stop_id
+      if (!stopMarkers[direction]) stopMarkers[direction] = [];
       if (stopMarkers[direction].some(m => m.stopId === stop.stop_id)) return;
+
 
       // create marker element
       const icon = document.createElement("img");
@@ -574,8 +576,8 @@ async function loadRoutes() {
   const response = await fetch('/shapes.txt');
   const parsed = parseCSV(await response.text());
   const routes = [
-    { id: '410008', color: '#FF3399', label: 'Northbound' },
-    { id: '410007', color: '#3399FF', label: 'Southbound' },
+    { id: '410010', color: '#FF3399', label: 'Northbound' },
+    { id: '410009', color: '#3399FF', label: 'Southbound' },
 	  { id: '810005', color: '#FF3399', label: 'Northbound' },
     { id: '810002', color: '#3399FF', label: 'Southbound' }
   ];
@@ -610,7 +612,7 @@ async function loadRoutes() {
 
 /* Show/hide route (unchanged) */
 function updateRouteDisplay(selectedId) {
-  const routes = ['410008', '410007', '810002', '810005'];
+  const routes = ['410009', '410010', '810002', '810005'];
 
   // toggle route line layers if they exist
   routes.forEach(id => {
@@ -679,9 +681,36 @@ async function updateBusPositions() {
 
 
 /* Dropdown listener (unchanged) */
-document.getElementById('directionSelect').addEventListener('change', e => {
+/* document.getElementById('directionSelect').addEventListener('change', e => {
+  updateRouteDisplay(e.target.value);
+}); */
+
+const routeSelect = document.getElementById('routeSelect');
+const dir41 = document.getElementById('direction41select');
+const dir81 = document.getElementById('direction81select');
+
+// Show correct direction selector when route changes
+routeSelect.addEventListener('change', () => {
+  if (routeSelect.value === '41') {
+    dir41.style.display = 'inline-block';
+    dir81.style.display = 'none';
+    updateRouteDisplay(dir41.value);
+  } else {
+    dir41.style.display = 'none';
+    dir81.style.display = 'inline-block';
+    updateRouteDisplay(dir81.value);
+  }
+});
+
+// Update route when direction changes
+dir41.addEventListener('change', (e) => {
   updateRouteDisplay(e.target.value);
 });
+
+dir81.addEventListener('change', (e) => {
+  updateRouteDisplay(e.target.value);
+});
+
 
 /* Init */
 map.on('load', async () => {
