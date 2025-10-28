@@ -427,6 +427,33 @@ svg {
   }
 }
 </style>
+<style>
+  .pill {
+    background-color: #2d3399;
+    color: white;
+    font-family: Outfit;
+    font-weight: 600;
+    padding: 10px;
+    border-radius: 15px;
+    width: 70px;
+    border: none;
+    cursor: pointer;
+    font-size: larger;
+  }
+
+  .pillact {
+  background-color: #4048cc;
+  box-shadow: 0 0 10px rgba(45, 51, 153, 0.6);
+  animation: pulse 0.8s ease-in-out;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.07); }
+  100% { transform: scale(1); }
+}
+
+</style>
   </head>
  <body><header style="white-space: nowrap;">
       <a href="/" class=""><img src="caledon.png" alt="Caledon Transit" style="
@@ -549,17 +576,34 @@ function showSlides(n) {
     text-align: center;
     font-weight: 400;
 ">See real-time bus locations on the map below for Caledon Transit. Route 41 is operated by Brampton Transit. Press on the bus stop markers to see real-time arrivals.</h4><br>
-<div id="accuracyWarning" style="background-color: #FF5F15; padding: 15px; max-width: 350px; margin: auto; height: 90px; border-radius: 25px; color:white; font-family: Outfit;display: none;">
-  <span class="material-symbols-outlined">
-warning
-</span>
-<span style="font-weight: 600;">Reduced real-time bus accuracy
-</span>
-<p style="font-size: 12px;">We’re working with limited live data, so bus locations and arrivals may not be exact for now.</p>
+<div id="accuracyWarning" style="
+  background-color: rgb(255, 95, 21);
+  padding: 15px;
+  max-width: 350px;
+  margin: auto;
+  height: 90px;
+  border-radius: 25px;
+  color: white;
+  font-family: Outfit;
+  display: block;
+">
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <span class="material-symbols-outlined">warning</span>
+    <span style="font-weight: 600;">Reduced real-time bus accuracy</span>
+  </div>
+  <p style="font-size: 12px; margin-top: 8px;">
+    We’re working with limited live data, so bus locations and arrivals may not be exact for now.
+  </p>
+</div>
+<div style="padding-top: 20px; margin: auto; display: flex; justify-content: center; gap: 10px;">
+  <button class="pill pillact" id="button41">41</button>
+
+  <button class="pill" id="button81">81</button>
 </div>
 
+
 <div style="margin: auto; text-align: center; ">
-<select id="routeSelect" style="
+<!-- <select id="routeSelect" style="
     padding: 10px;
     border: none;
     font-family: 'Montserrat';
@@ -571,14 +615,14 @@ warning
 ">
   <option value="41">Route 41 - Bolton</option>
     <option value="81">Route 81 - Mayfield West</option>
-</select>
+</select> -->
 
 <select id="direction41select" style="
     padding: 10px;
     border: none;
     font-family: 'Montserrat';
     font-weight: bold;
-    border-radius: 50px;
+    border-radius: 15px;
     background: #dddddd;
     display: inline-block;
     margin: auto;
@@ -593,7 +637,7 @@ display: none;
     border: none;
     font-family: 'Montserrat';
     font-weight: bold;
-    border-radius: 50px;
+    border-radius: 15px;
     background: #dddddd;
     display: none;
     margin: auto;
@@ -1349,7 +1393,7 @@ if (direction !== selectedDirection) {
   updateRouteDisplay(e.target.value);
 }); */
 
-const routeSelect = document.getElementById('routeSelect');
+/*const routeSelect = document.getElementById('routeSelect');
 const dir41 = document.getElementById('direction41select');
 const dir81 = document.getElementById('direction81select');
 
@@ -1373,7 +1417,39 @@ dir41.addEventListener('change', (e) => {
 
 dir81.addEventListener('change', (e) => {
   updateRouteDisplay(e.target.value);
+}); */
+
+const dir41 = document.getElementById('direction41select');
+const dir81 = document.getElementById('direction81select');
+
+const button41 = document.getElementById('button41');
+const button81 = document.getElementById('button81');
+
+button41.addEventListener('click', () => {
+  button41.classList.add('pillact');
+  button81.classList.remove('pillact');
+  dir41.style.display = 'inline-block';
+  dir81.style.display = 'none';
+  updateRouteDisplay(dir41.value);
 });
+
+button81.addEventListener('click', () => {
+  button41.classList.remove('pillact');
+  button81.classList.add('pillact');
+  dir41.style.display = 'none';
+  dir81.style.display = 'inline-block';
+  updateRouteDisplay(dir81.value);
+});
+
+dir41.addEventListener('change', (e) => {
+  updateRouteDisplay(e.target.value);
+});
+
+dir81.addEventListener('change', (e) => {
+  updateRouteDisplay(e.target.value);
+});
+
+
 
 
 /* Init */
