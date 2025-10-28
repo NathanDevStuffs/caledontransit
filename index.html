@@ -685,8 +685,8 @@ const WORKER_BASE = "https://caledon.nathanplayzofficial.workers.dev/";
 const map = tt.map({
   key: 'XVUXC7GLhrBCR47wKHSTSabpLRTnEzv2',
   container: 'map',
-  center: [-79.72748996039797, 43.872053075176915],
-  zoom: 12
+  center: [-79.7254859,43.8333433],
+  zoom: 11
 });
 map.addControl(new tt.NavigationControl());
 const popup = new tt.Popup({ closeButton: true, closeOnClick: true });
@@ -1426,6 +1426,7 @@ const button41 = document.getElementById('button41');
 const button81 = document.getElementById('button81');
 
 button41.addEventListener('click', () => {
+  map.flyTo({ center: [-79.7254859,43.8333433], zoom: 11});
   button41.classList.add('pillact');
   button81.classList.remove('pillact');
   dir41.style.display = 'inline-block';
@@ -1434,6 +1435,7 @@ button41.addEventListener('click', () => {
 });
 
 button81.addEventListener('click', () => {
+  map.flyTo({ center: [-79.820941,43.7401914]});
   button41.classList.remove('pillact');
   button81.classList.add('pillact');
   dir41.style.display = 'none';
