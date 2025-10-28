@@ -1019,9 +1019,10 @@ async function getStopDepartures(stopId) {
 
     const now = new Date();
     const allowedRoutes = new Set(['41', '81']); // allow both routes
-	console.log(isTripRunningToday(st.trip_id, tripServiceMap));
     const departures = stopTimes
-      .filter(st => st.stop_id === stopId && allowedRoutes.has(tripRouteMap[st.trip_id]) && isTripRunningToday(st.trip_id, tripServiceMap))
+      // .filter(st => st.stop_id === stopId && allowedRoutes.has(tripRouteMap[st.trip_id]) && isTripRunningToday(st.trip_id, tripServiceMap))
+	.filter(st => st.stop_id === stopId && allowedRoutes.has(tripRouteMap[st.trip_id]))
+
       .map(st => {
         const depTime = parseTimeToDate(st.departure_time);
         const minutesAway = Math.round((depTime - now) / 60000);
