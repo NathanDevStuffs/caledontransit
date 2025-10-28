@@ -720,6 +720,8 @@ async function buildTripDirectionMap() {
   trips.forEach(trip => {
     if (trip.route_id === "41" || trip.route_id === "81") {
       tripDirectionMap[trip.trip_id] = trip.shape_id;
+       const stem = trip.trip_id.split('-')[0];
+      if (!tripDirectionMap[stem]) tripDirectionMap[stem] = trip.shape_id;
     }
   });
 }
