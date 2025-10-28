@@ -626,11 +626,11 @@ function showSlides(n) {
     background: #dddddd;
     display: inline-block;
     margin: auto;
+    height: 48px;
 ">
   <option value="410009">Southbound to Queen St / Highway 7</option>
     <option value="410010">Northbound to Columbia Way</option>
 </select>
-
 <select id="direction81select" style="
 display: none;
     padding: 10px;
@@ -641,6 +641,7 @@ display: none;
     background: #dddddd;
     display: none;
     margin: auto;
+    height: 48px;
 ">
   <option value="810002">Southbound to Sandalwood Loop</option>
     <option value="810005">Northbound to Caledon</option>
@@ -664,9 +665,11 @@ display: none;
 <button id="locateBtn" style="
     display: inline-block;
     margin: 10px auto;
-    padding: 10px 20px;
-    border-radius: 25px;
-    background-color: #0078ff;
+    border-radius: 16px;
+    box-shadow: #060e1a33 0px 4px 12px;
+    width: 48px;
+    height: 48px;
+    background-color: white;
     color: white;
     border: none;
     font-size: 16px;
@@ -707,7 +710,7 @@ document.getElementById('locateBtn').addEventListener('click', () => {
 
         if (!userMarker) {
           const icon2 = document.createElement("img");
-          icon2.src = "/locationpin.png";
+          icon2.src = "/location.png";
           icon2.style.width = "40px";
           icon2.style.height = "40px";
 
