@@ -1294,6 +1294,8 @@ let direction = tripDirectionMap[tripId];
 if (!direction && tripId) {
   const stem = String(tripId).split('-')[0];
   direction = tripDirectionMap[stem];
+  console.log(direction);
+  console.log(stem);
 }
 
 if (!direction) {
