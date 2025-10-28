@@ -595,19 +595,21 @@ function showSlides(n) {
     We’re working with limited live data, so bus locations and arrivals may not be exact for now.
   </p>
 </div>
-<div style="padding-top: 20px; margin: auto; display: flex; justify-content: center; gap: 10px;">
+<div style="padding-top: 20px; margin: auto; display: flex; justify-content: center; gap: 10px; padding-bottom: 20px">
   <button class="pill pillact" id="button41">41</button>
 
   <button class="pill" id="button81">81</button>
 </div>
 
 
-<div style="display: flex;
+<div style="
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0px;
-  margin: auto;
-  text-align: center;">
+  column-gap: 25px; /* tighter control */
+  margin: 0;
+  padding: 0;
+  ">
 <!-- <select id="routeSelect" style="
     padding: 10px;
     border: none;
@@ -622,32 +624,11 @@ function showSlides(n) {
     <option value="81">Route 81 - Mayfield West</option>
 </select> -->
 
-<select id="direction41select" style="
-    padding: 10px;
-    border: none;
-    font-family: 'Montserrat';
-    font-weight: bold;
-    border-radius: 15px;
-    background: #dddddd;
-    display: inline-block;
-    margin: auto;
-    height: 48px;
-">
+<select id="direction41select" style="padding: 10px; border: none; font-family: Montserrat; font-weight: bold; border-radius: 15px; background: rgb(221, 221, 221); height: 48px; margin: 0px; display: inline-block;">
   <option value="410009">Southbound to Queen St / Highway 7</option>
     <option value="410010">Northbound to Columbia Way</option>
 </select>
-<select id="direction81select" style="
-display: none;
-    padding: 10px;
-    border: none;
-    font-family: 'Montserrat';
-    font-weight: bold;
-    border-radius: 15px;
-    background: #dddddd;
-    display: none;
-    margin: auto;
-    height: 48px;
-">
+<select id="direction81select" style="padding: 10px; border: none; font-family: Montserrat; font-weight: bold; border-radius: 15px; background: rgb(221, 221, 221); height: 48px; margin: 0px; display: none;">
   <option value="810002">Southbound to Sandalwood Loop</option>
     <option value="810005">Northbound to Caledon</option>
 </select>
@@ -668,17 +649,18 @@ display: none;
   <option value="810002">Route 81: Southbound</option>
 </select>Show My Location Button -->
 <button id="locateBtn" style="
-    display: inline-block;
-    margin: 10px auto;
     border-radius: 16px;
-    box-shadow: #060e1a33 0px 4px 12px;
-    width: 48px;
-    height: 48px;
-    background-color: white;
-    color: white;
-    border: none;
-    font-size: 16px;
-    cursor: pointer;
+      box-shadow: #060e1a33 0px 4px 12px;
+      width: 48px;
+      height: 48px;
+      background-color: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;       /* remove default button padding */
+      margin: 0;  
 "><img src="/location.png" style="width: 35px;height: 35px;"></button></div><br>
 
 <div id="map"></div>
