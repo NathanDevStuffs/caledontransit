@@ -1298,7 +1298,7 @@ let direction = tripDirectionMap[tripId];
 
 // fallback: try the trip "stem" before the first dash (e.g. "24722862")
 if (!direction && tripId) {
-  const warning = window.getElementById('accuracyWarning');
+  const warning = document.getElementById('accuracyWarning');
   warning.style.display = 'block';
   const stem = String(tripId).split('-')[0];
   direction = tripDirectionMap[stem];
