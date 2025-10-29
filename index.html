@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
 	  <link rel="stylesheet" href="https://api.tomtom.com/maps-sdk-for-web/cdn/6.x/6.15.0/maps/maps.css" />
-	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=my_location,warning" />
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 	<link rel="apple-touch-icon" href="/favicon.png">
   <link rel="manifest" href="manifest.json" />
 
@@ -1490,6 +1490,30 @@ map.on('load', async () => {
 
 	  <br>
 	  <br>
+    <div id="servicealerts" style="
+  background-color: rgb(255, 255, 255);
+  padding: 15px;
+  max-width: 350px;
+  margin: auto;
+  height: 90px;
+  border-radius: 25px;
+  color: black;
+  font-family: Outfit;
+  display: block;
+  box-shadow: #060e1a33 0px 4px 12px;
+">
+  <div style="display: flex; align-items: center; gap: 8px; ">
+    <span class="material-symbols-outlined">bus_alert</span>
+    <span style="font-weight: 600;">Live Service Alerts / Route Status</span>
+  </div>
+  <p id="allClear" style="font-size: 12px; margin-top: 8px;">
+    No service disruptions at this time
+  </p>
+  <p style="font-size: 12px; margin-top: 8px;">
+Route 219 detour due to construction near Elm Street  </p>
+  <p style="font-size: 12px; margin-top: 8px;">
+Due to construction at Elm Street, the stop at 16230 is closed. A temporary stop can be found 300 meters north at Oak Street.  </p>
+</div>
 	  <div class="container">
     <div class="card" onclick="window.location.href = '/fare-info'" style="cursor: pointer;">
       <img src="/New Project (6).png" alt="Paying Your Fare">
@@ -1588,8 +1612,9 @@ chat='true'>
 </script>
 	 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7151224786698184"
      crossorigin="anonymous"></script>
-
-<script>if ('serviceWorker' in navigator) {
+<script>if (window.location.href.includes("caledontransit.com")) {
+  console.log("on caledontransit.com")
+  if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then(registration => {
@@ -1599,6 +1624,9 @@ chat='true'>
         console.error('Service Worker registration failed:', error);
       });
   });
+}
+} else {
+  console.log("not on caledontransit.com, skipping service worker registration")
 }
 </script>
 <script>window.addEventListener('beforeinstallprompt', (e) => {
