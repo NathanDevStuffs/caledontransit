@@ -1601,4 +1601,14 @@ chat='true'>
   });
 }
 </script>
+<script>window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+
+  // Wait a few seconds, then trigger it
+  setTimeout(() => {
+    deferredPrompt.prompt();
+  }, 5000); // 5 seconds after page load
+});
+</script>
 </body></html>
