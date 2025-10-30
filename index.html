@@ -635,8 +635,8 @@ function showSlides(n) {
     <option value="810005">Northbound to Caledon</option>
 </select>
 <select id="direction25select" style="padding: 10px; border: none; font-family: Montserrat; font-weight: bold; border-radius: 15px; background: rgb(221, 221, 221); height: 48px; margin: 0px; display: none;">
-  <option value="250033">Southbound to Peel Memorial Hospital</option>
-    <option value="250032">Northbound to Mayfield Road</option>
+  <option value="250032">Southbound to Peel Memorial Hospital</option>
+    <option value="250033">Northbound to Mayfield Road</option>
 </select>
 
 
@@ -1113,7 +1113,7 @@ async function getStopDepartures(stopId) {
 let selectedDirection = "410009"; // default direction: northbound
 
 // ---- Stop marker storage & guard ----
-const stopMarkers = { "410010": [], "410009": [], "810002": [], "810005": [], "250033": [], "250032": [] }; // northbound, southbound
+const stopMarkers = { "410010": [], "410009": [], "810002": [], "810005": [], "250032": [], "250033": [] }; // northbound, southbound
 let stopsLoaded = false; // prevents double-loading
 
 
@@ -1142,8 +1142,8 @@ async function loadRoute41Stops() {
     '410009': { route: '41', dir: 'Southbound' },
     '810005': { route: '81', dir: 'Northbound' },
     '810002': { route: '81', dir: 'Southbound' },
-    '250032': { route: '25', dir: 'Northbound' },
-    '250033': { route: '25', dir: 'Southbound' }
+    '250033': { route: '25', dir: 'Northbound' },
+    '250032': { route: '25', dir: 'Southbound' }
   };
 
   // iterate only stops that belong to these routes
@@ -1261,8 +1261,8 @@ async function loadRoutes() {
     { id: '410009', color: '#3399FF', label: 'Southbound' },
 	  { id: '810005', color: '#FF3399', label: 'Northbound' },
     { id: '810002', color: '#3399FF', label: 'Southbound' },
-    { id: '250032', color: '#FF3399', label: 'Northbound' },
-    { id: '250033', color: '#3399FF', label: 'Southbound' }
+    { id: '250033', color: '#FF3399', label: 'Northbound' },
+    { id: '250032', color: '#3399FF', label: 'Southbound' }
   ];
 
   for (const { id, color, label } of routes) {
@@ -1296,7 +1296,7 @@ const routeNumber = routes.find(r => id.startsWith(r)) || '';
 
 /* Show/hide route (unchanged) */
 function updateRouteDisplay(selectedId) {
-  const routes = ['410009', '410010', '810002', '810005', '250032', '250033'];
+  const routes = ['410009', '410010', '810002', '810005', '250033', '250032'];
 
   // toggle route line layers if they exist
   routes.forEach(id => {
