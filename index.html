@@ -605,6 +605,41 @@ function showSlides(n) {
     We’re working with limited live data, so bus locations and arrivals may not be exact for now.
   </p>
 </div>
+
+<div id="offlineAlert" style="
+  background-color: rgb(128, 128, 128);
+  padding: 15px;
+  max-width: 350px;
+  margin: auto;
+  height: 90px;
+  border-radius: 25px;
+  color: white;
+  font-family: Outfit;
+  display: none;
+  transition: all 0.5s ease;
+">
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <span class="material-symbols-outlined">warning</span>
+    <span style="font-weight: 600;">Currently Offline</span>
+  </div>
+  <script>
+  window.addEventListener("online", onFunction);
+window.addEventListener("offline", offFunction);
+
+function onFunction() {
+  console.log("online")
+  document.getElementById("offlineAlert").style.display = "none";
+}
+
+function offFunction() {
+    console.log("offline")
+
+  document.getElementById("offlineAlert").style.display = "block";
+}
+</script>
+  <p style="font-size: 12px; margin-top: 8px;">
+It looks like you’re offline right now. Live updates aren’t available, so we’re showing scheduled bus info instead.  </p>
+</div>
 <div style="padding-top: 20px; margin: auto; display: flex; justify-content: center; gap: 10px; padding-bottom: 20px">
   <button class="pill pillact" id="button41">41</button>
 
