@@ -66,6 +66,7 @@ self.addEventListener('activate', event => {
 // Fetch event - cache-first only in production
 self.addEventListener('fetch', event => {
   if (IS_LOCAL) {
+    
     // Don’t intercept Live Preview requests
     return;
   }

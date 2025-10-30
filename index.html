@@ -1490,35 +1490,69 @@ map.on('load', async () => {
 
 	  <br>
 	  <br>
-    <div id="servicealerts" style="
-  background-color: rgba(255, 123, 0, 0.5);
-  padding: 15px;
-  max-width: 350px;
+  <div id="servicealerts" style="
+  background-color: rgba(255, 123, 0, 0.1);
+  padding: 18px 20px;
+  max-width: 380px;
   margin: auto;
-  height: auto;
-  border-radius: 25px;
-  color: black;
-  font-family: Outfit;
-  display: block;
+  border-radius: 20px;
+  color: #111;
+  font-family: Outfit, sans-serif;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  backdrop-filter: blur(8px);
 ">
-  <div style="display: flex; align-items: center; gap: 8px; ">
-    <span class="material-symbols-outlined">bus_alert</span>
-    <span style="font-weight: 600;">Live Service Alerts / Route Status</span>
+
+  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+    <span class="material-symbols-outlined" style="font-size: 22px;">bus_alert</span>
+    <span style="font-weight: 600; font-size: 15px;">Live Service Alerts / Route Status</span>
   </div>
-  <p id="allClear" style="font-size: 12px; margin-top: 8px;">
+
+  <p id="allClear" style="
+    font-size: 13px;
+    margin-top: 6px;
+    margin-bottom: 12px;
+    background: rgba(255, 123, 0, 0.07);
+    padding: 8px 10px;
+    border-radius: 8px;
+    text-align: center;
+  ">
     No service alerts or disruptions at this time.
   </p>
-  <ul style="display:flex; justify-content:space-between; padding:4px 0; border-top:1px solid #eee; list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important; flex-direction: column;
-    justify-content: space-between;">
-    <li style="padding:6px 0; margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important; gap: 14px; display: flex;">  <button class="pill" style="cursor: unset !important; width: 50px !important; height: 35px !important; padding: 1px !important;">41</button>
-      <p style="font-weight: 600; font-family: Outfit; font-size: 15px; margin-top: 8px; display: inline;">Bolton</p>
-</li>
-<li style="padding:6px 0; margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important; gap: 14px; display: flex;">  <button class="pill" style="cursor: unset !important; width: 50px !important; height: 35px !important; padding: 1px !important;">81</button>
-      <p style="font-weight: 600; font-family: Outfit; font-size: 15px; margin-top: 8px; display: inline;">Mayfield West</p>
-</li>
-<li style="padding:6px 0; margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important; gap: 14px; display: flex;">  <button class="pill" style="cursor: unset !important; width: 50px !important; height: 35px !important; padding: 1px !important;">25</button>
-      <p style="font-weight: 600; font-family: Outfit; font-size: 15px; margin-top: 8px; display: inline;">Edenbrooke</p>
-</li></ul>
+
+  <ul style="
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  ">
+
+    <li style="background: white; padding: 10px 14px; border-radius: 14px; display: flex; align-items: center; gap: 14px; box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 4px; transition: transform 0.15s, box-shadow 0.15s; transform: none; width: unset !important; font-family: Outfit !important; height: unset !important; margin-bottom: unset !important;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 3px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 1px 4px rgba(0,0,0,0.1)';">
+      <button class="pill" style="
+    width: 60px;
+    height: 40px;
+">41</button>
+      <p style="font-weight: 600; font-size: 15px; margin: 0;">Bolton</p>
+    </li>
+    <li style="background: white; padding: 10px 14px; border-radius: 14px; display: flex; align-items: center; gap: 14px; box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 4px; transition: transform 0.15s, box-shadow 0.15s; transform: none; width: unset !important; font-family: Outfit !important; height: unset !important; margin-bottom: unset !important;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 3px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 1px 4px rgba(0,0,0,0.1)';">
+      <button class="pill" style="
+    width: 60px;
+    height: 40px;
+">81</button>
+      <p style="font-weight: 600; font-size: 15px; margin: 0;">Mayfield West</p>
+    </li>
+    <li style="background: white; padding: 10px 14px; border-radius: 14px; display: flex; align-items: center; gap: 14px; box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 4px; transition: transform 0.15s, box-shadow 0.15s; transform: none; width: unset !important; font-family: Outfit !important; height: unset !important; margin-bottom: unset !important;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 3px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 1px 4px rgba(0,0,0,0.1)';">
+      <button class="pill" style="
+    width: 60px;
+    height: 40px;
+">25</button>
+      <p style="font-weight: 600; font-size: 15px; margin: 0;">Edenbrooke</p>
+    </li>
+
+    
+
+  </ul>
 </div>
 	  <div class="container">
     <div class="card" onclick="window.location.href = '/fare-info'" style="cursor: pointer;">
