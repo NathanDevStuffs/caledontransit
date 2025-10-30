@@ -16,7 +16,16 @@
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 	<link rel="apple-touch-icon" href="/favicon.png">
   <link rel="manifest" href="manifest.json" />
-
+<style>
+  .mapboxgl-popup-content {
+     position: unset !important;
+    background: unset !important;
+    border-radius: unset !important;
+    box-shadow: unset !important;
+    padding: unset !important;
+    pointer-events: unset !important;
+  }
+</style>
 	  <style>
 
     .container {
@@ -1193,6 +1202,7 @@ async function loadRoute41Stops() {
         const rep = stopTrips.find(x => x.stop_id === stop.stop_id && routeTrips.has(x.trip_id));
         const shape = tripDirectionMap[rep.trip_id];
         const info = shapeInfo[shape] || { route: '', dir: 'Unknown' };
+        console.log(info.route, info.dir);
         const directionLabel = `Route ${info.route} — ${info.dir}`;
 
         let departures = [];
@@ -1215,14 +1225,14 @@ async function loadRoute41Stops() {
   const depHtml = departures.length
     ? departures.map(d => `
       <li style="display:flex; align-items:center; justify-content:space-between; padding:4px 0; border-top:1px solid #eee; list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
-        <span style="font-weight:600; padding:2px 6px; border-radius:6px; background:#222; color:#fff;">${d.routeId}</span>
+        <span style="font-weight:600;padding: 2px 12px;border-radius:6px;background: #2d3399;color:#fff;">${d.routeId}</span>
         <span style="flex:1; margin:0 6px;">${d.route_long_name || "Bolton"}</span>
         <span style="font-weight:600; white-space:nowrap;">${d.displayTime || d.time.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
       </li>`).join("")
     : `<li style="padding:6px 0; margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;"><a href="/fare-info" style="color:#333; text-decoration:none;">No upcoming departures</a></li>`;
 
   const popupHTML = `
-    <div style="font-family: system-ui, sans-serif; font-size:14px; min-width:240px;">
+    <div style="font-family: 'Outfit';font-size:14px;min-width:240px;background: white;border-radius: 12px;padding: 17px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
         <b style="font-size:15px;">${stop.stop_name}</b>
       </div>
