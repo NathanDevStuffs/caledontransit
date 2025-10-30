@@ -1578,6 +1578,53 @@ map.on('load', async () => {
     </div>
   </div>
 </main>
+<div id="installApp" style="
+      box-shadow: #060e1a33 0px 4px 12px;
+      background: white;
+  padding: 15px;
+  max-width: 500px;
+  min-width: 95%;
+  margin: auto;
+  height: auto;
+  border-radius: 25px;
+  color: black;
+  font-family: Outfit;
+  display: none;
+  bottom: 25px;
+  position: fixed;
+left: 50%;
+  transform: translateX(-50%);
+  z-index: 5000000000;
+  transition: all 0.3s ease-in-out;
+
+">
+  <div style="display: flex; align-items: center; justify-content: space-between;">
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <span class="material-symbols-outlined">download</span>
+    <span style="font-weight: 600;">Download Caledon Transit</span>
+  </div>
+  <span class="material-symbols-outlined" style="cursor: pointer;" onclick="document.getElementById('installApp').style.display =  'none';">close</span>
+</div>
+
+  <p style="font-size: 12px; margin-top: 4px;">
+  Use the Caledon Transit app on the go for routes, schedules, and live updates.
+  </p>
+  <br>
+  <button id="installBtn" style="
+  display: block;
+    background-color: #2d3399;
+    color: white;
+    font-family: Outfit;
+    font-weight: 600;
+    padding: 10px;
+    border-radius: 15px;
+    width: 70px;
+    border: none;
+    text-align: center;
+    margin: 0 auto;
+">Install</button>
+</div>
+
 	 <footer style="background-color: #f5f5f5; padding: 30px 20px; text-align: center; font-family: 'Montserrat', sans-serif;">
   <div style="display: flex; justify-content: space-between; max-width: 1200px; margin: auto; flex-wrap: wrap;">
     
@@ -1675,7 +1722,13 @@ chat='true'>
 
   // Wait a few seconds, then trigger it
   setTimeout(() => {
-    deferredPrompt.prompt();
+    const installBanner = document.getElementById('installApp');
+    installBanner.style.display = 'block';
+    const installBtn = document.getElementById('installBtn');
+    installBtn.addEventListener('click', () => {
+      installBanner.style.display = 'none';
+      deferredPrompt.prompt();
+    });
   }, 5000); // 5 seconds after page load
 });
 </script>

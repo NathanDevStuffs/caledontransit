@@ -1,7 +1,7 @@
 // Caledon Transit PWA - Safe Service Worker
 // Version 2.0
 
-const CACHE_NAME = 'caledon-transit-v2';
+const CACHE_NAME = 'caledon-transit-v3';
 const IS_LOCAL =
   self.location.hostname === '127.0.0.1' ||
   self.location.hostname === 'localhost';
@@ -64,34 +64,20 @@ self.addEventListener('activate', event => {
 });
 
 // Fetch event - cache-first only in production
+// Fetch event – serve only pre-cached assets
 self.addEventListener('fetch', event => {
-  if (IS_LOCAL) {
-    
-    // Don’t intercept Live Preview requests
-    return;
-  }
-
+  if (IS_LOCAL) return;
   const req = event.request;
   if (req.method !== 'GET') return;
 
   event.respondWith(
     caches.match(req).then(cachedRes => {
       if (cachedRes) return cachedRes;
-
-      return fetch(req)
-        .then(networkRes => {
-          // Cache fetched files dynamically
-          return caches.open(CACHE_NAME).then(cache => {
-            cache.put(req, networkRes.clone());
-            return networkRes;
-          });
-        })
-        .catch(() => {
-          // If offline and not cached, return fallback page
-          if (req.destination === 'document') {
-            return caches.match('/index.html');
-          }
-        });
+      return fetch(req).catch(() => {
+        if (req.destination === 'document') {
+          return caches.match('/index.html');
+        }
+      });
     })
   );
 });
