@@ -640,6 +640,66 @@ function offFunction() {
   <p style="font-size: 12px; margin-top: 8px;">
 It looks like you’re offline right now. Live updates aren’t available, so we’re showing scheduled bus info instead.  </p>
 </div>
+<div id="closestStop" style="
+  background: linear-gradient(135deg, #ffffff, #f5f7fa);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  padding: 18px 20px;
+  max-width: 360px;
+  margin: 25px auto;
+  border-radius: 20px;
+  font-family: 'Outfit', sans-serif;
+  color: #1a1a1a;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  display: none;
+">
+  <div style="display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span class="material-symbols-outlined" style="color: #007aff;">near_me</span>
+      <span style="font-weight: 600; font-size: 15px;">Nearest Bus Stop</span>
+    </div>
+  </div>
+
+  <div style="
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    margin-top: 18px; 
+    background-color: #f0f3f8; 
+    padding: 10px 12px; 
+    border-radius: 12px;
+    justify-content: space-between;
+  ">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span class="material-symbols-outlined" style="color: #007aff;">directions_bus</span>
+      <div>
+        <div style="font-weight: 600; font-size: 13px;" id="stopName">Highway 50 n/sof Allan Drive</div>
+        <div style="font-size: 11px; color: #666;" id="distance">0.3 miles away </div>  
+        <div style="display: flex; align-items: center;">  
+          <span class="material-symbols-outlined" style="color: #666; font-size: 11px;">directions_walk</span>
+          <div style="font-size: 11px; color: #666;" id="walkTimeETA">6 min walk </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Start Navigation icon -->
+    <span class="material-symbols-outlined" 
+      style="
+        color: #007aff; 
+        background: #e6f0ff; 
+        padding: 6px; 
+        border-radius: 50%;
+        font-size: 22px;
+        cursor: pointer;
+        transition: background 0.2s ease;
+      "
+      title="Start Navigation"
+      onclick="startNavigation()"
+    >
+      navigation
+    </span>
+  </div>
+</div>
 <div style="padding-top: 20px; margin: auto; display: flex; justify-content: center; gap: 10px; padding-bottom: 20px">
   <button class="pill pillact" id="button41">41</button>
 
@@ -734,9 +794,181 @@ let userMarker = null;
 let watchId = null;
 let lastPosition = null;
 
-document.getElementById('locateBtn').addEventListener('click', () => {
-  if (!navigator.geolocation) return alert('Geolocation not supported.');
+// at top (globals)
+let nearestStopCoords = null;       // { lat, lon }
 
+
+/* ------------------------------
+  Nearby Bus Stops Feature
+------------------------------ */
+
+const OSRM_BASE = "https://router.project-osrm.org/route/v1/foot";
+let allStops = [];
+let nearbyMarkers = [];
+
+/* 1️⃣ Load all GTFS stops from stops.txt */
+async function loadAllStops() {
+  if (allStops.length) return allStops; // cache
+  const res = await fetch('/stops.txt');
+  const text = await res.text();
+  const lines = text.trim().split('\n');
+  const headers = lines.shift().split(',');
+
+  allStops = lines.map(line => {
+    const parts = line.split(',');
+    const stop = {};
+    headers.forEach((h, i) => stop[h] = parts[i]);
+    stop.stop_lat = parseFloat(stop.stop_lat);
+    stop.stop_lon = parseFloat(stop.stop_lon);
+    return stop;
+  });
+  return allStops;
+}
+
+/* 2️⃣ Quick approximate (Haversine) distance in meters */
+function getApproxDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // metres
+  const φ1 = lat1 * Math.PI / 180;
+  const φ2 = lat2 * Math.PI / 180;
+  const Δφ = (lat2 - lat1) * Math.PI / 180;
+  const Δλ = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(Δφ / 2) ** 2 +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+/* 3️⃣ Get real walking distance & time via OSRM */
+async function getWalkingDistance(origin, destination) {
+  const url = `${OSRM_BASE}/${origin.lon},${origin.lat};${destination.lon},${destination.lat}?overview=false`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("OSRM request failed");
+  const data = await res.json();
+  if (!data.routes?.length) throw new Error("No route found");
+  const route = data.routes[0];
+  return {
+    distanceMeters: route.distance,
+    durationMinutes: Math.round(route.duration / 60)
+  };
+}
+
+/* 4️⃣ Find & show nearby stops on map */
+async function showNearbyStops() {
+  try {
+    if (!navigator.geolocation) {
+      console.warn("Geolocation not supported");
+      return;
+    }
+
+    // Get user's current location
+   // Get user's current location
+const pos = await new Promise((resolve, reject) => {
+  navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true });
+});
+
+// ✅ store only what we need so we never access .coords later
+const userLat = pos?.coords?.latitude;
+const userLon = pos?.coords?.longitude;
+
+if (typeof userLat !== 'number' || typeof userLon !== 'number') {
+  console.warn('Could not read geolocation coordinates');
+  alert('Could not read your location. Please allow location access and try again.');
+  return;
+}
+
+lastPosition = { lat: userLat, lon: userLon };
+
+const stops = await loadAllStops();
+
+// Step 1: filter by rough distance (<1 km)
+const nearbyCandidates = stops
+  .map(s => ({
+    ...s,
+    approx: getApproxDistance(userLat, userLon, s.stop_lat, s.stop_lon)
+  }))
+  .filter(s => Number.isFinite(s.approx) && s.approx < 1000)
+  .sort((a, b) => a.approx - b.approx)
+  .slice(0, 5); // top 5 nearby
+
+if (!nearbyCandidates.length) {
+  alert("No nearby stops found.");
+  return;
+}
+
+// Step 2: use OSRM for walking distance on the top few
+const enrichedStops = [];
+for (const stop of nearbyCandidates) {
+  try {
+    const route = await getWalkingDistance(
+      { lat: userLat, lon: userLon },
+      { lat: stop.stop_lat, lon: stop.stop_lon }
+    );
+    enrichedStops.push({
+      ...stop,
+      walkDistance: route.distanceMeters,
+      walkTime: route.durationMinutes
+    });
+  } catch {
+    // fallback to approximate
+    enrichedStops.push({
+      ...stop,
+      walkDistance: stop.approx,
+      walkTime: Math.round(stop.approx / 80) // assume 80m/min
+    });
+  }
+}
+
+// Step 3: sort by walking distance
+enrichedStops.sort((a, b) => a.walkDistance - b.walkDistance);
+
+// ✅ guard before using index 0
+const nearest = enrichedStops[0];
+if (!nearest || !Number.isFinite(nearest.stop_lat) || !Number.isFinite(nearest.stop_lon)) {
+  console.warn('Nearest stop missing coordinates:', nearest);
+  alert('Could not determine nearest stop.');
+  return;
+}
+
+// ✅ store for navigation
+nearestStopCoords = { lat: nearest.stop_lat, lon: nearest.stop_lon };
+
+// Step 4: Update “Nearest Stop” card
+document.getElementById("closestStop").style.display = "block";
+document.getElementById("stopName").textContent = nearest.stop_name || 'Unknown stop';
+document.getElementById("distance").textContent = `${(nearest.walkDistance / 1000).toFixed(2)} km away`;
+document.getElementById("walkTimeETA").textContent = `${nearest.walkTime} min walk`;
+
+    // Step 6: focus map
+  } catch (err) {
+    console.error(err);
+    console.warn("Failed to find nearby stops. Check console for details.");
+  }
+}
+
+function startNavigation() {
+  if (!nearestStopCoords) {
+    alert("No destination found yet. Tap the locate button to find nearby stops first.");
+    return;
+  }
+
+  let url = `https://www.google.com/maps/dir/?api=1&destination=${nearestStopCoords.lat},${nearestStopCoords.lon}&travelmode=walking`;
+
+  // ✅ only use origin if we have it
+  if (lastPosition && Number.isFinite(lastPosition.lat) && Number.isFinite(lastPosition.lon)) {
+    url = `https://www.google.com/maps/dir/?api=1&origin=${lastPosition.lat},${lastPosition.lon}&destination=${nearestStopCoords.lat},${nearestStopCoords.lon}&travelmode=walking`;
+  }
+
+  window.open(url, '_blank');
+}
+
+
+/* 5️⃣ Hook to your button */
+
+
+document.getElementById('locateBtn').addEventListener('click', () => {
+  if (!navigator.geolocation) return console.warn('Geolocation not supported.');
+  showNearbyStops();
   if (!watchId) {
     watchId = navigator.geolocation.watchPosition(
       (position) => {
