@@ -607,7 +607,7 @@ function showSlides(n) {
 </div>
 
 <div id="offlineAlert" style="
-  background-color: rgb(128, 128, 128);
+  background-color: #808080;
   padding: 15px;
   max-width: 350px;
   margin: auto;
@@ -1634,12 +1634,19 @@ function updateRouteDisplay(selectedId) {
 const busMarkers = {};
 async function updateBusPositions() {
   try {
-    const response = await fetch("https://busapi.caledontransit.com/");
-    const data = await response.json();
+    const [realtimeRes, stopTimesRes] = await Promise.all([
+      fetch("https://busapi.caledontransit.com/"),
+      fetch("/stop_times.txt")
+    ]);
 
-    // include both route 41 and 81 vehicles
-    data.entity
-      .filter(ent => ent.vehicle?.trip?.route_id === "41" || ent.vehicle?.trip?.route_id === "81" || ent.vehicle?.trip?.route_id === "25" || ent.vehicle?.trip?.route_id === "18")
+    const realtimeData = await realtimeRes.json();
+    const stopTimes = parseCSV(await stopTimesRes.text());
+
+    // include routes 41, 81, 25, and 18
+    realtimeData.entity
+      .filter(ent =>
+        ["41", "81", "25", "18"].includes(ent.vehicle?.trip?.route_id)
+      )
       .forEach(ent => {
         const veh = ent.vehicle;
         const id = veh.vehicle?.id || veh.id;
@@ -1648,70 +1655,119 @@ async function updateBusPositions() {
         const lon = veh.position?.longitude;
         if (!lat || !lon) return;
 
-        // const direction = tripDirectionMap[tripId];
-        // if (direction !== selectedDirection) {
-        //   if (busMarkers[id]) busMarkers[id].getElement().style.display = "none";
-        //   return;
-        // }
+        // get direction
+        let direction = tripDirectionMap[tripId];
+        if (!direction && tripId) {
+          const warning = document.getElementById('accuracyWarning');
+          warning.style.display = 'block';
+          const stem = String(tripId).split('-')[0];
+          direction = tripDirectionMap[stem];
+        }
 
-let direction = tripDirectionMap[tripId];
+        if (!direction) {
+          if (busMarkers[id]) busMarkers[id].getElement().style.display = "none";
+          return;
+        }
 
-// fallback: try the trip "stem" before the first dash (e.g. "24722862")
-if (!direction && tripId) {
-  const warning = document.getElementById('accuracyWarning');
-  warning.style.display = 'block';
-  const stem = String(tripId).split('-')[0];
-  direction = tripDirectionMap[stem];
-  console.log(direction);
-  console.log(stem);
-}
+        if (direction !== selectedDirection) {
+          if (busMarkers[id]) busMarkers[id].getElement().style.display = "none";
+          return;
+        }
 
-if (!direction) {
-  // no mapping found — hide marker if exists and skip
-  if (busMarkers[id]) busMarkers[id].getElement().style.display = "none";
-  return;
-}
+        // 🔹 Compute Adherence (Delay)
+        let adherenceStatus = "Good Service";
+        let adherenceColor = "#00c853";
+        let delayText = "";
 
-if (direction !== selectedDirection) {
-  if (busMarkers[id]) busMarkers[id].getElement().style.display = "none";
-  return;
-}
+        const scheduledRow = stopTimes.find(st => st.trip_id.startsWith(tripId));
+        if (scheduledRow) {
+          const schedStr = scheduledRow.departure_time;
+          const [h, m, s] = schedStr.split(":").map(Number);
+          const sched = new Date();
+          sched.setHours(h, m, s || 0, 0);
 
+          const realtimeTs = veh.timestamp ? new Date(veh.timestamp * 1000) : new Date();
+          const delayMin = (realtimeTs - sched) / 60000;
 
+          if (delayMin <= 2 && delayMin >= -2) {
+            adherenceStatus = "On Time";
+            adherenceColor = "#00c853";
+          } else if (delayMin > 2) {
+            adherenceColor = "#d32f2f";
+            const absthing = Math.abs(Math.round(delayMin));
+            adherenceStatus = `Delayed ${absthing} min`;
+          } else if (delayMin < 2) {
+            adherenceColor = "#ffa000";
+            const absthing = Math.abs(Math.round(delayMin));
+            adherenceStatus = `Early ${absthing} min`;
+          } else {
+            adherenceStatus = "No Info";
+            adherenceColor = "#808080";
+          }
+        }
+
+        // 🔹 Create or update marker
         if (!busMarkers[id]) {
-          const icon = document.createElement("img");
-          icon.src = "/New Project (8).png";
-          icon.style.width = "40px";
-          icon.style.height = "40px";
-          busMarkers[id] = new tt.Marker({ element: icon })
+          const iconEl = document.createElement("img");
+          iconEl.src = "/New Project (8).png";
+          iconEl.style.width = "40px";
+          iconEl.style.height = "40px";
+          const updateTime = new Date(realtimeData.header.timestamp * 1000);
+          const now = new Date();
+          const diffMs = now - updateTime; // difference in milliseconds
+          const diffMin = Math.round(diffMs / 60000); // convert to minutes
+
+
+          const popupHTML = `
+            <div style="font-family:'Outfit';font-size:14px;background:white;border-radius:12px;padding:17px;">
+              <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">
+                <span class="material-symbols-outlined">directions_bus</span>
+                <span style="padding:2px 6px;border-radius:10px;background:#f1f1f1;font-weight:600;">
+                  Bus ${veh.vehicle?.label || id}
+                </span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;color:${adherenceColor};margin-bottom:4px;">
+                <span>${adherenceStatus} ${delayText}</span>
+              </div>
+              <div style="font-size:12px;color:#666;margin-top:6px;">
+                Updated ${diffMin} mins ago
+              </div>
+            </div>
+          `;
+
+          busMarkers[id] = new tt.Marker({ element: iconEl })
             .setLngLat([lon, lat])
-            .setPopup(new tt.Popup().setHTML(`<div style="font-family: 'Outfit';font-size:14px;background: white;border-radius: 12px;padding: 17px;">
-      
-      
-      
-	  <div style="margin-bottom:6px;font-size:13px;color:#444;display: flex;gap: 10px;">
-<span class="material-symbols-outlined">
-directions_bus
-</span>
-        
-      <span style="padding:2px 6px;border-radius:10px;background:#f1f1f1;font-weight: 600;">Bus ${veh.vehicle?.label || id}</span></div><div style="
-    display: flex;
-    justify-content: space-between;
-"><div style="margin-top:6px;font-size: 12px;color:#666;">
-        Updated 10:58 AM
-      </div></div>
-    <div style="font-size: 12px;color:#666;">On time</div></div>`))
-          //  .setPopup(new tt.Popup().setHTML(`<b>Bus ${veh.vehicle?.label || id}</b>`))
+            .setPopup(new tt.Popup().setHTML(popupHTML))
             .addTo(map);
         } else {
           busMarkers[id].setLngLat([lon, lat]);
           busMarkers[id].getElement().style.display = "block";
+
+          // update popup dynamically
+          const popupHTML = `
+            <div style="font-family:'Outfit';font-size:14px;background:white;border-radius:12px;padding:17px;">
+              <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">
+                <span class="material-symbols-outlined">directions_bus</span>
+                <span style="padding:2px 6px;border-radius:10px;background:#f1f1f1;font-weight:600;">
+                  Bus ${veh.vehicle?.label || id}
+                </span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;color:${adherenceColor};margin-bottom:4px;">
+                <span>${adherenceStatus} ${delayText}</span>
+              </div>
+              <div style="font-size:12px;color:#666;margin-top:6px;">
+                Updated ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+              </div>
+            </div>
+          `;
+          busMarkers[id].getPopup().setHTML(popupHTML);
         }
       });
   } catch (err) {
     console.error("Bus update failed:", err);
   }
 }
+
 
 
 /* Dropdown listener (unchanged) */
