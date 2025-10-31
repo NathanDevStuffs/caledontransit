@@ -873,28 +873,33 @@ const userLon = pos?.coords?.longitude;
 
 if (typeof userLat !== 'number' || typeof userLon !== 'number') {
   console.warn('Could not read geolocation coordinates');
-  alert('Could not read your location. Please allow location access and try again.');
+  console.log('Could not read your location. Please allow location access and try again.');
   return;
 }
 
 lastPosition = { lat: userLat, lon: userLon };
 
 const stops = await loadAllStops();
-
-// Step 1: filter by rough distance (<1 km)
-const nearbyCandidates = stops
+// Step 1: compute all distances
+const candidates = stops
   .map(s => ({
     ...s,
     approx: getApproxDistance(userLat, userLon, s.stop_lat, s.stop_lon)
   }))
-  .filter(s => Number.isFinite(s.approx) && s.approx < 1000)
-  .sort((a, b) => a.approx - b.approx)
-  .slice(0, 5); // top 5 nearby
+  .filter(s => Number.isFinite(s.approx))
+  .sort((a, b) => a.approx - b.approx);
+
+// Step 2: pick top 5 within 1 km if any exist, otherwise top 5 overall
+let nearbyCandidates = candidates.filter(s => s.approx < 1000).slice(0, 5);
 
 if (!nearbyCandidates.length) {
-  alert("No nearby stops found.");
-  return;
+  // fallback: take top 5 closest regardless of distance
+  nearbyCandidates = candidates.slice(0, 5);
 }
+
+// continue with nearbyCandidates
+console.log(nearbyCandidates);
+
 
 // Step 2: use OSRM for walking distance on the top few
 const enrichedStops = [];
@@ -926,7 +931,7 @@ enrichedStops.sort((a, b) => a.walkDistance - b.walkDistance);
 const nearest = enrichedStops[0];
 if (!nearest || !Number.isFinite(nearest.stop_lat) || !Number.isFinite(nearest.stop_lon)) {
   console.warn('Nearest stop missing coordinates:', nearest);
-  alert('Could not determine nearest stop.');
+  console.log('Could not determine nearest stop.');
   return;
 }
 
@@ -948,7 +953,7 @@ document.getElementById("walkTimeETA").textContent = `${nearest.walkTime} min wa
 
 function startNavigation() {
   if (!nearestStopCoords) {
-    alert("No destination found yet. Tap the locate button to find nearby stops first.");
+    console.log("No destination found yet. Tap the locate button to find nearby stops first.");
     return;
   }
 
