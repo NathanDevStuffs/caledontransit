@@ -705,6 +705,8 @@ It looks like you’re offline right now. Live updates aren’t available, so we
 
   <button class="pill" id="button81">81</button>
   <button class="pill" id="button25">25</button>
+    <button class="pill" style="display: none;" id="button18">18</button>
+
 </div>
 
 
@@ -739,8 +741,14 @@ It looks like you’re offline right now. Live updates aren’t available, so we
     <option value="810005">Northbound to Caledon</option>
 </select>
 <select id="direction25select" style="padding: 10px; border: none; font-family: Montserrat; font-weight: bold; border-radius: 15px; background: rgb(221, 221, 221); height: 48px; margin: 0px; display: none;">
-  <option value="250032">Southbound to Peel Memorial Hospital</option>
-    <option value="250033">Northbound to Mayfield Road</option>
+  <option value="250032">Southbound</option>
+    <option value="250033">Northbound</option>
+</select>
+<select id="direction18select" style="padding: 10px; border: none; font-family: Montserrat; font-weight: bold; border-radius: 15px; background: rgb(221, 221, 221); height: 48px; margin: 0px; display: none;">
+  <option value="180227">Southbound</option>
+    <option value="180209">Northbound</option>
+        <option value="180231">Northbound A</option>
+
 </select>
 
 
@@ -1048,7 +1056,7 @@ async function buildTripDirectionMap() {
   const tripsRes = await fetch("/trips.txt");
   const trips = parseCSV(await tripsRes.text());
   trips.forEach(trip => {
-    if (trip.route_id === "41" || trip.route_id === "81" || trip.route_id === "25") {
+    if (trip.route_id === "41" || trip.route_id === "81" || trip.route_id === "25" || trip.route_id === "18") {
       tripDirectionMap[trip.trip_id] = trip.shape_id;
        const stem = trip.trip_id.split('-')[0];
       if (!tripDirectionMap[stem]) tripDirectionMap[stem] = trip.shape_id;
@@ -1350,7 +1358,7 @@ async function getStopDepartures(stopId) {
     });
 
     const now = new Date();
-    const allowedRoutes = new Set(['41', '81', '25']); // allow both routes
+    const allowedRoutes = new Set(['41', '81', '25', '18']); // allow both routes
     const departures = stopTimes
       // .filter(st => st.stop_id === stopId && allowedRoutes.has(tripRouteMap[st.trip_id]) && isTripRunningToday(st.trip_id, tripServiceMap))
 	.filter(st => st.stop_id === stopId && allowedRoutes.has(tripRouteMap[st.trip_id]))
@@ -1394,7 +1402,7 @@ async function getStopDepartures(stopId) {
 let selectedDirection = "410009"; // default direction: northbound
 
 // ---- Stop marker storage & guard ----
-const stopMarkers = { "410010": [], "410009": [], "810002": [], "810005": [], "250032": [], "250033": [] }; // northbound, southbound
+const stopMarkers = { "410010": [], "410009": [], "810002": [], "810005": [], "250032": [], "250033": [], "180209": [], "180231": [] }; // northbound, southbound
 let stopsLoaded = false; // prevents double-loading
 
 
@@ -1424,7 +1432,9 @@ async function loadRoute41Stops() {
     '810005': { route: '81', dir: 'Northbound' },
     '810002': { route: '81', dir: 'Southbound' },
     '250033': { route: '25', dir: 'Northbound' },
-    '250032': { route: '25', dir: 'Southbound' }
+    '250032': { route: '25', dir: 'Southbound' },
+    '180209': { route: '18', dir: 'Northbound' },
+    '180231': { route: '18', dir: 'Northbound A' },
   };
 
   // iterate only stops that belong to these routes
@@ -1559,7 +1569,10 @@ async function loadRoutes() {
 	  { id: '810005', color: '#FF3399', label: 'Northbound' },
     { id: '810002', color: '#3399FF', label: 'Southbound' },
     { id: '250033', color: '#FF3399', label: 'Northbound' },
-    { id: '250032', color: '#3399FF', label: 'Southbound' }
+    { id: '250032', color: '#3399FF', label: 'Southbound' },
+    { id: '180209', color: '#FF3399', label: 'Northbound' },
+    { id: '180231', color: '#FF3399', label: 'Northbound A' },
+
   ];
 
   for (const { id, color, label } of routes) {
@@ -1583,7 +1596,7 @@ async function loadRoutes() {
     });
 
     map.on('click', `routeLineLayer-${id}`, e => {
-const routes = ['81', '41', '25'];
+const routes = ['81', '41', '25', '18'];
 const routeNumber = routes.find(r => id.startsWith(r)) || '';
   popup.setLngLat(e.lngLat).setHTML(`<div class="tt-popup"><strong>Route ${routeNumber} - ${label}</strong></div>`).addTo(map);
 });
@@ -1593,7 +1606,7 @@ const routeNumber = routes.find(r => id.startsWith(r)) || '';
 
 /* Show/hide route (unchanged) */
 function updateRouteDisplay(selectedId) {
-  const routes = ['410009', '410010', '810002', '810005', '250033', '250032'];
+  const routes = ['410009', '410010', '810002', '810005', '250033', '250032', '180209', '180231'];
 
   // toggle route line layers if they exist
   routes.forEach(id => {
@@ -1626,7 +1639,7 @@ async function updateBusPositions() {
 
     // include both route 41 and 81 vehicles
     data.entity
-      .filter(ent => ent.vehicle?.trip?.route_id === "41" || ent.vehicle?.trip?.route_id === "81" || ent.vehicle?.trip?.route_id === "25")
+      .filter(ent => ent.vehicle?.trip?.route_id === "41" || ent.vehicle?.trip?.route_id === "81" || ent.vehicle?.trip?.route_id === "25" || ent.vehicle?.trip?.route_id === "18")
       .forEach(ent => {
         const veh = ent.vehicle;
         const id = veh.vehicle?.id || veh.id;
@@ -1672,7 +1685,23 @@ if (direction !== selectedDirection) {
           icon.style.height = "40px";
           busMarkers[id] = new tt.Marker({ element: icon })
             .setLngLat([lon, lat])
-            .setPopup(new tt.Popup().setHTML(`<b>Bus ${veh.vehicle?.label || id}</b>`))
+            .setPopup(new tt.Popup().setHTML(`<div style="font-family: 'Outfit';font-size:14px;background: white;border-radius: 12px;padding: 17px;">
+      
+      
+      
+	  <div style="margin-bottom:6px;font-size:13px;color:#444;display: flex;gap: 10px;">
+<span class="material-symbols-outlined">
+directions_bus
+</span>
+        
+      <span style="padding:2px 6px;border-radius:10px;background:#f1f1f1;font-weight: 600;">Bus ${veh.vehicle?.label || id}</span></div><div style="
+    display: flex;
+    justify-content: space-between;
+"><div style="margin-top:6px;font-size: 12px;color:#666;">
+        Updated 10:58 AM
+      </div></div>
+    <div style="font-size: 12px;color:#666;">On time</div></div>`))
+          //  .setPopup(new tt.Popup().setHTML(`<b>Bus ${veh.vehicle?.label || id}</b>`))
             .addTo(map);
         } else {
           busMarkers[id].setLngLat([lon, lat]);
@@ -1719,10 +1748,12 @@ dir81.addEventListener('change', (e) => {
 const dir41 = document.getElementById('direction41select');
 const dir81 = document.getElementById('direction81select');
 const dir25 = document.getElementById('direction25select');
+const dir18 = document.getElementById('direction18select');
 
 const button41 = document.getElementById('button41');
 const button81 = document.getElementById('button81');
 const button25 = document.getElementById('button25');
+const button18 = document.getElementById('button18');
 
 button41.addEventListener('click', () => {
   map.flyTo({ center: [-79.7254859,43.8333433], zoom: 11});
@@ -1757,6 +1788,19 @@ button25.addEventListener('click', () => {
   updateRouteDisplay(dir25.value);
 });
 
+button18.addEventListener('click', () => {
+  map.flyTo({ center: [-79.740512,43.689343], zoom: 12});
+  button41.classList.remove('pillact');
+  button81.classList.remove('pillact');
+  button25.classList.remove('pillact');
+  dir81.style.display = 'none';
+  dir41.style.display = 'none';
+  dir25.style.display = 'none';
+  dir18.style.display = 'inline-block';
+  updateRouteDisplay(dir18.value);
+});
+
+
 dir25.addEventListener('change', (e) => {
   updateRouteDisplay(e.target.value);
 });
@@ -1769,6 +1813,9 @@ dir81.addEventListener('change', (e) => {
   updateRouteDisplay(e.target.value);
 });
 
+dir18.addEventListener('change', (e) => {
+  updateRouteDisplay(e.target.value);
+});
 
 
 
