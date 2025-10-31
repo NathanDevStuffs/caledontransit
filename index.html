@@ -1744,7 +1744,7 @@ async function updateBusPositions() {
           busMarkers[id].getElement().style.display = "block";
 
           // update popup dynamically
-          const popupHTML = `
+           const popupHTML = `
             <div style="font-family:'Outfit';font-size:14px;background:white;border-radius:12px;padding:17px;">
               <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">
                 <span class="material-symbols-outlined">directions_bus</span>
@@ -1756,7 +1756,7 @@ async function updateBusPositions() {
                 <span>${adherenceStatus} ${delayText}</span>
               </div>
               <div style="font-size:12px;color:#666;margin-top:6px;">
-                Updated ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+                Updated ${diffMin} mins ago
               </div>
             </div>
           `;
