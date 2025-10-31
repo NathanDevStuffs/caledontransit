@@ -1828,46 +1828,46 @@ map.on('load', async () => {
     <!-- ✅ Route OK -->
     <li style="background: white; padding: 10px 14px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 4px; transition: transform 0.15s, box-shadow 0.15s; transform: none; width: unset !important; font-family: Outfit !important; height: unset !important; margin-bottom: unset !important;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 3px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 1px 4px rgba(0,0,0,0.1)';">
       <div style="display: flex; align-items: center; gap: 14px;">
-        <button class="pill" style="
-          width: 60px;
-          height: 40px;
-        ">41</button>
-        <p style="font-weight: 600; font-size: 15px; margin: 0;">Bolton</p>
-      </div>
-      <div style="display: flex; gap: 10px">
-      <span class="material-symbols-outlined" style="font-size: 20px; color: #00c853;"></span>
-      <span style="font-size: 13px; font-family: Outfit; font-weight: 600;"></span>
-      </div>
+    <button class="pill" style="width: 60px; height: 40px;">41</button>
+    <p style="font-weight: 600; font-size: 15px; margin: 0;">Bolton</p>
+  </div>
+
+  <!-- Delay icon + text container -->
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+    <span class="material-symbols-outlined" style="font-size: 20px; color: #d32f2f;"></span>
+    <span style="font-size: 13px; font-family: Outfit; font-weight: 600;" class="status"></span>
+    <p style="font-size: 12px; margin: 0; color: #d32f2f;" class="delayminutes"></p>
+  </div>
     </li>
 
     <!-- ⚠️ Minor delay -->
     <li style="background: white; padding: 10px 14px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 4px; transition: transform 0.15s, box-shadow 0.15s; transform: none; width: unset !important; font-family: Outfit !important; height: unset !important; margin-bottom: unset !important;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 3px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 1px 4px rgba(0,0,0,0.1)';">
       <div style="display: flex; align-items: center; gap: 14px;">
-        <button class="pill" style="
-          width: 60px;
-          height: 40px;
-        ">81</button>
-        <p style="font-weight: 600; font-size: 15px; margin: 0;">Mayfield West</p>
-      </div>
-      <div style="display: flex; gap: 10px">
-      <span class="material-symbols-outlined" style="font-size: 20px; color: #d32f2f;"></span>
-      <span style="font-size: 13px; font-family: Outfit; font-weight: 600;"></span>
-      </div>
+    <button class="pill" style="width: 60px; height: 40px;">81</button>
+    <p style="font-weight: 600; font-size: 15px; margin: 0;">Mayfield West</p>
+  </div>
+
+  <!-- Delay icon + text container -->
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+    <span class="material-symbols-outlined" style="font-size: 20px; color: #d32f2f;"></span>
+    <span style="font-size: 13px; font-family: Outfit; font-weight: 600;" class="status"></span>
+    <p style="font-size: 12px; margin: 0; color: #d32f2f;" class="delayminutes"></p>
+  </div>
     </li>
 
     <!-- ⛔ Major disruption -->
     <li style="background: white; padding: 10px 14px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 4px; transition: transform 0.15s, box-shadow 0.15s; transform: none; width: unset !important; font-family: Outfit !important; height: unset !important; margin-bottom: unset !important;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 3px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 1px 4px rgba(0,0,0,0.1)';">
       <div style="display: flex; align-items: center; gap: 14px;">
-        <button class="pill" style="
-          width: 60px;
-          height: 40px;
-        ">25</button>
-        <p style="font-weight: 600; font-size: 15px; margin: 0;">Edenbrooke</p>
-      </div>
-      <div style="display: flex; gap: 10px">
-      <span class="material-symbols-outlined" style="font-size: 20px; color: #d32f2f;"></span>
-      <span style="font-size: 13px; font-family: Outfit; font-weight: 600;"></span>
-      </div>
+    <button class="pill" style="width: 60px; height: 40px;">25</button>
+    <p style="font-weight: 600; font-size: 15px; margin: 0;">Edenbrooke</p>
+  </div>
+
+  <!-- Delay icon + text container -->
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+    <span class="material-symbols-outlined" style="font-size: 20px; color: #d32f2f;"></span>
+    <span style="font-size: 13px; font-family: Outfit; font-weight: 600;" class="status"></span>
+    <p style="font-size: 12px; margin: 0; color: #d32f2f;" class="delayminutes"></p>
+  </div>
     </li>
 
   </ul>
@@ -1928,21 +1928,26 @@ async function fetchServiceStatus() {
       console.log(avg, route)
       const card = document.querySelector(`#servicealerts li:nth-child(${route === "41" ? 1 : route === "81" ? 2 : 3})`);
       const icon = card.querySelector(".material-symbols-outlined");
-      const text = card.querySelector("span:last-child");
+      const text = card.querySelector(".status");
+      const delayminutes = card.querySelector(".delayminutes");
 
       if (avg <= 2) {
         icon.textContent = "check_circle";
         icon.style.color = "#00c853";
         text.textContent = "Good Service";
+        delayminutes.textContent = "";
       } else if (avg <= 20) {
         icon.textContent = "warning";
         icon.style.color = "#ffa000";
         text.textContent = "Minor Delays";
+        delayminutes.textContent = `Delays up to ${Math.round(avg)} mins`;
       } else if (avg > 20) {
         icon.textContent = "cancel";
         icon.style.color = "#d32f2f";
         text.textContent = "Significant Delays";
-      }
+        delayminutes.textContent = `Delays up to ${Math.round(avg)} mins`;
+
+      } 
     }
   } catch (err) {
     console.error("Service status update failed:", err);
