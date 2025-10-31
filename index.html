@@ -778,7 +778,7 @@ It looks like you’re offline right now. Live updates aren’t available, so we
 <!-- Scripts -->
 <script src="https://api.tomtom.com/maps-sdk-for-web/cdn/6.x/6.15.0/maps/maps-web.min.js"></script>
 <script>
-const WORKER_BASE = "https://caledon.nathanplayzofficial.workers.dev/";
+const WORKER_BASE = "https://busapi.caledontransit.com/";
 
 /* TomTom map init (unchanged) */
 const map = tt.map({
@@ -1621,7 +1621,7 @@ function updateRouteDisplay(selectedId) {
 const busMarkers = {};
 async function updateBusPositions() {
   try {
-    const response = await fetch("https://caledon.nathanplayzofficial.workers.dev/");
+    const response = await fetch("https://busapi.caledontransit.com/");
     const data = await response.json();
 
     // include both route 41 and 81 vehicles
@@ -1877,7 +1877,7 @@ map.on('load', async () => {
 async function fetchServiceStatus() {
   try {
     const [tripRes, stopRes] = await Promise.all([
-      fetch("https://caledon.nathanplayzofficial.workers.dev/tripupdate"),
+      fetch("https://busapi.caledontransit.com/tripupdate"),
       fetch("/stop_times.txt")
     ]);
 
