@@ -1675,36 +1675,67 @@ async function updateBusPositions() {
         }
 
         // 🔹 Compute Adherence (Delay)
-        let adherenceStatus = "Good Service";
-        let adherenceColor = "#00c853";
-        let delayText = "";
+        // 🔹 Compute Adherence (Delay)
+let adherenceStatus = "On Time";
+let adherenceColor = "#00c853";
+let delayText = "";
 
-        const scheduledRow = stopTimes.find(st => st.trip_id.startsWith(tripId));
-        if (scheduledRow) {
-          const schedStr = scheduledRow.departure_time;
-          const [h, m, s] = schedStr.split(":").map(Number);
-          const sched = new Date();
-          sched.setHours(h, m, s || 0, 0);
+// Calculate time since last update (used in both branches)
+const updateTime = new Date(realtimeData.header.timestamp * 1000);
+const now = new Date();
+const diffMs = now - updateTime;
+const diffMin = Math.round(diffMs / 60000);
 
-          const realtimeTs = veh.timestamp ? new Date(veh.timestamp * 1000) : new Date();
-          const delayMin = (realtimeTs - sched) / 60000;
+if (!busMarkers[id]) {
+  const iconEl = document.createElement("img");
+  iconEl.src = "/New Project (8).png";
+  iconEl.style.width = "40px";
+  iconEl.style.height = "40px";
 
-          if (delayMin <= 2 && delayMin >= -2) {
-            adherenceStatus = "On Time";
-            adherenceColor = "#00c853";
-          } else if (delayMin > 2) {
-            adherenceColor = "#d32f2f";
-            const absthing = Math.abs(Math.round(delayMin));
-            adherenceStatus = `Delayed ${absthing} min`;
-          } else if (delayMin < 2) {
-            adherenceColor = "#ffa000";
-            const absthing = Math.abs(Math.round(delayMin));
-            adherenceStatus = `Early ${absthing} min`;
-          } else {
-            adherenceStatus = "No Info";
-            adherenceColor = "#808080";
-          }
-        }
+  const popupHTML = `
+    <div style="font-family:'Outfit';font-size:14px;background:white;border-radius:12px;padding:17px;">
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">
+        <span class="material-symbols-outlined">directions_bus</span>
+        <span style="padding:2px 6px;border-radius:10px;background:#f1f1f1;font-weight:600;">
+          Bus ${veh.vehicle?.label || id}
+        </span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;color:${adherenceColor};margin-bottom:4px;">
+        <span>${adherenceStatus} ${delayText}</span>
+      </div>
+      <div style="font-size:12px;color:#666;margin-top:6px;">
+        Updated ${diffMin} mins ago
+      </div>
+    </div>
+  `;
+
+  busMarkers[id] = new tt.Marker({ element: iconEl })
+    .setLngLat([lon, lat])
+    .setPopup(new tt.Popup().setHTML(popupHTML))
+    .addTo(map);
+} else {
+  busMarkers[id].setLngLat([lon, lat]);
+  busMarkers[id].getElement().style.display = "block";
+
+  const popupHTML = `
+    <div style="font-family:'Outfit';font-size:14px;background:white;border-radius:12px;padding:17px;">
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">
+        <span class="material-symbols-outlined">directions_bus</span>
+        <span style="padding:2px 6px;border-radius:10px;background:#f1f1f1;font-weight:600;">
+          Bus ${veh.vehicle?.label || id}
+        </span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;color:${adherenceColor};margin-bottom:4px;">
+        <span>${adherenceStatus} ${delayText}</span>
+      </div>
+      <div style="font-size:12px;color:#666;margin-top:6px;">
+        Updated ${diffMin} mins ago
+      </div>
+    </div>
+  `;
+  busMarkers[id].getPopup().setHTML(popupHTML);
+}
+
 
         // 🔹 Create or update marker
         if (!busMarkers[id]) {
