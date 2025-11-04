@@ -708,6 +708,17 @@ It looks like you’re offline right now. Live updates aren’t available, so we
     <button class="pill" style="display: none;" id="button18">18</button>
 
 </div>
+<h1 style="
+    color: black;
+    font-family: Outfit;
+    text-align: center;
+    font-size: 1em;
+">Interchangable Zum Routes</h1>
+<div style="padding-top: 10px; margin: auto; display: flex; justify-content: center; gap: 10px; padding-bottom: 20px">
+  <button class="pill" id="button501" style="background: #c24947 !important;">501</button>
+  <button class="pill" id="button502" style="background: #c24947 !important;">502</button>
+
+</div>
 
 
 <div style="
@@ -748,9 +759,15 @@ It looks like you’re offline right now. Live updates aren’t available, so we
   <option value="180227">Southbound</option>
     <option value="180209">Northbound</option>
         <option value="180231">Northbound A</option>
-
 </select>
-
+<select id="direction501select" style="padding: 10px; border: none; font-family: Montserrat; font-weight: bold; border-radius: 15px; background: rgb(221, 221, 221); height: 48px; margin: 0px; display: none;">
+  <option value="5010073">Eastbound to SmartVMC Terminal</option>
+    <option value="5010072">Westbound to Downtown Brampton</option>
+</select>
+<select id="direction502select" style="padding: 10px; border: none; font-family: Montserrat; font-weight: bold; border-radius: 15px; background: rgb(221, 221, 221); height: 48px; margin: 0px; display: none;">
+  <option value="5020016">Southbound to Square One</option>
+    <option value="5020013">Northbound to Sandalwood Loop</option>
+</select>
 
 <!-- <select id="directionSelect" style="
     padding: 10px;
@@ -1056,7 +1073,7 @@ async function buildTripDirectionMap() {
   const tripsRes = await fetch("/trips.txt");
   const trips = parseCSV(await tripsRes.text());
   trips.forEach(trip => {
-    if (trip.route_id === "41" || trip.route_id === "81" || trip.route_id === "25" || trip.route_id === "18") {
+    if (trip.route_id === "41" || trip.route_id === "81" || trip.route_id === "25" || trip.route_id === "18" || trip.route_id === "501" || trip.route_id === "502") {
       tripDirectionMap[trip.trip_id] = trip.shape_id;
        const stem = trip.trip_id.split('-')[0];
       if (!tripDirectionMap[stem]) tripDirectionMap[stem] = trip.shape_id;
@@ -1358,7 +1375,7 @@ async function getStopDepartures(stopId) {
     });
 
     const now = new Date();
-    const allowedRoutes = new Set(['41', '81', '25', '18']); // allow both routes
+    const allowedRoutes = new Set(['41', '81', '25', '18', '501', '502']); // allow both routes
     const departures = stopTimes
       // .filter(st => st.stop_id === stopId && allowedRoutes.has(tripRouteMap[st.trip_id]) && isTripRunningToday(st.trip_id, tripServiceMap))
 	.filter(st => st.stop_id === stopId && allowedRoutes.has(tripRouteMap[st.trip_id]))
@@ -1402,7 +1419,7 @@ async function getStopDepartures(stopId) {
 let selectedDirection = "410009"; // default direction: northbound
 
 // ---- Stop marker storage & guard ----
-const stopMarkers = { "410010": [], "410009": [], "810002": [], "810005": [], "250032": [], "250033": [], "180209": [], "180231": [] }; // northbound, southbound
+const stopMarkers = { "410010": [], "410009": [], "810002": [], "810005": [], "250032": [], "250033": [], "180209": [], "180231": [], "5010073": [], "5010072": [], "5020016": [], "5020013": [] }; // northbound, southbound
 let stopsLoaded = false; // prevents double-loading
 
 
@@ -1435,6 +1452,10 @@ async function loadRoute41Stops() {
     '250032': { route: '25', dir: 'Southbound' },
     '180209': { route: '18', dir: 'Northbound' },
     '180231': { route: '18', dir: 'Northbound A' },
+    '5010073': { route: '501', dir: 'Eastbound' },
+    '5010072': { route: '501', dir: 'Westbound' },
+    '5020016': { route: '502', dir: 'Southbound' },
+    '5020013': { route: '502', dir: 'Northbound' },
   };
 
   // iterate only stops that belong to these routes
@@ -1512,6 +1533,9 @@ const depHtml = departures.length
         if (d.routeId === "41") routeName = "Bolton";
         else if (d.routeId === "81") routeName = "Mayfield West";
         else if (d.routeId === "25") routeName = "Edenbrooke";
+        else if (d.routeId === "18") routeName = "Dixie";
+        else if (d.routeId === "501") routeName = "Zum Queen";
+        else if (d.routeId === "502") routeName = "Zum Main";
         else routeName = "Unknown Route";
       }
 
@@ -1572,6 +1596,10 @@ async function loadRoutes() {
     { id: '250032', color: '#3399FF', label: 'Southbound' },
     { id: '180209', color: '#FF3399', label: 'Northbound' },
     { id: '180231', color: '#FF3399', label: 'Northbound A' },
+    { id: '5010073', color: '#c24947', label: 'Eastbound' },
+    { id: '5010072', color: '#c24947', label: 'Westbound' },
+    { id: '5020016', color: '#47a3c2', label: 'Southbound' },
+    { id: '5020013', color: '#47a3c2', label: 'Northbound' },
 
   ];
 
@@ -1596,7 +1624,7 @@ async function loadRoutes() {
     });
 
     map.on('click', `routeLineLayer-${id}`, e => {
-const routes = ['81', '41', '25', '18'];
+const routes = ['81', '41', '25', '18', '501', '502'];
 const routeNumber = routes.find(r => id.startsWith(r)) || '';
   popup.setLngLat(e.lngLat).setHTML(`<div class="tt-popup"><strong>Route ${routeNumber} - ${label}</strong></div>`).addTo(map);
 });
@@ -1606,9 +1634,14 @@ const routeNumber = routes.find(r => id.startsWith(r)) || '';
 
 /* Show/hide route (unchanged) */
 function updateRouteDisplay(selectedId) {
-  const routes = ['410009', '410010', '810002', '810005', '250033', '250032', '180209', '180231'];
+  // Remove all existing bus markers from the map
+  Object.values(busMarkers).forEach(marker => {
+    marker.remove();
+  });
+  Object.keys(busMarkers).forEach(key => delete busMarkers[key]);
 
-  // toggle route line layers if they exist
+  const routes = ['410009', '410010', '810002', '810005', '250033', '250032', '180209', '180231', '5010073', '5010072', '5020016', '5020013'];
+
   routes.forEach(id => {
     const visibility = id === selectedId ? 'visible' : 'none';
     if (map.getLayer(`routeLineLayer-${id}`)) {
@@ -1616,7 +1649,6 @@ function updateRouteDisplay(selectedId) {
     }
   });
 
-  // toggle stop markers for all directions (41 & 81)
   routes.forEach(id => {
     if (!stopMarkers[id]) return;
     stopMarkers[id].forEach(marker => {
@@ -1626,8 +1658,9 @@ function updateRouteDisplay(selectedId) {
   });
 
   selectedDirection = selectedId;
-  updateBusPositions(); // keep buses in sync
+  updateBusPositions(); // fetch fresh ones
 }
+
 
 
 /* Live buses (unchanged) */
@@ -1646,7 +1679,7 @@ async function updateBusPositions() {
     // include routes 41, 81, 25, and 18
     realtimeData.entity
       .filter(ent =>
-        ["41", "81", "25", "18"].includes(ent.vehicle?.trip?.route_id)
+        ["41", "81", "25", "18", "501", "502"].includes(ent.vehicle?.trip?.route_id)
       )
       .forEach(ent => {
         const veh = ent.vehicle;
@@ -1806,11 +1839,15 @@ const dir41 = document.getElementById('direction41select');
 const dir81 = document.getElementById('direction81select');
 const dir25 = document.getElementById('direction25select');
 const dir18 = document.getElementById('direction18select');
+const dir501 = document.getElementById('direction501select');
+const dir502 = document.getElementById('direction502select');
 
 const button41 = document.getElementById('button41');
 const button81 = document.getElementById('button81');
 const button25 = document.getElementById('button25');
 const button18 = document.getElementById('button18');
+const button501 = document.getElementById('button501');
+const button502 = document.getElementById('button502');
 
 button41.addEventListener('click', () => {
   map.flyTo({ center: [-79.7254859,43.8333433], zoom: 11});
@@ -1820,6 +1857,9 @@ button41.addEventListener('click', () => {
   dir41.style.display = 'inline-block';
   dir81.style.display = 'none';
   dir25.style.display = 'none';
+  dir18.style.display = 'none';
+  dir501.style.display = 'none';
+  dir502.style.display = 'none';
   updateRouteDisplay(dir41.value);
 });
 
@@ -1831,6 +1871,9 @@ button81.addEventListener('click', () => {
   dir25.style.display = 'none';
   dir41.style.display = 'none';
   dir81.style.display = 'inline-block';
+  dir18.style.display = 'none';
+  dir501.style.display = 'none';
+  dir502.style.display = 'none';
   updateRouteDisplay(dir81.value);
 });
 
@@ -1842,6 +1885,9 @@ button25.addEventListener('click', () => {
   dir81.style.display = 'none';
   dir41.style.display = 'none';
   dir25.style.display = 'inline-block';
+  dir18.style.display = 'none';
+  dir501.style.display = 'none';
+  dir502.style.display = 'none';
   updateRouteDisplay(dir25.value);
 });
 
@@ -1854,7 +1900,37 @@ button18.addEventListener('click', () => {
   dir41.style.display = 'none';
   dir25.style.display = 'none';
   dir18.style.display = 'inline-block';
+  dir501.style.display = 'none';
+  dir502.style.display = 'none';
   updateRouteDisplay(dir18.value);
+});
+
+button501.addEventListener('click', () => {
+  map.flyTo({ center: [-79.630073,43.589226], zoom: 12});
+  button41.classList.remove('pillact');
+  button81.classList.remove('pillact');
+  button25.classList.remove('pillact');
+  dir81.style.display = 'none';
+  dir41.style.display = 'none';
+  dir25.style.display = 'none';
+  dir18.style.display = 'none';
+  dir501.style.display = 'inline-block';
+  dir502.style.display = 'none';
+  updateRouteDisplay(dir501.value);
+});
+
+button502.addEventListener('click', () => {
+  map.flyTo({ center: [-79.630073,43.589226], zoom: 12});
+  button41.classList.remove('pillact');
+  button81.classList.remove('pillact');
+  button25.classList.remove('pillact');
+  dir81.style.display = 'none';
+  dir41.style.display = 'none';
+  dir25.style.display = 'none';
+  dir18.style.display = 'none';
+  dir501.style.display = 'none';
+  dir502.style.display = 'inline-block';
+  updateRouteDisplay(dir502.value);
 });
 
 
@@ -1871,6 +1947,14 @@ dir81.addEventListener('change', (e) => {
 });
 
 dir18.addEventListener('change', (e) => {
+  updateRouteDisplay(e.target.value);
+});
+
+dir501.addEventListener('change', (e) => {
+  updateRouteDisplay(e.target.value);
+});
+
+dir502.addEventListener('change', (e) => {
   updateRouteDisplay(e.target.value);
 });
 
