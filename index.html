@@ -713,10 +713,11 @@ It looks like you’re offline right now. Live updates aren’t available, so we
     font-family: Outfit;
     text-align: center;
     font-size: 1em;
-">Interchangable Zum Routes</h1>
+">Zum Routes</h1>
 <div style="padding-top: 10px; margin: auto; display: flex; justify-content: center; gap: 10px; padding-bottom: 20px">
   <button class="pill" id="button501" style="background: #c24947 !important;">501</button>
   <button class="pill" id="button502" style="background: #c24947 !important;">502</button>
+  <button class="pill" id="button505" style="background: #c24947 !important;">505</button>
 
 </div>
 
@@ -768,7 +769,12 @@ It looks like you’re offline right now. Live updates aren’t available, so we
   <option value="5020016">Southbound to Square One</option>
     <option value="5020013">Northbound to Sandalwood Loop</option>
 </select>
-
+<select id="direction505select" style="padding: 10px; border: none; font-family: Montserrat; font-weight: bold; border-radius: 15px; background: rgb(221, 221, 221); height: 48px; margin: 0px; display: none;">
+  <option value="5050005">East to Malton GO Station (505)</option>
+  <option value="5050008">East to Viscount Station (505A)</option>
+  <option value="5050006">West to Mount Pleasant GO Station (505)</option>
+  <option value="5050010">West to Viscount Station (505A)</option>
+</select>
 <!-- <select id="directionSelect" style="
     padding: 10px;
     border: none;
@@ -1073,7 +1079,7 @@ async function buildTripDirectionMap() {
   const tripsRes = await fetch("/trips.txt");
   const trips = parseCSV(await tripsRes.text());
   trips.forEach(trip => {
-    if (trip.route_id === "41" || trip.route_id === "81" || trip.route_id === "25" || trip.route_id === "18" || trip.route_id === "501" || trip.route_id === "502") {
+    if (trip.route_id === "41" || trip.route_id === "81" || trip.route_id === "25" || trip.route_id === "18" || trip.route_id === "501" || trip.route_id === "502" || trip.route_id === "505") {
       tripDirectionMap[trip.trip_id] = trip.shape_id;
        const stem = trip.trip_id.split('-')[0];
       if (!tripDirectionMap[stem]) tripDirectionMap[stem] = trip.shape_id;
@@ -1375,7 +1381,7 @@ async function getStopDepartures(stopId) {
     });
 
     const now = new Date();
-    const allowedRoutes = new Set(['41', '81', '25', '18', '501', '502']); // allow both routes
+    const allowedRoutes = new Set(['41', '81', '25', '18', '501', '502', '505']); // allow both routes
     const departures = stopTimes
       // .filter(st => st.stop_id === stopId && allowedRoutes.has(tripRouteMap[st.trip_id]) && isTripRunningToday(st.trip_id, tripServiceMap))
 	.filter(st => st.stop_id === stopId && allowedRoutes.has(tripRouteMap[st.trip_id]))
@@ -1419,7 +1425,7 @@ async function getStopDepartures(stopId) {
 let selectedDirection = "410009"; // default direction: northbound
 
 // ---- Stop marker storage & guard ----
-const stopMarkers = { "410010": [], "410009": [], "810002": [], "810005": [], "250032": [], "250033": [], "180209": [], "180231": [], "5010073": [], "5010072": [], "5020016": [], "5020013": [] }; // northbound, southbound
+const stopMarkers = { "410010": [], "410009": [], "810002": [], "810005": [], "250032": [], "250033": [], "180209": [], "180231": [], "5010073": [], "5010072": [], "5020016": [], "5020013": [], "5050005": [], "5050008": [], "5050006": [], "5050010": [] }; // northbound, southbound
 let stopsLoaded = false; // prevents double-loading
 
 
@@ -1456,6 +1462,10 @@ async function loadRoute41Stops() {
     '5010072': { route: '501', dir: 'Westbound' },
     '5020016': { route: '502', dir: 'Southbound' },
     '5020013': { route: '502', dir: 'Northbound' },
+    '5050005': { route: '505', dir: 'East to Malton GO Station' },
+    '5050008': { route: '505A', dir: 'East to Viscount Station (A)' },
+    '5050006': { route: '505', dir: 'West to Mount Pleasant GO Station' },
+    '5050010': { route: '505A', dir: 'West to Trinity Commons Terminal' },
   };
 
   // iterate only stops that belong to these routes
@@ -1600,6 +1610,10 @@ async function loadRoutes() {
     { id: '5010072', color: '#c24947', label: 'Westbound' },
     { id: '5020016', color: '#47a3c2', label: 'Southbound' },
     { id: '5020013', color: '#47a3c2', label: 'Northbound' },
+    { id: '5050005', color: '#ffa500', label: 'East to Malton GO Station' },
+    { id: '5050008', color: '#ffb84d', label: 'East to Viscount Station (A)' },
+    { id: '5050006', color: '#ffa500', label: 'West to Mount Pleasant GO Station' },
+    { id: '5050010', color: '#ffb84d', label: 'West to Trinity Commons Terminal (A)' },
 
   ];
 
@@ -1640,7 +1654,7 @@ function updateRouteDisplay(selectedId) {
   });
   Object.keys(busMarkers).forEach(key => delete busMarkers[key]);
 
-  const routes = ['410009', '410010', '810002', '810005', '250033', '250032', '180209', '180231', '5010073', '5010072', '5020016', '5020013'];
+  const routes = ['410009', '410010', '810002', '810005', '250033', '250032', '180209', '180231', '5010073', '5010072', '5020016', '5020013', '5050005', '5050008', '5050006', '5050010'];
 
   routes.forEach(id => {
     const visibility = id === selectedId ? 'visible' : 'none';
@@ -1676,7 +1690,7 @@ async function updateBusPositions() {
     const realtimeData = await realtimeRes.json();
     const stopTimes = parseCSV(await stopTimesRes.text());
 
-    const activeRoutes = ["41", "81", "25", "18", "501", "502"];
+    const activeRoutes = ["41", "81", "25", "18", "501", "502","505"];
 
     // Calculate how old the data is
     const updateTime = new Date(realtimeData.header.timestamp * 1000);
@@ -1845,6 +1859,7 @@ const dir25 = document.getElementById('direction25select');
 const dir18 = document.getElementById('direction18select');
 const dir501 = document.getElementById('direction501select');
 const dir502 = document.getElementById('direction502select');
+const dir505 = document.getElementById('direction505select');
 
 const button41 = document.getElementById('button41');
 const button81 = document.getElementById('button81');
@@ -1852,6 +1867,7 @@ const button25 = document.getElementById('button25');
 const button18 = document.getElementById('button18');
 const button501 = document.getElementById('button501');
 const button502 = document.getElementById('button502');
+const button505 = document.getElementById('button505');
 
 button41.addEventListener('click', () => {
   map.flyTo({ center: [-79.7254859,43.8333433], zoom: 11});
@@ -1864,6 +1880,7 @@ button41.addEventListener('click', () => {
   dir18.style.display = 'none';
   dir501.style.display = 'none';
   dir502.style.display = 'none';
+  dir505.style.display = 'none';
   updateRouteDisplay(dir41.value);
 });
 
@@ -1878,6 +1895,7 @@ button81.addEventListener('click', () => {
   dir18.style.display = 'none';
   dir501.style.display = 'none';
   dir502.style.display = 'none';
+  dir505.style.display = 'none';
   updateRouteDisplay(dir81.value);
 });
 
@@ -1892,6 +1910,7 @@ button25.addEventListener('click', () => {
   dir18.style.display = 'none';
   dir501.style.display = 'none';
   dir502.style.display = 'none';
+  dir505.style.display = 'none';
   updateRouteDisplay(dir25.value);
 });
 
@@ -1906,6 +1925,7 @@ button18.addEventListener('click', () => {
   dir18.style.display = 'inline-block';
   dir501.style.display = 'none';
   dir502.style.display = 'none';
+  dir505.style.display = 'none';
   updateRouteDisplay(dir18.value);
 });
 
@@ -1920,6 +1940,7 @@ button501.addEventListener('click', () => {
   dir18.style.display = 'none';
   dir501.style.display = 'inline-block';
   dir502.style.display = 'none';
+  dir505.style.display = 'none';
   updateRouteDisplay(dir501.value);
 });
 
@@ -1934,7 +1955,23 @@ button502.addEventListener('click', () => {
   dir18.style.display = 'none';
   dir501.style.display = 'none';
   dir502.style.display = 'inline-block';
+  dir505.style.display = 'none';
   updateRouteDisplay(dir502.value);
+});
+
+button505.addEventListener('click', () => {
+  map.flyTo({ center: [-79.630529,43.686823], zoom: 11});
+  button41.classList.remove('pillact');
+  button81.classList.remove('pillact');
+  button25.classList.remove('pillact');
+  dir81.style.display = 'none';
+  dir41.style.display = 'none';
+  dir25.style.display = 'none';
+  dir18.style.display = 'none';
+  dir501.style.display = 'none';
+  dir502.style.display = 'none';
+  dir505.style.display = 'inline-block';
+  updateRouteDisplay(dir505.value);
 });
 
 
@@ -1962,6 +1999,9 @@ dir502.addEventListener('change', (e) => {
   updateRouteDisplay(e.target.value);
 });
 
+dir505.addEventListener('change', (e) => {
+  updateRouteDisplay(e.target.value);
+});
 
 
 /* Init */
