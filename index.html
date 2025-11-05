@@ -1676,15 +1676,13 @@ async function updateBusPositions() {
     const realtimeData = await realtimeRes.json();
     const stopTimes = parseCSV(await stopTimesRes.text());
 
-    // Define which routes to track
     const activeRoutes = ["41", "81", "25", "18", "501", "502"];
 
-    // Get the global timestamp for “last updated” calculation
+    // Calculate how old the data is
     const updateTime = new Date(realtimeData.header.timestamp * 1000);
     const now = new Date();
     const diffMin = Math.round((now - updateTime) / 60000);
 
-    // Iterate through each vehicle in GTFS-RT feed
     realtimeData.entity
       .filter(ent => activeRoutes.includes(ent.vehicle?.trip?.route_id))
       .forEach(ent => {
@@ -1695,54 +1693,44 @@ async function updateBusPositions() {
         const lon = veh.position?.longitude;
         if (!lat || !lon) return;
 
-        // Determine the direction of travel (via GTFS mapping)
+        // Determine trip direction
         let direction = tripDirectionMap[tripId];
         if (!direction && tripId) {
-          // Try fallback to stem ID (e.g., "410010-01")
           const stem = String(tripId).split('-')[0];
           direction = tripDirectionMap[stem];
-
-          // Show accuracy warning if we can’t confidently map
-          const warning = document.getElementById('accuracyWarning');
-          warning.style.display = 'block';
+          document.getElementById('accuracyWarning').style.display = 'block';
         }
 
-        // Hide marker if not on the active route/direction
         if (!direction || direction !== selectedDirection) {
           if (busMarkers[id]) busMarkers[id].getElement().style.display = "none";
           return;
         }
 
-        // ---- Compute On-time / Early / Delay Status ----
+        // ---- Adherence / Delay ----
         let adherenceStatus = "No Info";
         let adherenceColor = "#808080";
-        let delayText = "";
 
         const scheduledRow = stopTimes.find(st => st.trip_id.startsWith(tripId));
         if (scheduledRow) {
-          const schedStr = scheduledRow.departure_time;
-          const [h, m, s] = schedStr.split(":").map(Number);
+          const [h, m, s] = scheduledRow.departure_time.split(":").map(Number);
           const sched = new Date();
           sched.setHours(h, m, s || 0, 0);
-
           const realtimeTs = veh.timestamp ? new Date(veh.timestamp * 1000) : new Date();
           const delayMin = (realtimeTs - sched) / 60000;
 
           if (delayMin <= 2 && delayMin >= -2) {
             adherenceStatus = "On Time";
-            adherenceColor = "#00c853"; // green
+            adherenceColor = "#00c853";
           } else if (delayMin > 2) {
-            const absDelay = Math.abs(Math.round(delayMin));
-            adherenceStatus = `Delayed ${absDelay} min`;
-            adherenceColor = "#d32f2f"; // red
+            adherenceStatus = `Delayed ${Math.round(delayMin)} min`;
+            adherenceColor = "#d32f2f";
           } else if (delayMin < -2) {
-            const absEarly = Math.abs(Math.round(delayMin));
-            adherenceStatus = `Early ${absEarly} min`;
-            adherenceColor = "#ffa000"; // amber
+            adherenceStatus = `Early ${Math.abs(Math.round(delayMin))} min`;
+            adherenceColor = "#ffa000";
           }
         }
 
-        // ---- Build the popup HTML ----
+        // ---- Popup HTML ----
         const popupHTML = `
           <div style="font-family:'Outfit';font-size:14px;background:white;border-radius:12px;padding:17px;">
             <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">
@@ -1752,7 +1740,7 @@ async function updateBusPositions() {
               </span>
             </div>
             <div style="display:flex;align-items:center;gap:6px;color:${adherenceColor};margin-bottom:4px;">
-              <span>${adherenceStatus} ${delayText}</span>
+              <span>${adherenceStatus}</span>
             </div>
             <div style="font-size:12px;color:#666;margin-top:6px;">
               Updated ${diffMin} mins ago
@@ -1760,28 +1748,62 @@ async function updateBusPositions() {
           </div>
         `;
 
-        // ---- Create or update the marker ----
+        // ---- Create or update marker ----
         if (!busMarkers[id]) {
+          // Create new marker
           const iconEl = document.createElement("img");
           iconEl.src = "/New Project (8).png";
           iconEl.style.width = "40px";
           iconEl.style.height = "40px";
 
-          busMarkers[id] = new tt.Marker({ element: iconEl })
+          const marker = new tt.Marker({ element: iconEl })
             .setLngLat([lon, lat])
             .setPopup(new tt.Popup().setHTML(popupHTML))
             .addTo(map);
+
+          busMarkers[id] = marker;
+          marker.currentLngLat = [lon, lat];
         } else {
-          // Update existing bus marker position + popup
-          busMarkers[id].setLngLat([lon, lat]);
-          busMarkers[id].getElement().style.display = "block";
+          // Animate movement smoothly
+          animateMarkerMove(busMarkers[id], [lon, lat]);
+
+          // Update popup info
           busMarkers[id].getPopup().setHTML(popupHTML);
+          busMarkers[id].getElement().style.display = "block";
         }
       });
   } catch (err) {
     console.error("Bus update failed:", err);
   }
 }
+
+/**
+ * Smoothly animate a marker to its new position
+ * @param {tt.Marker} marker - TomTom marker object
+ * @param {[number, number]} newPos - [lon, lat] new position
+ */
+function animateMarkerMove(marker, newPos) {
+  const duration = 5000; // ms
+  const frames = 60;
+  const interval = duration / frames;
+
+  const startPos = marker.currentLngLat || marker.getLngLat().toArray();
+  const [startLon, startLat] = startPos;
+  const [endLon, endLat] = newPos;
+
+  let step = 0;
+  const stepFn = () => {
+    step++;
+    const t = step / frames; // progress (0 → 1)
+    const lon = startLon + (endLon - startLon) * t;
+    const lat = startLat + (endLat - startLat) * t;
+    marker.setLngLat([lon, lat]);
+    if (step < frames) requestAnimationFrame(stepFn);
+    else marker.currentLngLat = newPos; // store final position
+  };
+  requestAnimationFrame(stepFn);
+}
+
 
 
 
