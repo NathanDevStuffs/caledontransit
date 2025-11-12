@@ -734,7 +734,13 @@ It looks like you’re offline right now. Live updates aren’t available, so we
   padding: 6px 10px;
   height: 60px;
   backdrop-filter: blur(10px);
-  max-width: 600px; /* ✅ limits total width */
+  max-width: 95%;
+  overflow-x: visible; /* ✅ fix: dropdowns are no longer clipped */
+  scrollbar-width: none;
+}
+
+.direction-container::-webkit-scrollbar {
+  display: none;
 }
 
 /* direction dropdowns */
@@ -749,6 +755,7 @@ It looks like you’re offline right now. Live updates aren’t available, so we
   color: #111;
   cursor: pointer;
   transition: background 0.15s ease;
+  flex-shrink: 0;
 }
 
 .direction-select:hover,
@@ -771,6 +778,7 @@ It looks like you’re offline right now. Live updates aren’t available, so we
   justify-content: center;
   padding: 0;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  flex-shrink: 0;
 }
 
 .locate-btn:hover {
@@ -786,6 +794,7 @@ It looks like you’re offline right now. Live updates aren’t available, so we
 /* pill dropdown */
 .pill-dropdown {
   position: relative;
+  flex-shrink: 0;
 }
 
 /* --- Improved Route Menu (light version) --- */
@@ -805,12 +814,10 @@ It looks like you’re offline right now. Live updates aren’t available, so we
   z-index: 9999;
 }
 
-/* show dropdown */
 .pill-menu.show {
   display: block;
 }
 
-/* Each route row */
 .pill-menu li {
   padding: 6px 12px;
   cursor: pointer;
@@ -859,11 +866,36 @@ It looks like you’re offline right now. Live updates aren’t available, so we
   font-weight: 600;
 }
 
-/* Optional: Divider before Zum section */
+/* Divider before Zum section */
 .pill-menu .zum:first-of-type {
   border-top: 1px solid #eee;
   margin-top: 4px;
   padding-top: 4px;
+}
+
+/* ✅ Responsive tweak for smaller screens */
+@media (max-width: 600px) {
+  .direction-container {
+    max-width: 100%;
+    gap: 6px;
+    padding: 4px 6px;
+  }
+
+  .direction-select {
+    font-size: 13px;
+    padding: 8px 10px;
+    height: 40px;
+  }
+
+  .locate-btn {
+    width: 42px;
+    height: 42px;
+  }
+
+  .locate-icon {
+    width: 28px;
+    height: 28px;
+  }
 }
 
 </style>
