@@ -594,7 +594,7 @@ It looks like you’re offline right now. Live updates aren’t available, so we
     </span>
   </div>
 </div>
-<div style="padding-top: 20px; margin: auto; display: flex; justify-content: center; gap: 10px; padding-bottom: 20px">
+<!-- <div style="padding-top: 20px; margin: auto; display: flex; justify-content: center; gap: 10px; padding-bottom: 20px">
   <button class="pill pillact" id="button41">41</button>
 
   <button class="pill" id="button81">81</button>
@@ -613,7 +613,7 @@ It looks like you’re offline right now. Live updates aren’t available, so we
   <button class="pill" id="button502" style="background: #c24947 !important;">502</button>
   <button class="pill" id="button505" style="background: #c24947 !important;">505</button>
 
-</div>
+</div> -->
 
 
 <!-- Direction Select + Locate Button -->
@@ -769,7 +769,7 @@ It looks like you’re offline right now. Live updates aren’t available, so we
 z-index: 10000;
     position: absolute;
     right: 10px;
-    bottom: 150px;
+    bottom: 160px;
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(6,14,26,0.2);
   width: 48px;
@@ -2076,7 +2076,7 @@ const dir501 = document.getElementById('direction501select');
 const dir502 = document.getElementById('direction502select');
 const dir505 = document.getElementById('direction505select');
 
-const button41 = document.getElementById('button41');
+/*const button41 = document.getElementById('button41');
 const button81 = document.getElementById('button81');
 const button25 = document.getElementById('button25');
 const button18 = document.getElementById('button18');
@@ -2187,7 +2187,7 @@ button505.addEventListener('click', () => {
   dir502.style.display = 'none';
   dir505.style.display = 'inline-block';
   updateRouteDisplay(dir505.value);
-});
+}); */
 
 
 dir25.addEventListener('change', (e) => {
@@ -2512,6 +2512,7 @@ left: 50%;
 }
 
 .card-scroll {
+  margin: auto;
   display: flex;
   gap: 12px;
   padding: 0 16px;
