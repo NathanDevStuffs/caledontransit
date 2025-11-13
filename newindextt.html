@@ -489,10 +489,12 @@ svg {
   <div style="display: flex; align-items: center; gap: 8px;">
     <span class="material-symbols-outlined">warning</span>
     <span style="font-weight: 600;">Reduced real-time bus accuracy</span>
+    
   </div>
   <p style="font-size: 12px; margin-top: 8px;">
     We’re working with limited live data, so bus locations and arrivals may not be exact for now.
   </p>
+
 </div>
 
 
@@ -1847,6 +1849,26 @@ function updateRouteDisplay(selectedId) {
   selectedDirection = selectedId;
   updateBusPositions(); // fetch fresh ones
 }
+async function safeFetch(url, options = {}) {
+  try {
+    const res = await fetch(url, options);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res;
+  } catch (err) {
+    console.warn("Fetch failed:", url, err);
+    return null;
+  }
+}
+
+async function safeJson(res) {
+  try {
+    const text = await res.text();
+    return JSON.parse(text);
+  } catch (err) {
+    console.warn("Invalid JSON from server:", err);
+    return null;
+  }
+}
 
 
 
@@ -1854,157 +1876,159 @@ function updateRouteDisplay(selectedId) {
 /* Live buses (unchanged) */
 const busMarkers = {};
 async function updateBusPositions() {
+  // Prevent overlapping fetch loops (important!)
+  if (updateBusPositions.running) return;
+  updateBusPositions.running = true;
+
   try {
-    const [realtimeRes, tripUpdateRes, stopTimesRes] = await Promise.all([
-      fetch("https://busapi.caledontransit.com/"),
-      fetch("https://busapi.caledontransit.com/tripupdate"),
-      fetch("/stop_times.txt")
-    ]);
+    // ----------- SAFE FETCHES -----------
+    const realtimeRes = await safeFetch("https://busapi.caledontransit.com/");
+    const tripUpdateRes = await safeFetch("https://busapi.caledontransit.com/tripupdate");
+    const stopTimesRes = await safeFetch("/stop_times.txt");
 
-    const realtimeData = await realtimeRes.json();
-    const tripUpdateData = await tripUpdateRes.json();
-    const stopTimes = parseCSV(await stopTimesRes.text());
+    // If any fetch fails, fallback gracefully
+    const realtimeData = (realtimeRes ? await safeJson(realtimeRes) : null) || { entity: [] };
+    const tripUpdateData = (tripUpdateRes ? await safeJson(tripUpdateRes) : null) || { entity: [] };
+    const stopTimes = stopTimesRes ? parseCSV(await stopTimesRes.text()) : [];
 
-    const activeRoutes = ["41", "81", "25", "18", "501", "502","505"];
-
-    // Calculate how old the data is
-    const updateTime = new Date(realtimeData.header.timestamp * 1000);
-    const now = new Date();
-    const diffMin = Math.round((now - updateTime) / 60000);
-
-    // Build a map of trip updates for quick lookup
+    // Build trip update lookup
     const tripUpdateMap = {};
-    (tripUpdateData.entity || []).forEach(entity => {
-      const tu = entity.trip_update;
-      if (tu?.trip?.trip_id) {
-        tripUpdateMap[tu.trip.trip_id] = tu;
+    for (const ent of tripUpdateData.entity || []) {
+      if (ent.trip_update?.trip?.trip_id) {
+        tripUpdateMap[ent.trip_update.trip.trip_id] = ent.trip_update;
       }
-    });
+    }
 
-    realtimeData.entity
-      .filter(ent => activeRoutes.includes(ent.vehicle?.trip?.route_id))
-      .forEach(ent => {
-        const veh = ent.vehicle;
-        const id = veh.vehicle?.id || veh.id;
-        const tripId = veh.trip?.trip_id;
-        const lat = veh.position?.latitude;
-        const lon = veh.position?.longitude;
-        if (!lat || !lon) return;
+    const activeRoutes = ["41", "81", "25", "18", "501", "502", "505"];
 
-        // Determine trip direction
-        let direction = tripDirectionMap[tripId];
-        if (!direction && tripId) {
-          const stem = String(tripId).split('-')[0];
-          direction = tripDirectionMap[stem];
-          document.getElementById('accuracyWarning').style.display = 'block';
-        }
+    // Calculate stale update warning
+    let diffMin = 0;
+    try {
+      const updateTime = new Date((realtimeData.header?.timestamp || 0) * 1000);
+      diffMin = Math.round((Date.now() - updateTime) / 60000);
+    } catch {}
 
-        if (!direction || direction !== selectedDirection) {
-          if (busMarkers[id]) busMarkers[id].getElement().style.display = "none";
-          return;
-        }
+    // ----------- PROCESS VEHICLES -----------
+    for (const entity of realtimeData.entity || []) {
+      const veh = entity.vehicle;
+      if (!veh) continue;
 
-        // ---- CORRECTED Adherence / Delay ----
-        let adherenceStatus = "Scheduled";
-        let adherenceColor = "#808080";
-        let delayMinutes = null;
+      const route = veh.trip?.route_id;
+      if (!activeRoutes.includes(route)) continue;
 
-        // Method 1: Use trip update data (same as Route Status system)
-        const tripUpdate = tripUpdateMap[tripId];
-        if (tripUpdate?.stop_time_update?.length > 0) {
-          // Use the first stop time update for this trip (same logic as Route Status)
-          const firstStop = tripUpdate.stop_time_update[0];
-          if (firstStop?.departure?.time) {
-            // Find the scheduled time for this stop
-            const scheduledRow = stopTimes.find(st => 
-              st.trip_id.startsWith(tripId) && st.stop_id === firstStop.stop_id
-            );
-            
-            if (scheduledRow) {
-              // Convert scheduled time to Date object
-              const schedStr = scheduledRow.departure_time;
-              const [h, m, s] = schedStr.split(":").map(Number);
-              const sched = new Date();
-              sched.setHours(h, m, s || 0, 0);
-              
-              // Convert real-time to Date object
-              const realtime = Number(firstStop.departure.time) * 1000;
-              
-              // Calculate delay in minutes
-              delayMinutes = (realtime - sched.getTime()) / 60000;
-              
-              if (!isNaN(delayMinutes)) {
-                if (delayMinutes <= 2 && delayMinutes >= -2) {
-                  adherenceStatus = "On Time";
-                  adherenceColor = "#00c853";
-                } else if (delayMinutes > 2) {
-                  adherenceStatus = `Delayed ${Math.round(delayMinutes)} min`;
-                  adherenceColor = "#d32f2f";
-                } else if (delayMinutes < -2) {
-                  adherenceStatus = `Early ${Math.abs(Math.round(delayMinutes))} min`;
-                  adherenceColor = "#ffa000";
-                }
-              }
+      const id = veh.vehicle?.id || veh.id || Math.random().toString();
+
+      const lat = veh.position?.latitude;
+      const lon = veh.position?.longitude;
+
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
+
+      const tripId = veh.trip?.trip_id || "";
+      let direction = tripDirectionMap[tripId];
+
+      // Try fallback for stem-based trips
+      if (!direction && tripId.includes("-")) {
+        const stem = tripId.split("-")[0];
+        direction = tripDirectionMap[stem];
+      }
+
+      // Skip if not selected direction
+      if (direction !== selectedDirection) {
+        if (busMarkers[id]) busMarkers[id].getElement().style.display = "none";
+        continue;
+      }
+
+      // ----------- ADHERENCE CALCULATION SAFE -----------
+      let adherenceStatus = "Live Tracking";
+      let adherenceColor = "#3366CC";
+      let delayMinutes = null;
+
+      const tu = tripUpdateMap[tripId];
+      if (tu && tu.stop_time_update && tu.stop_time_update.length > 0) {
+        const stu = tu.stop_time_update[0];
+
+        const stopId = stu.stop_id;
+        const schedRow = stopTimes.find(st => st.stop_id === stopId && st.trip_id.startsWith(tripId));
+
+        if (schedRow) {
+          // Scheduled time
+          const [h, m, s] = schedRow.departure_time.split(":").map(Number);
+          const sched = new Date();
+          sched.setHours(h, m, s || 0, 0);
+
+          // Realtime time
+          const realtimeMs = Number(stu.departure?.time || 0) * 1000;
+
+          if (!isNaN(realtimeMs)) {
+            delayMinutes = Math.round((realtimeMs - sched.getTime()) / 60000);
+
+            if (delayMinutes <= 2 && delayMinutes >= -2) {
+              adherenceStatus = "On Time";
+              adherenceColor = "#00c853";
+            } else if (delayMinutes > 2) {
+              adherenceStatus = `Delayed ${delayMinutes} min`;
+              adherenceColor = "#d32f2f";
+            } else if (delayMinutes < -2) {
+              adherenceStatus = `Early ${Math.abs(delayMinutes)} min`;
+              adherenceColor = "#ffa000";
             }
           }
         }
+      }
 
-        // Method 2: Fallback - use vehicle delay field if available
-
-        // Method 3: Final fallback - show basic status
-        if (delayMinutes === null) {
-          adherenceStatus = "Live Tracking";
-          adherenceColor = "#3366CC";
-        }
-
-        // ---- Popup HTML ----
-        const popupHTML = `
-          <div style="font-family:'Outfit';font-size:14px;background:white;border-radius:12px;padding:17px;">
-            <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">
-              <span class="material-symbols-outlined">directions_bus</span>
-              <span style="padding:2px 6px;border-radius:10px;background:#f1f1f1;font-weight:600;">
-                Bus ${veh.vehicle?.label || id}
-              </span>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px;color:${adherenceColor};margin-bottom:4px;">
-              <span class="material-symbols-outlined" style="font-size:16px;">
-                ${adherenceColor === '#00c853' ? 'check_circle' : 
-                  adherenceColor === '#d32f2f' ? 'warning' : 
-                  adherenceColor === '#ffa000' ? 'schedule' : 
-                  'location_on'}
-              </span>
-              <span>${adherenceStatus}</span>
-            </div>
-            <div style="font-size:12px;color:#666;margin-top:6px;">
-              Updated ${diffMin} min ago • Route ${veh.trip?.route_id || 'Unknown'}
-            </div>
+      // ----------- BUILD POPUP -----------
+      const popupHTML = `
+        <div style="font-family:'Outfit';font-size:14px;background:white;border-radius:12px;padding:17px;">
+          <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">
+            <span class="material-symbols-outlined">directions_bus</span>
+            <span style="padding:2px 6px;border-radius:10px;background:#f1f1f1;font-weight:600;">
+              Bus ${veh.vehicle?.label || id}
+            </span>
           </div>
-        `;
+          <div style="display:flex;align-items:center;gap:6px;color:${adherenceColor};margin-bottom:4px;">
+            <span class="material-symbols-outlined" style="font-size:16px;">
+              ${adherenceColor === '#00c853' ? 'check_circle' :
+                adherenceColor === '#d32f2f' ? 'warning' :
+                adherenceColor === '#ffa000' ? 'schedule' :
+                'location_on'}
+            </span>
+            <span>${adherenceStatus}</span>
+          </div>
+          <div style="font-size:12px;color:#666;margin-top:6px;">
+            Updated ${diffMin} min ago • Route ${route}
+          </div>
+        </div>
+      `;
 
-        // ---- Create or update marker ----
-        if (!busMarkers[id]) {
-          const iconEl = document.createElement("img");
-          iconEl.src = "/New Project (8).png";
-          iconEl.style.width = "40px";
-          iconEl.style.height = "40px";
+      // ----------- CREATE OR UPDATE MARKER -----------
+      if (!busMarkers[id]) {
+        const iconEl = document.createElement("img");
+        iconEl.src = "/New Project (8).png";
+        iconEl.style.width = "40px";
+        iconEl.style.height = "40px";
 
-          const marker = new mapboxgl.Marker({ element: iconEl })
-            .setLngLat([lon, lat])
-            .setPopup(new mapboxgl.Popup().setHTML(popupHTML))
-            .addTo(map);
+        const marker = new mapboxgl.Marker({ element: iconEl })
+          .setLngLat([lon, lat])
+          .setPopup(new mapboxgl.Popup().setHTML(popupHTML))
+          .addTo(map);
 
-          busMarkers[id] = marker;
-          marker.currentLngLat = [lon, lat];
-        } else {
-          animateMarkerMove(busMarkers[id], [lon, lat]);
-          busMarkers[id].getPopup().setHTML(popupHTML);
-          busMarkers[id].getElement().style.display = "block";
-        }
-      });
+        busMarkers[id] = marker;
+        marker.currentLngLat = [lon, lat];
+
+      } else {
+        animateMarkerMove(busMarkers[id], [lon, lat]);
+        busMarkers[id].getPopup().setHTML(popupHTML);
+        busMarkers[id].getElement().style.display = "block";
+      }
+    }
+
   } catch (err) {
-    console.error("Bus update failed:", err);
+    console.warn("updateBusPositions crashed but was caught safely:", err);
   }
+
+  updateBusPositions.running = false;
 }
+
 
 /**
  * Smoothly animate a marker to its new position
@@ -2412,8 +2436,8 @@ setInterval(fetchServiceStatus, 60000);
       box-shadow: #060e1a33 0px 4px 12px;
       background: white;
   padding: 15px;
-  max-width: 500px;
-  min-width: 95%;
+  max-width: 350px;
+    width: 90%;
   margin: auto;
   height: auto;
   border-radius: 25px;
@@ -2497,6 +2521,8 @@ left: 50%;
     </button>
   </div>
 </div>
+
+<div style=""></div>
 
 <style>
 .bottom-card-container {
