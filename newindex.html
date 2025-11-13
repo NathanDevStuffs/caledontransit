@@ -682,8 +682,8 @@ It looks like you’re offline right now. Live updates aren’t available, so we
   </select>
 
   <select id="direction25select" class="direction-select" style="display:none;">
-    <option value="250032">Southbound</option>
-    <option value="250033">Northbound</option>
+    <option value="250032">Southbound to Peel Memorial Hospital</option>
+    <option value="250033">Northbound to Caledon</option>
   </select>
 
   <select id="direction18select" class="direction-select" style="display:none;">
@@ -710,11 +710,11 @@ It looks like you’re offline right now. Live updates aren’t available, so we
   </select>
 
   <!-- locate button -->
-  <button id="locateBtn" class="locate-btn" aria-label="Locate Me">
+  
+</div>
+<button id="locateBtn" class="locate-btn" aria-label="Locate Me">
     <img src="/location.png" alt="Locate" class="locate-icon">
   </button>
-</div>
-
 <style>
 .direction-container {
   position: fixed;
@@ -757,6 +757,10 @@ It looks like you’re offline right now. Live updates aren’t available, so we
 
 /* locate button */
 .locate-btn {
+  z-index: 10000;
+    position: absolute;
+    right: 10px;
+    bottom: 150px;
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(6,14,26,0.2);
   width: 48px;
@@ -893,13 +897,13 @@ const route = e.currentTarget.getAttribute('data-route');
     [dir41, dir81, dir25, dir18, dir501, dir502, dir505].forEach(d => d.style.display = 'none');
 
     switch (route) {
-      case '41': dir41.style.display='inline-block'; updateRouteDisplay(dir41.value); map.flyTo({center:[-79.7254859,43.8333433],zoom:11}); break;
-      case '81': dir81.style.display='inline-block'; updateRouteDisplay(dir81.value); map.flyTo({center:[-79.820941,43.7401914],zoom:13}); break;
-      case '25': dir25.style.display='inline-block'; updateRouteDisplay(dir25.value); map.flyTo({center:[-79.8092108,43.7042705],zoom:11}); break;
-      case '18': dir18.style.display='inline-block'; updateRouteDisplay(dir18.value); map.flyTo({center:[-79.740512,43.689343],zoom:12}); break;
-      case '501': dir501.style.display='inline-block'; updateRouteDisplay(dir501.value); map.flyTo({center:[-79.6400479,43.7655184],zoom:10}); break;
-      case '502': dir502.style.display='inline-block'; updateRouteDisplay(dir502.value); map.flyTo({center:[-79.7714951,43.6632282],zoom:10}); break;
-      case '505': dir505.style.display='inline-block'; updateRouteDisplay(dir505.value); map.flyTo({center:[-79.630529,43.686823],zoom:11}); break;
+      case '41': dir41.style.display='inline-block'; routePill.classList.remove("zum-pill"); (dir41.value); map.flyTo({center:[-79.7254859,43.8333433],zoom:11}); break;
+      case '81': dir81.style.display='inline-block'; routePill.classList.remove("zum-pill"); (dir81.value); map.flyTo({center:[-79.820941,43.7401914],zoom:13}); break;
+      case '25': dir25.style.display='inline-block'; routePill.classList.remove("zum-pill"); updateRouteDisplay(dir25.value); map.flyTo({center:[-79.8092108,43.7042705],zoom:11}); break;
+      case '18': dir18.style.display='inline-block'; routePill.classList.remove("zum-pill"); updateRouteDisplay(dir18.value); map.flyTo({center:[-79.740512,43.689343],zoom:12}); break;
+      case '501': dir501.style.display='inline-block'; routePill.classList.add("zum-pill"); updateRouteDisplay(dir501.value); map.flyTo({center:[-79.6400479,43.7655184],zoom:10}); break;
+      case '502': dir502.style.display='inline-block'; routePill.classList.add("zum-pill"); updateRouteDisplay(dir502.value); map.flyTo({center:[-79.7714951,43.6632282],zoom:10}); break;
+      case '505': dir505.style.display='inline-block'; routePill.classList.add("zum-pill"); updateRouteDisplay(dir505.value); map.flyTo({center:[-79.630529,43.686823],zoom:11}); break;
     }
   });
 });
@@ -2434,7 +2438,13 @@ left: 50%;
       </div>
       <span class="material-symbols-outlined card-icon">campaign</span>
     </button>
-
+<button class="info-card" aria-label="Payment Options">
+      <div>
+        <h3>Payment options</h3>
+        <p>Make paying your fare easy</p>
+      </div>
+      <span class="material-symbols-outlined card-icon">payment_card</span>
+    </button>
     <button class="info-card" aria-label="Check live bus status">
       <div>
         <h3>Service</h3>
@@ -2444,7 +2454,7 @@ left: 50%;
     </button>
     <button class="info-card" aria-label="Check live bus status">
       <div>
-        <h3>Contact us</h3>
+        <h3>Contact us and info</h3>
         <p>For Help and Feedback</p>
       </div>
       <span class="material-symbols-outlined card-icon">chat</span>
