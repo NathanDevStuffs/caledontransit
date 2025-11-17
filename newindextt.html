@@ -1605,11 +1605,10 @@ let selectedDirection = "410009"; // default direction: northbound
 
 // ---- Stop marker storage & guard ----
 const stopMarkers = { "410010": [], "410009": [], "810002": [], "810005": [], "250032": [], "250033": [], "180209": [], "180231": [], "5010073": [], "5010072": [], "5020016": [], "5020013": [], "5050005": [], "5050008": [], "5050006": [], "5050010": [] }; // northbound, southbound
-let stopsLoaded = false; // prevents double-loading
+// keep your existing globals:
+let stopsLoaded = false;
+// stopMarkers can stay defined but won't be used for stops anymore
 
-
-
-// ---- loadRoute41Stops: loads stops and creates markers for every direction a stop is used ----
 async function loadRoute41Stops() {
   if (stopsLoaded) return;
   stopsLoaded = true;
@@ -1622,153 +1621,204 @@ async function loadRoute41Stops() {
   const stopTimes = parseCSV(await stopTimesRes.text());
   const stops = parseCSV(await stopsRes.text());
 
-  const routeTrips = new Set(Object.keys(tripDirectionMap)); // now contains trips for route 41 & 81
+  // Same as before: all trips we care about (for 41, 81, 25, 18, 501, 502, 505)
+  const routeTrips = new Set(Object.keys(tripDirectionMap));
+
+  // Only stops used by those trips
   const routeStopIds = new Set(
-    stopTimes.filter(st => routeTrips.has(st.trip_id)).map(st => st.stop_id)
+    stopTimes
+      .filter(st => routeTrips.has(st.trip_id))
+      .map(st => st.stop_id)
   );
 
-  // map shape_id to route number + direction label
+  // map shape_id to route number + direction label (same content as before)
   const shapeInfo = {
-    '410010': { route: '41', dir: 'Northbound' },
-    '410009': { route: '41', dir: 'Southbound' },
-    '810005': { route: '81', dir: 'Northbound' },
-    '810002': { route: '81', dir: 'Southbound' },
-    '250033': { route: '25', dir: 'Northbound' },
-    '250032': { route: '25', dir: 'Southbound' },
+    '410010': { route: '41', dir: 'Northbound to Columbia Way' },
+    '410009': { route: '41', dir: 'Southbound to Queen St / Highway 7' },
+    '810005': { route: '81', dir: 'Northbound to Caledon' },
+    '810002': { route: '81', dir: 'Southbound to Sandalwood Loop' },
+    '250033': { route: '25', dir: 'Northbound to Caledon' },
+    '250032': { route: '25', dir: 'Southbound to Peel Memorial Hospital' },
     '180209': { route: '18', dir: 'Northbound' },
     '180231': { route: '18', dir: 'Northbound A' },
-    '5010073': { route: '501', dir: 'Eastbound' },
-    '5010072': { route: '501', dir: 'Westbound' },
-    '5020016': { route: '502', dir: 'Southbound' },
-    '5020013': { route: '502', dir: 'Northbound' },
-    '5050005': { route: '505', dir: 'East to Malton GO Station' },
-    '5050008': { route: '505A', dir: 'East to Viscount Station (A)' },
-    '5050006': { route: '505', dir: 'West to Mount Pleasant GO Station' },
-    '5050010': { route: '505A', dir: 'West to Trinity Commons Terminal' },
+    '5010073': { route: '501', dir: 'Eastbound to SmartVMC Terminal' },
+    '5010072': { route: '501', dir: 'Westbound to Downtown Brampton' },
+    '5020016': { route: '502', dir: 'Southbound to Square One' },
+    '5020013': { route: '502', dir: 'Northbound to Sandalwood Loop' },
+    '5050005': { route: '505', dir: 'East to Malton GO Station (505)' },
+    '5050008': { route: '505A', dir: 'East to Viscount Station (505A)' },
+    '5050006': { route: '505', dir: 'West to Mount Pleasant GO Station (505)' },
+    '5050010': { route: '505A', dir: 'West to Trinity Commons Terminal (505A)' },
   };
 
-  // iterate only stops that belong to these routes
-  stops.filter(s => routeStopIds.has(s.stop_id)).forEach(stop => {
-    const lat = parseFloat(stop.stop_lat);
-    const lon = parseFloat(stop.stop_lon);
-    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+  // Build GeoJSON features for all relevant stops
+  const features = [];
 
-    // find all trips for this stop that belong to routeTrips (41 or 81)
-    const stopTrips = stopTimes.filter(st => st.stop_id === stop.stop_id && routeTrips.has(st.trip_id));
+  // Pre-index stopTimes per stop_id to speed up direction lookup
+  const stopTripsByStop = {};
+  stopTimes.forEach(st => {
+    if (!routeTrips.has(st.trip_id)) return;
+    if (!routeStopIds.has(st.stop_id)) return;
+    if (!stopTripsByStop[st.stop_id]) stopTripsByStop[st.stop_id] = [];
+    stopTripsByStop[st.stop_id].push(st);
+  });
 
-    stopTrips.forEach(st => {
-      const direction = tripDirectionMap[st.trip_id];
-      if (!direction) return;
+  stops
+    .filter(s => routeStopIds.has(s.stop_id))
+    .forEach(stop => {
+      const lat = parseFloat(stop.stop_lat);
+      const lon = parseFloat(stop.stop_lon);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
 
-      // Avoid duplicate markers for same stop & direction using stop_id
-      if (!stopMarkers[direction]) stopMarkers[direction] = [];
-      if (stopMarkers[direction].some(m => m.stopId === stop.stop_id)) return;
+      const stopTrips = stopTripsByStop[stop.stop_id] || [];
+      const directions = new Set();
 
+      stopTrips.forEach(st => {
+        const dir = tripDirectionMap[st.trip_id];
+        if (dir) directions.add(dir);
+      });
 
-      // create marker element
-      const icon = document.createElement("img");
-      icon.src = "download (6).png";
-      icon.style.width = "12px";
-      icon.style.height = "12px";
-      icon.style.cursor = "pointer";
-		icon.alt = "Bus Stop Marker";
+      const dirArray = Array.from(directions);
+      if (!dirArray.length) return;
 
-      // add marker to map
-      const marker = new mapboxgl.Marker({ element: icon }).setLngLat([lon, lat]).addTo(map);
-
-      // attach metadata so toggling is easy
-      marker.stopId = stop.stop_id;
-      marker.direction = direction; // shape_id like '410008' or '810002'
-      marker.coords = { lat, lon };
-      marker.stop = stop; // attach GTFS stop object for later use
-
-      // store marker
-      stopMarkers[direction].push(marker);
-
-      // set initial visibility based on selectedDirection
-      marker.getElement().style.display = (direction === selectedDirection) ? "block" : "none";
-
-      // popup listener (uses Transit App via worker for departures)
-      marker.getElement().addEventListener("click", async () => {
-        // find a representative trip for this stop to determine shape/route
-        const rep = stopTrips.find(x => x.stop_id === stop.stop_id && routeTrips.has(x.trip_id));
-        const shape = tripDirectionMap[rep.trip_id];
-        const info = shapeInfo[shape] || { route: '', dir: 'Unknown' };
-        console.log(info.route, info.dir);
-        const directionLabel = `Route ${info.route} — ${info.dir}`;
-
-        let departures = [];
-
-        // Try fetching real-time departures from Transit API
-        try {
-          departures = await fetchTransitDeparturesForGtfsStop(stop);
-        } catch (err) {
-          console.error("Transit API error:", err);
-          departures = [];
+      features.push({
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [lon, lat]
+        },
+        properties: {
+          stop_id: stop.stop_id,
+          stop_name: stop.stop_name,
+          stop_lat: lat,
+          stop_lon: lon,
+          directions: dirArray // array of shape_ids this stop belongs to
         }
+      });
+    });
 
-        // If Transit API fails or returns empty, fall back to GTFS schedule
-        if (!departures.length) {
-          departures = await getStopDepartures(stop.stop_id);
-        }
+  const stopsGeoJSON = {
+    type: "FeatureCollection",
+    features
+  };
 
+  // Add source + layer for all stops
+  if (!map.getSource("route-stops")) {
+    map.addSource("route-stops", {
+      type: "geojson",
+      data: stopsGeoJSON
+    });
 
-  // Build HTML with your current styling
-const depHtml = departures.length
-  ? departures.map(d => {
-      // Determine fallback route name if route_long_name is missing
-      let routeName = d.route_long_name;
-      if (!routeName || routeName === "—" || routeName.trim() === "") {
-        if (d.routeId === "41") routeName = "Bolton";
-        else if (d.routeId === "81") routeName = "Mayfield West";
-        else if (d.routeId === "25") routeName = "Edenbrooke";
-        else if (d.routeId === "18") routeName = "Dixie";
-        else if (d.routeId === "501") routeName = "Zum Queen";
-        else if (d.routeId === "502") routeName = "Zum Main";
-        else routeName = "Unknown Route";
+    // visual style of stops; tweak as you like
+    map.addLayer({
+      id: "route-stops-layer",
+      type: "circle",
+      source: "route-stops",
+      paint: {
+        "circle-radius": 4,
+        "circle-color": "#2d3399",
+        "circle-stroke-color": "#ffffff",
+        "circle-stroke-width": 1
+      },
+      // only show stops for the currently selected direction
+      filter: ["in", selectedDirection, ["get", "directions"]]
+    });
+
+    // CLICK HANDLER (this replaces your marker click listener)
+    map.on("click", "route-stops-layer", async (e) => {
+      if (!e.features || !e.features.length) return;
+      const feature = e.features[0];
+
+      const stopId = feature.properties.stop_id;
+      const stopName = feature.properties.stop_name;
+      const lat = feature.properties.stop_lat;
+      const lon = feature.properties.stop_lon;
+
+      // We only need minimal GTFS-like object for your existing helpers
+      const stop = {
+        stop_id: stopId,
+        stop_name: stopName,
+        stop_lat: lat,
+        stop_lon: lon
+      };
+
+      // Build direction label from the currently selectedDirection
+      const info = shapeInfo[selectedDirection] || { route: "", dir: "Unknown" };
+      const directionLabel = info.route
+        ? `Route ${info.route} — ${info.dir}`
+        : info.dir;
+
+      let departures = [];
+
+      // Try Transit API first
+      try {
+        departures = await fetchTransitDeparturesForGtfsStop(stop);
+      } catch (err) {
+        console.error("Transit API error:", err);
+        departures = [];
       }
 
-      return `
-        <li style="display:flex; align-items:center; justify-content:space-between; padding:4px 0; border-top:1px solid #eee; list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
-          <span style="font-weight:600;padding: 2px 12px;border-radius:6px;background: #2d3399;color:#fff;">${d.routeId}</span>
-          <span style="flex:1; margin:0 6px;">${routeName}</span>
-          <span style="font-weight:600; white-space:nowrap;">
-            ${d.displayTime || d.time.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
-          </span>
-        </li>`;
-    }).join("")
-  : `<li style="padding:6px 0; margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
-      <p style="color:#333; text-decoration:none;">No upcoming departures</p>
-    </li>`;
+      // Fallback to GTFS schedule
+      if (!departures.length) {
+        departures = await getStopDepartures(stopId);
+      }
 
-  const popupHTML = `
-    <div style="font-family: 'Outfit';font-size:14px;min-width:240px;background: white;border-radius: 12px;padding: 17px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-        <b style="font-size:15px;">${stop.stop_name}</b>
-      </div>
-      <div style="margin-bottom:6px; font-size:13px; color:#444;">
-        <span style="padding:2px 6px; border-radius:10px; background:#f1f1f1;">${directionLabel}</span>
-      </div>
-      <ul style="list-style:none; padding:0; margin:0;">${depHtml}</ul>
-	  <div style="
-    display: flex;
-    justify-content: space-between;
-"><div style="margin-top:6px;font-size: 12px;color:#666;">
-        Updated ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
-      </div><img src="/transit-api-badge.png" style="
-    width: 100px;
-" alt="Powered by Transit API"></div>
-    </div>`;
+      const depHtml = departures.length
+        ? departures.map(d => {
+            // Determine fallback route name if route_long_name is missing
+            let routeName = d.route_long_name;
+            if (!routeName || routeName === "—" || routeName.trim() === "") {
+              if (d.routeId === "41") routeName = "Bolton";
+              else if (d.routeId === "81") routeName = "Mayfield West";
+              else if (d.routeId === "25") routeName = "Edenbrooke";
+              else if (d.routeId === "18") routeName = "Dixie";
+              else if (d.routeId === "501") routeName = "Zum Queen";
+              else if (d.routeId === "502") routeName = "Zum Main";
+              else routeName = "Unknown Route";
+            }
 
-  new mapboxgl.Popup().setLngLat([lon, lat]).setHTML(popupHTML).addTo(map);
-});
+            return `
+              <li style="display:flex; align-items:center; justify-content:space-between; padding:4px 0; border-top:1px solid #eee; list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
+                <span style="font-weight:600;padding: 2px 12px;border-radius:6px;background: #2d3399;color:#fff;">${d.routeId}</span>
+                <span style="flex:1; margin:0 6px;">${routeName}</span>
+                <span style="font-weight:600; white-space:nowrap;">
+                  ${d.displayTime || d.time.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+                </span>
+              </li>`;
+          }).join("")
+        : `<li style="padding:6px 0; margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
+            <p style="color:#333; text-decoration:none;">No upcoming departures</p>
+           </li>`;
 
+      const popupHTML = `
+        <div style="font-family: 'Outfit';font-size:14px;min-width:240px;background: white;border-radius: 12px;padding: 17px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <b style="font-size:15px;">${stopName}</b>
+          </div>
+          <div style="margin-bottom:6px; font-size:13px; color:#444;">
+            <span style="padding:2px 6px; border-radius:10px; background:#f1f1f1;">${directionLabel}</span>
+          </div>
+          <ul style="list-style:none; padding:0; margin:0;">${depHtml}</ul>
+          <div style="display: flex; justify-content: space-between;">
+            <div style="margin-top:6px;font-size: 12px;color:#666;">
+              Updated ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+            </div>
+            <img src="/transit-api-badge.png" style="width: 100px;" alt="Powered by Transit API">
+          </div>
+        </div>`;
 
-
-
+      new mapboxgl.Popup()
+        .setLngLat([lon, lat])
+        .setHTML(popupHTML)
+        .addTo(map);
     });
-  });
+
+  } else {
+    // If you ever need to refresh data without re-adding source
+    map.getSource("route-stops").setData(stopsGeoJSON);
+  }
 }
+
 
 /* -------------------------
    Load routes (unchanged)
@@ -1825,34 +1875,47 @@ const routeNumber = routes.find(r => id.startsWith(r)) || '';
   }
 }
 
-/* Show/hide route (unchanged) */
 function updateRouteDisplay(selectedId) {
-  // Remove all existing bus markers from the map
+  // 1) Remove all existing bus markers from the map (unchanged)
   Object.values(busMarkers).forEach(marker => {
     marker.remove();
   });
   Object.keys(busMarkers).forEach(key => delete busMarkers[key]);
 
-  const routes = ['410009', '410010', '810002', '810005', '250033', '250032', '180209', '180231', '5010073', '5010072', '5020016', '5020013', '5050005', '5050008', '5050006', '5050010'];
+  // 2) Show only the selected route line
+  const routes = [
+    '410009', '410010',
+    '810002', '810005',
+    '250033', '250032',
+    '180209', '180231',
+    '5010073', '5010072',
+    '5020016', '5020013',
+    '5050005', '5050008',
+    '5050006', '5050010'
+  ];
 
   routes.forEach(id => {
     const visibility = id === selectedId ? 'visible' : 'none';
-    if (map.getLayer(`routeLineLayer-${id}`)) {
-      map.setLayoutProperty(`routeLineLayer-${id}`, 'visibility', visibility);
+    const layerId = `routeLineLayer-${id}`;
+    if (map.getLayer(layerId)) {
+      map.setLayoutProperty(layerId, 'visibility', visibility);
     }
   });
 
-  routes.forEach(id => {
-    if (!stopMarkers[id]) return;
-    stopMarkers[id].forEach(marker => {
-      const el = marker.getElement();
-      el.style.display = (id === selectedId) ? 'block' : 'none';
-    });
-  });
+  // 3) NEW: filter the GeoJSON stop layer by direction (shape_id)
+  // `directions` is the array we set on each feature in loadRoute41Stops()
+  if (map.getLayer('route-stops-layer')) {
+    map.setFilter(
+      'route-stops-layer',
+      ['in', selectedId, ['get', 'directions']]
+    );
+  }
 
+  // 4) Update the currently selected direction and refresh buses
   selectedDirection = selectedId;
   updateBusPositions(); // fetch fresh ones
 }
+
 async function safeFetch(url, options = {}) {
   try {
     const res = await fetch(url, options);
