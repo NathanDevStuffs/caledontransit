@@ -1712,13 +1712,14 @@ async function loadRoute41Stops() {
     // visual style of stops; tweak as you like
     map.addLayer({
       id: "route-stops-layer",
-      type: "circle",
+      type: "symbol",
       source: "route-stops",
-      paint: {
-        "circle-radius": 4,
-        "circle-color": "#2d3399",
-        "circle-stroke-color": "#ffffff",
-        "circle-stroke-width": 1
+      layout: {
+        'icon-image': 'stop-marker',   // ← name you added with map.addImage
+        'icon-size': 0.07,
+        'icon-allow-overlap': true,
+        'icon-ignore-placement': true,
+        'icon-anchor': 'center'
       },
       // only show stops for the currently selected direction
       filter: ["in", selectedDirection, ["get", "directions"]]
@@ -1877,10 +1878,7 @@ const routeNumber = routes.find(r => id.startsWith(r)) || '';
 
 function updateRouteDisplay(selectedId) {
   // 1) Remove all existing bus markers from the map (unchanged)
-  Object.values(busMarkers).forEach(marker => {
-    marker.remove();
-  });
-  Object.keys(busMarkers).forEach(key => delete busMarkers[key]);
+  
 
   // 2) Show only the selected route line
   const routes = [
@@ -1943,24 +1941,21 @@ async function safeJson(res) {
 /* Live buses (unchanged) */
 const busMarkers = {};
 async function updateBusPositions() {
-  // Prevent overlapping fetch loops (important!)
   if (updateBusPositions.running) return;
   updateBusPositions.running = true;
 
   try {
-    // ----------- SAFE FETCHES -----------
-    const realtimeRes = await safeFetch("https://busapi.caledontransit.com/");
+    const realtimeRes   = await safeFetch("https://busapi.caledontransit.com/");
     const tripUpdateRes = await safeFetch("https://busapi.caledontransit.com/tripupdate");
-    const stopTimesRes = await safeFetch("/stop_times.txt");
+    const stopTimesRes  = await safeFetch("/stop_times.txt");
 
-    // If any fetch fails, fallback gracefully
-    const realtimeData = (realtimeRes ? await safeJson(realtimeRes) : null) || { entity: [] };
+    const realtimeData   = (realtimeRes   ? await safeJson(realtimeRes)   : null) || { entity: [] };
     const tripUpdateData = (tripUpdateRes ? await safeJson(tripUpdateRes) : null) || { entity: [] };
-    const stopTimes = stopTimesRes ? parseCSV(await stopTimesRes.text()) : [];
+    const stopTimes      = stopTimesRes ? parseCSV(await stopTimesRes.text()) : [];
 
     // Build trip update lookup
     const tripUpdateMap = {};
-    for (const ent of tripUpdateData.entity || []) {
+    for (const ent of (tripUpdateData.entity || [])) {
       if (ent.trip_update?.trip?.trip_id) {
         tripUpdateMap[ent.trip_update.trip.trip_id] = ent.trip_update;
       }
@@ -1968,125 +1963,108 @@ async function updateBusPositions() {
 
     const activeRoutes = ["41", "81", "25", "18", "501", "502", "505"];
 
-    // Calculate stale update warning
+    // Header timestamp → how stale is the feed?
     let diffMin = 0;
     try {
       const updateTime = new Date((realtimeData.header?.timestamp || 0) * 1000);
       diffMin = Math.round((Date.now() - updateTime) / 60000);
     } catch {}
 
-    // ----------- PROCESS VEHICLES -----------
-    for (const entity of realtimeData.entity || []) {
+    const features = [];
+
+    for (const entity of (realtimeData.entity || [])) {
       const veh = entity.vehicle;
       if (!veh) continue;
 
       const route = veh.trip?.route_id;
       if (!activeRoutes.includes(route)) continue;
 
-      const id = veh.vehicle?.id || veh.id || Math.random().toString();
-
+      const id  = veh.vehicle?.id || veh.id || Math.random().toString();
       const lat = veh.position?.latitude;
       const lon = veh.position?.longitude;
-
       if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
 
-      const tripId = veh.trip?.trip_id || "";
-      let direction = tripDirectionMap[tripId];
+      const tripIdRaw = veh.trip?.trip_id || "";
+      let direction = tripDirectionMap[tripIdRaw];
 
-      // Try fallback for stem-based trips
-      if (!direction && tripId.includes("-")) {
-        const stem = tripId.split("-")[0];
+      // fallback: stem match (tripId like "1234-1")
+      if (!direction && tripIdRaw.includes("-")) {
+        const stem = tripIdRaw.split("-")[0];
         direction = tripDirectionMap[stem];
       }
 
-      // Skip if not selected direction
-      if (direction !== selectedDirection) {
-        if (busMarkers[id]) busMarkers[id].getElement().style.display = "none";
-        continue;
-      }
+      // Only show buses for the currently selected shape/direction
+      if (direction !== selectedDirection) continue;
 
-      // ----------- ADHERENCE CALCULATION SAFE -----------
+      // ---- adherence calculation (same logic, but stored in properties) ----
       let adherenceStatus = "Live Tracking";
-      let adherenceColor = "#3366CC";
-      let delayMinutes = null;
+      let adherenceColor  = "#3366CC";
+      let delayMinutes    = null;
+      let iconType        = "live";
 
-      const tu = tripUpdateMap[tripId];
+      const tu = tripUpdateMap[tripIdRaw];
       if (tu && tu.stop_time_update && tu.stop_time_update.length > 0) {
-        const stu = tu.stop_time_update[0];
-
+        const stu    = tu.stop_time_update[0];
         const stopId = stu.stop_id;
-        const schedRow = stopTimes.find(st => st.stop_id === stopId && st.trip_id.startsWith(tripId));
+
+        const schedRow = stopTimes.find(st =>
+          st.stop_id === stopId && st.trip_id.startsWith(tripIdRaw)
+        );
 
         if (schedRow) {
-          // Scheduled time
           const [h, m, s] = schedRow.departure_time.split(":").map(Number);
           const sched = new Date();
           sched.setHours(h, m, s || 0, 0);
 
-          // Realtime time
           const realtimeMs = Number(stu.departure?.time || 0) * 1000;
-
           if (!isNaN(realtimeMs)) {
             delayMinutes = Math.round((realtimeMs - sched.getTime()) / 60000);
 
             if (delayMinutes <= 2 && delayMinutes >= -2) {
               adherenceStatus = "On Time";
-              adherenceColor = "#00c853";
+              adherenceColor  = "#00c853";
+              iconType        = "onTime";
             } else if (delayMinutes > 2) {
               adherenceStatus = `Delayed ${delayMinutes} min`;
-              adherenceColor = "#d32f2f";
+              adherenceColor  = "#d32f2f";
+              iconType        = "delayed";
             } else if (delayMinutes < -2) {
               adherenceStatus = `Early ${Math.abs(delayMinutes)} min`;
-              adherenceColor = "#ffa000";
+              adherenceColor  = "#ffa000";
+              iconType        = "early";
             }
           }
         }
       }
 
-      // ----------- BUILD POPUP -----------
-      const popupHTML = `
-        <div style="font-family:'Outfit';font-size:14px;background:white;border-radius:12px;padding:17px;">
-          <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">
-            <span class="material-symbols-outlined">directions_bus</span>
-            <span style="padding:2px 6px;border-radius:10px;background:#f1f1f1;font-weight:600;">
-              Bus ${veh.vehicle?.label || id}
-            </span>
-          </div>
-          <div style="display:flex;align-items:center;gap:6px;color:${adherenceColor};margin-bottom:4px;">
-            <span class="material-symbols-outlined" style="font-size:16px;">
-              ${adherenceColor === '#00c853' ? 'check_circle' :
-                adherenceColor === '#d32f2f' ? 'warning' :
-                adherenceColor === '#ffa000' ? 'schedule' :
-                'location_on'}
-            </span>
-            <span>${adherenceStatus}</span>
-          </div>
-          <div style="font-size:12px;color:#666;margin-top:6px;">
-            Updated ${diffMin} min ago • Route ${route}
-          </div>
-        </div>
-      `;
+      // ---- Build GeoJSON feature for this bus ----
+      features.push({
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [lon, lat]
+        },
+        properties: {
+          id,
+          label: veh.vehicle?.label || id,
+          route,
+          adherenceStatus,
+          adherenceColor,
+          delayMinutes: delayMinutes ?? 0,
+          updatedMinutesAgo: diffMin,
+          iconType
+        }
+      });
+    }
 
-      // ----------- CREATE OR UPDATE MARKER -----------
-      if (!busMarkers[id]) {
-        const iconEl = document.createElement("img");
-        iconEl.src = "/New Project (8).png";
-        iconEl.style.width = "40px";
-        iconEl.style.height = "40px";
+    const collection = {
+      type: "FeatureCollection",
+      features
+    };
 
-        const marker = new mapboxgl.Marker({ element: iconEl })
-          .setLngLat([lon, lat])
-          .setPopup(new mapboxgl.Popup().setHTML(popupHTML))
-          .addTo(map);
-
-        busMarkers[id] = marker;
-        marker.currentLngLat = [lon, lat];
-
-      } else {
-        animateMarkerMove(busMarkers[id], [lon, lat]);
-        busMarkers[id].getPopup().setHTML(popupHTML);
-        busMarkers[id].getElement().style.display = "block";
-      }
+    const src = map.getSource("buses");
+    if (src) {
+      src.setData(collection);
     }
 
   } catch (err) {
@@ -2095,6 +2073,7 @@ async function updateBusPositions() {
 
   updateBusPositions.running = false;
 }
+
 
 
 /**
@@ -2312,13 +2291,97 @@ dir505.addEventListener('change', (e) => {
 
 /* Init */
 map.on('load', async () => {
+  map.loadImage('bus.png', (error, image) => {
+  if (error) {
+    console.error("Failed to load bus icon:", error);
+    return;
+  }
+  if (!map.hasImage('bus-icon')) {
+    map.addImage('bus-icon', image);
+  }
+});
+
+map.loadImage('stop_marker.png', (error, image) => {
+  if (error) {
+    console.error("Failed to load bus icon:", error);
+    return;
+  }
+  if (!map.hasImage('stop-marker')) {
+    map.addImage('stop-marker', image);
+  }
+});
+
   await buildTripDirectionMap();
   await loadRoute41Stops();
   await loadRoutes();
+
+  // 🔹 Add GeoJSON source for buses
+  map.addSource('buses', {
+    type: 'geojson',
+    data: {
+      type: 'FeatureCollection',
+      features: []
+    }
+  });
+
+  // 🔹 Simple circle layer for buses (you can later change to symbol/icon)
+  map.addLayer({
+  id: 'buses-layer',
+  type: 'symbol',
+  source: 'buses',
+  layout: {
+    'icon-image': 'bus-icon',   // ← name you added with map.addImage
+    'icon-size': 0.2,
+    'icon-allow-overlap': true,
+    'icon-ignore-placement': true,
+    'icon-anchor': 'center'
+  }
+});
+
+
+  // 🔹 Click handler for bus popups (uses properties we’ll set in updateBusPositions)
+  map.on('click', 'buses-layer', (e) => {
+    if (!e.features || !e.features.length) return;
+    const f = e.features[0];
+    const props = f.properties;
+    const coords = f.geometry.coordinates.slice();
+
+    const popupHTML = `
+      <div style="font-family:'Outfit';font-size:14px;background:white;border-radius:12px;padding:17px;">
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">
+          <span class="material-symbols-outlined">directions_bus</span>
+          <span style="padding:2px 6px;border-radius:10px;background:#f1f1f1;font-weight:600;">
+            Bus ${props.label || props.id}
+          </span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;color:${props.adherenceColor || '#3366CC'};margin-bottom:4px;">
+          <span class="material-symbols-outlined" style="font-size:16px;">
+            ${
+              props.iconType === 'onTime' ? 'check_circle' :
+              props.iconType === 'delayed' ? 'warning' :
+              props.iconType === 'early'   ? 'schedule' :
+              'location_on'
+            }
+          </span>
+          <span>${props.adherenceStatus || 'Live Tracking'}</span>
+        </div>
+        <div style="font-size:12px;color:#666;margin-top:6px;">
+          Updated ${props.updatedMinutesAgo ?? '?'} min ago • Route ${props.route || '—'}
+        </div>
+      </div>
+    `;
+
+    new mapboxgl.Popup()
+      .setLngLat(coords)
+      .setHTML(popupHTML)
+      .addTo(map);
+  });
+
   updateRouteDisplay(selectedDirection);
   updateBusPositions();
   setInterval(updateBusPositions, 15000);
 });
+
 
 </script>
 
