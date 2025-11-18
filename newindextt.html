@@ -1993,6 +1993,10 @@ async function safeJson(res) {
 /* Live buses (unchanged) */
 /* Live buses (unchanged) */
 const busMarkers = {};
+let lastBusFeatures = null;              // previous FeatureCollection for buses
+let busAnimationFrame = null;           // current rAF id
+const BUS_ANIMATION_DURATION = 3000;    // ms for one move animation
+
 async function updateBusPositions() {
   if (updateBusPositions.running) return;
   updateBusPositions.running = true;
@@ -2111,14 +2115,16 @@ async function updateBusPositions() {
     }
 
     const collection = {
-      type: "FeatureCollection",
-      features
-    };
+  type: "FeatureCollection",
+  features
+};
 
-    const src = map.getSource("buses");
-    if (src) {
-      src.setData(collection);
-    }
+const src = map.getSource("buses");
+if (src) {
+  animateBusTransition(lastBusFeatures, collection);
+  lastBusFeatures = collection;
+}
+
 
   } catch (err) {
     console.warn("updateBusPositions crashed but was caught safely:", err);
@@ -2134,26 +2140,88 @@ async function updateBusPositions() {
  * @param {tt.Marker} marker - TomTom marker object
  * @param {[number, number]} newPos - [lon, lat] new position
  */
-function animateMarkerMove(marker, newPos) {
-  const duration = 5000; // ms
-  const frames = 60;
-  const interval = duration / frames;
+function animateBusTransition(fromCollection, toCollection) {
+  const src = map.getSource("buses");
+  if (!src) return;
 
-  const startPos = marker.currentLngLat || marker.getLngLat().toArray();
-  const [startLon, startLat] = startPos;
-  const [endLon, endLat] = newPos;
+  // First update: nothing to animate, just draw.
+  if (!fromCollection || !fromCollection.features.length) {
+    src.setData(toCollection);
+    return;
+  }
 
-  let step = 0;
-  const stepFn = () => {
-    step++;
-    const t = step / frames; // progress (0 → 1)
-    const lon = startLon + (endLon - startLon) * t;
-    const lat = startLat + (endLat - startLat) * t;
-    marker.setLngLat([lon, lat]);
-    if (step < frames) requestAnimationFrame(stepFn);
-    else marker.currentLngLat = newPos; // store final position
-  };
-  requestAnimationFrame(stepFn);
+  // Cancel any in-flight animation so we don’t fight ourselves.
+  if (busAnimationFrame) {
+    cancelAnimationFrame(busAnimationFrame);
+    busAnimationFrame = null;
+  }
+
+  // Index old and new positions by vehicle id for cheap lookup.
+  const fromById = Object.create(null);
+  fromCollection.features.forEach(f => {
+    const id = f.properties.id;
+    if (!id) return;
+    fromById[id] = f;
+  });
+
+  const toById = Object.create(null);
+  toCollection.features.forEach(f => {
+    const id = f.properties.id;
+    if (!id) return;
+    toById[id] = f;
+  });
+
+  const start = performance.now();
+
+  function frame(now) {
+    const tRaw = (now - start) / BUS_ANIMATION_DURATION;
+    const t = Math.max(0, Math.min(1, tRaw)); // clamp 0–1
+
+    // Build an interpolated FeatureCollection for this frame
+    const interpFeatures = toCollection.features.map(f => {
+      const id = f.properties.id;
+      const toCoords = f.geometry.coordinates;
+      const fromFeature = fromById[id];
+
+      let fromCoords = fromFeature ? fromFeature.geometry.coordinates : toCoords;
+
+      // Optional: skip animation for tiny moves to avoid jitter
+      const dx = toCoords[0] - fromCoords[0];
+      const dy = toCoords[1] - fromCoords[1];
+      const dist2 = dx * dx + dy * dy;
+      if (dist2 < 1e-10) {
+        // practically the same place
+        return f;
+      }
+
+      const lng = fromCoords[0] + dx * t;
+      const lat = fromCoords[1] + dy * t;
+
+      // Return a shallow-cloned feature with new geometry
+      return {
+        ...f,
+        geometry: {
+          ...f.geometry,
+          coordinates: [lng, lat]
+        }
+      };
+    });
+
+    src.setData({
+      type: "FeatureCollection",
+      features: interpFeatures
+    });
+
+    if (t < 1) {
+      busAnimationFrame = requestAnimationFrame(frame);
+    } else {
+      // Snap to final data at end to avoid drift
+      src.setData(toCollection);
+      busAnimationFrame = null;
+    }
+  }
+
+  busAnimationFrame = requestAnimationFrame(frame);
 }
 
 
