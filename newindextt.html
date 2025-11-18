@@ -1002,10 +1002,13 @@ const popup = new mapboxgl.Popup({ closeButton: true, closeOnClick: true });
 
 let userMarker = null;
 let watchId = null;
-let lastPosition = null;
+let lastPosition = null; // { lat, lon } of user
+let userHeading = 0;     // degrees, from Geolocation API if available
+let isFollowingUser = false; // are we in "follow my location" mode?
 
 // at top (globals)
 let nearestStopCoords = null;       // { lat, lon }
+
 
 
 /* ------------------------------
@@ -1179,17 +1182,33 @@ function startNavigation() {
 
 
 /* 5️⃣ Hook to your button */
-
+let locatebtnthing = document.getElementById('locateBtn');
 
 document.getElementById('locateBtn').addEventListener('click', () => {
-  if (!navigator.geolocation) return console.warn('Geolocation not supported.');
+  if (!navigator.geolocation) {
+    console.warn('Geolocation not supported.');
+    return;
+  }
+
+  // Still show nearest stops as you do now
   showNearbyStops();
+
+  // Turn on follow mode
+  isFollowingUser = true;
+
+  locatebtnthing.style.backgroundColor = '#BBDEFB';
+
   if (!watchId) {
+    // Start watching position if not already
     watchId = navigator.geolocation.watchPosition(
       (position) => {
-        const userLat = position.coords.latitude;
-        const userLng = position.coords.longitude;
-        lastPosition = [userLng, userLat];
+        const { latitude, longitude, heading } = position.coords;
+
+        // Store as an object for consistency
+        lastPosition = { lat: latitude, lon: longitude };
+
+        // Update marker
+        const lngLat = [longitude, latitude];
 
         if (!userMarker) {
           const icon2 = document.createElement("img");
@@ -1198,17 +1217,46 @@ document.getElementById('locateBtn').addEventListener('click', () => {
           icon2.style.height = "40px";
 
           userMarker = new mapboxgl.Marker({ element: icon2 })
-            .setLngLat(lastPosition)
+            .setLngLat(lngLat)
             .addTo(map);
         } else {
-          userMarker.setLngLat(lastPosition);
+          userMarker.setLngLat(lngLat);
+        }
+
+        // Save heading if provided by the device
+        if (typeof heading === 'number' && !Number.isNaN(heading)) {
+          userHeading = heading;
+        }
+
+        // If we’re in follow mode, keep the camera locked on the user
+        if (isFollowingUser) {
+          map.easeTo({
+            center: lngLat,
+            zoom: Math.max(map.getZoom(), 15),     // don’t zoom out below 15 while following
+            bearing: userHeading || map.getBearing(),
+            pitch: 55,                             // tilt, "3D" style
+            duration: 1000,
+            essential: true
+          });
         }
       },
       (error) => console.error('Location error:', error.message),
-      { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
+      {
+        enableHighAccuracy: true,
+        maximumAge: 5000,
+        timeout: 10000
+      }
     );
   } else if (lastPosition) {
-    map.flyTo({ center: lastPosition, zoom: 15 });
+    // Already watching: recenter and re-enable follow mode
+    map.easeTo({
+      center: [lastPosition.lon, lastPosition.lat],
+      zoom: Math.max(map.getZoom(), 15),
+      bearing: userHeading || map.getBearing(),
+      pitch: 55,
+      duration: 1000,
+      essential: true
+    });
   }
 });
 
@@ -2376,6 +2424,18 @@ map.loadImage('stop_marker.png', (error, image) => {
       .setHTML(popupHTML)
       .addTo(map);
   });
+
+    // Disable follow mode when the user manually moves the map
+  ['dragstart', 'rotatestart', 'pitchstart', 'zoomstart'].forEach(evt => {
+    map.on(evt, () => {
+      if (isFollowingUser) {
+        isFollowingUser = false;
+      locatebtnthing.style.backgroundColor = '#FFFF';
+        // optionally: update the locate button UI to show "not following"
+      }
+    });
+  });
+
 
   updateRouteDisplay(selectedDirection);
   updateBusPositions();
