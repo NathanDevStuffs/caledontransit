@@ -1195,6 +1195,7 @@ document.getElementById('locateBtn').addEventListener('click', () => {
 
   // Turn on follow mode
   isFollowingUser = true;
+  console.log('follow mode on');
 
   locatebtnthing.style.backgroundColor = '#BBDEFB';
 
@@ -1230,6 +1231,7 @@ document.getElementById('locateBtn').addEventListener('click', () => {
 
         // If we’re in follow mode, keep the camera locked on the user
         if (isFollowingUser) {
+          console.log('continue follow')
           map.easeTo({
             center: lngLat,
             zoom: Math.max(map.getZoom(), 15),     // don’t zoom out below 15 while following
@@ -2426,11 +2428,12 @@ map.loadImage('stop_marker.png', (error, image) => {
   });
 
     // Disable follow mode when the user manually moves the map
-  ['dragstart', 'rotatestart', 'pitchstart', 'zoomstart'].forEach(evt => {
+  ['dragstart'].forEach(evt => {
     map.on(evt, () => {
       if (isFollowingUser) {
         isFollowingUser = false;
       locatebtnthing.style.backgroundColor = '#FFFF';
+      console.log("disable follow")
         // optionally: update the locate button UI to show "not following"
       }
     });
