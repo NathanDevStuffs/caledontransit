@@ -655,6 +655,13 @@ It looks like you’re offline right now. Live updates aren’t available, so we
     </div>
   </li>
 
+  <li data-route="30" style="list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
+    <div class="route-item">
+      <div class="route-pill">30</div>
+      <span>Airport Road</span>
+    </div>
+  </li>
+
   <li class="zum" data-route="501" style="list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
     <div class="route-item">
       <div class="route-pill zum-pill">501</div>
@@ -716,6 +723,13 @@ It looks like you’re offline right now. Live updates aren’t available, so we
     <option value="5050008">East to Viscount Station (505A)</option>
     <option value="5050006">West to Mount Pleasant GO Station (505)</option>
     <option value="5050010">West to Trinity Commons Terminal (505A)</option>
+  </select>
+
+  <select id="direction30select" class="direction-select" style="display:none;">
+    <option value="300086">North to Mayfield Road</option>
+    <option value="300087">North to Caledon</option>
+    <option value="300083">South to Westwood Mall Terminal</option>
+    <option value="300077">South to Westwood Mall Terminal via Caledon</option>
   </select>
 
   <!-- locate button -->
@@ -937,7 +951,7 @@ const route = e.currentTarget.getAttribute('data-route');
     routeMenu.classList.remove('show');
     routePill.setAttribute('aria-expanded', 'false');
 
-    [dir41, dir81, dir25, dir18, dir501, dir502, dir505].forEach(d => d.style.display = 'none');
+    [dir41, dir81, dir25, dir18, dir501, dir502, dir505,dir30].forEach(d => d.style.display = 'none');
 
     switch (route) {
       case '41': dir41.style.display='inline-block'; routePill.classList.remove("zum-pill"); updateRouteDisplay(dir41.value); map.flyTo({center:[-79.7254859,43.8333433],zoom:11}); break;
@@ -947,6 +961,7 @@ const route = e.currentTarget.getAttribute('data-route');
       case '501': dir501.style.display='inline-block'; routePill.classList.add("zum-pill"); updateRouteDisplay(dir501.value); map.flyTo({center:[-79.6400479,43.7655184],zoom:10}); break;
       case '502': dir502.style.display='inline-block'; routePill.classList.add("zum-pill"); updateRouteDisplay(dir502.value); map.flyTo({center:[-79.7714951,43.6632282],zoom:10}); break;
       case '505': dir505.style.display='inline-block'; routePill.classList.add("zum-pill"); updateRouteDisplay(dir505.value); map.flyTo({center:[-79.630529,43.686823],zoom:11}); break;
+      case '30': dir30.style.display='inline-block'; routePill.classList.remove("zum-pill"); updateRouteDisplay(dir30.value); map.flyTo({center:[-79.7254859,43.8333433],zoom:11}); break;
     }
   });
 });
@@ -1311,7 +1326,7 @@ async function buildTripDirectionMap() {
   const tripsRes = await fetch("/trips.txt");
   const trips = parseCSV(await tripsRes.text());
   trips.forEach(trip => {
-    if (trip.route_id === "41" || trip.route_id === "81" || trip.route_id === "25" || trip.route_id === "18" || trip.route_id === "501" || trip.route_id === "502" || trip.route_id === "505") {
+    if (trip.route_id === "41" || trip.route_id === "81" || trip.route_id === "25" || trip.route_id === "18" || trip.route_id === "501" || trip.route_id === "502" || trip.route_id === "505" || trip.route_id === "30") {
       tripDirectionMap[trip.trip_id] = trip.shape_id;
        const stem = trip.trip_id.split('-')[0];
       if (!tripDirectionMap[stem]) tripDirectionMap[stem] = trip.shape_id;
@@ -1613,7 +1628,7 @@ async function getStopDepartures(stopId) {
     });
 
     const now = new Date();
-    const allowedRoutes = new Set(['41', '81', '25', '18', '501', '502', '505']); // allow both routes
+    const allowedRoutes = new Set(['41', '81', '25', '18', '501', '502', '505', '30']); // allow both routes
     const departures = stopTimes
       // .filter(st => st.stop_id === stopId && allowedRoutes.has(tripRouteMap[st.trip_id]) && isTripRunningToday(st.trip_id, tripServiceMap))
 	.filter(st => st.stop_id === stopId && allowedRoutes.has(tripRouteMap[st.trip_id]))
@@ -1657,7 +1672,7 @@ async function getStopDepartures(stopId) {
 let selectedDirection = "410009"; // default direction: northbound
 
 // ---- Stop marker storage & guard ----
-const stopMarkers = { "410010": [], "410009": [], "810002": [], "810005": [], "250032": [], "250033": [], "180209": [], "180231": [], "5010073": [], "5010072": [], "5020016": [], "5020013": [], "5050005": [], "5050008": [], "5050006": [], "5050010": [] }; // northbound, southbound
+const stopMarkers = { "410010": [], "410009": [], "810002": [], "810005": [], "250032": [], "250033": [], "180209": [], "180231": [], "5010073": [], "5010072": [], "5020016": [], "5020013": [], "5050005": [], "5050008": [], "5050006": [], "5050010": [], "300086": [], "300087": [], "300083": [], "300077": []}; // northbound, southbound
 // keep your existing globals:
 let stopsLoaded = false;
 // stopMarkers can stay defined but won't be used for stops anymore
@@ -1702,6 +1717,10 @@ async function loadRoute41Stops() {
     '5050008': { route: '505A', dir: 'East to Viscount Station (505A)' },
     '5050006': { route: '505', dir: 'West to Mount Pleasant GO Station (505)' },
     '5050010': { route: '505A', dir: 'West to Trinity Commons Terminal (505A)' },
+    '300086': { route: '30', dir: 'North to Mayfield Road' },
+    '300087': { route: '30', dir: 'North to Caledon' },
+    '300083': { route: '30', dir: 'South to Westwood Mall Terminal' },
+    '300077': { route: '30', dir: 'South to Westwood Mall Terminal via Caledon' }
   };
 
   // Build GeoJSON features for all relevant stops
@@ -1828,6 +1847,8 @@ async function loadRoute41Stops() {
               else if (d.routeId === "18") routeName = "Dixie";
               else if (d.routeId === "501") routeName = "Zum Queen";
               else if (d.routeId === "502") routeName = "Zum Main";
+              else if (d.routeId === "505") routeName = "Zum Bovaird";
+              else if (d.routeId === "30") routeName = "Airport Road";
               else routeName = "Unknown Route";
             }
 
@@ -1891,12 +1912,16 @@ async function loadRoutes() {
     { id: '180231', color: '#FF3399', label: 'Northbound A' },
     { id: '5010073', color: '#c24947', label: 'Eastbound' },
     { id: '5010072', color: '#c24947', label: 'Westbound' },
-    { id: '5020016', color: '#47a3c2', label: 'Southbound' },
-    { id: '5020013', color: '#47a3c2', label: 'Northbound' },
-    { id: '5050005', color: '#ffa500', label: 'East to Malton GO Station' },
-    { id: '5050008', color: '#ffb84d', label: 'East to Viscount Station (A)' },
-    { id: '5050006', color: '#ffa500', label: 'West to Mount Pleasant GO Station' },
-    { id: '5050010', color: '#ffb84d', label: 'West to Trinity Commons Terminal (A)' },
+    { id: '5020016', color: '#c24947', label: 'Southbound' },
+    { id: '5020013', color: '#c24947', label: 'Northbound' },
+    { id: '5050005', color: '#c24947', label: 'East to Malton GO Station' },
+    { id: '5050008', color: '#c24947', label: 'East to Viscount Station (A)' },
+    { id: '5050006', color: '#c24947', label: 'West to Mount Pleasant GO Station' },
+    { id: '5050010', color: '#c24947', label: 'West to Trinity Commons Terminal (A)' },
+    { id: '300086', color: '#FF3399', label: 'North to Mayfield Road' },
+    { id: '300087', color: '#FF3399', label: 'North to Caledon' },
+    { id: '300083', color: '#3399FF', label: 'South to Westwood Mall Terminal' },
+    { id: '300077', color: '#3399FF', label: 'South to Westwood Mall Terminal via Caledon' }
 
   ];
 
@@ -1942,7 +1967,8 @@ function updateRouteDisplay(selectedId) {
     '5010073', '5010072',
     '5020016', '5020013',
     '5050005', '5050008',
-    '5050006', '5050010'
+    '5050006', '5050010',
+    '300086', '300087', '300083', '300077',
   ];
 
   routes.forEach(id => {
@@ -2018,7 +2044,7 @@ async function updateBusPositions() {
       }
     }
 
-    const activeRoutes = ["41", "81", "25", "18", "501", "502", "505"];
+    const activeRoutes = ["41", "81", "25", "18", "501", "502", "505", "30"];
 
     // Header timestamp → how stale is the feed?
     let diffMin = 0;
@@ -2266,7 +2292,7 @@ const dir18 = document.getElementById('direction18select');
 const dir501 = document.getElementById('direction501select');
 const dir502 = document.getElementById('direction502select');
 const dir505 = document.getElementById('direction505select');
-
+const dir30 = document.getElementById('direction30select');
 /*const button41 = document.getElementById('button41');
 const button81 = document.getElementById('button81');
 const button25 = document.getElementById('button25');
@@ -2409,6 +2435,9 @@ dir505.addEventListener('change', (e) => {
   updateRouteDisplay(e.target.value);
 });
 
+dir30.addEventListener('change', (e) => {
+  updateRouteDisplay(e.target.value);
+});
 
 /* Init */
 map.on('load', async () => {
