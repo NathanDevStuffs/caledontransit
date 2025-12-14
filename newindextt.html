@@ -1026,6 +1026,11 @@ let isFollowingUser = false; // are we in "follow my location" mode?
 
 // at top (globals)
 let nearestStopCoords = null;       // { lat, lon }
+let walkingRouteCoords = null;   // full decoded route
+let destinationCoords = null;   // [lon, lat]
+let ROUTE_REMOVE_DISTANCE = 300; // meters
+let REROUTE_DISTANCE = 60;       // meters off-route
+
 
 
 
@@ -1168,6 +1173,15 @@ if (!nearest || !Number.isFinite(nearest.stop_lat) || !Number.isFinite(nearest.s
 
 // ✅ store for navigation
 nearestStopCoords = { lat: nearest.stop_lat, lon: nearest.stop_lon };
+// 🔹 draw walking route ONCE
+if (lastPosition && nearestStopCoords) {
+  drawWalkingRouteValhalla(
+    lastPosition.lat,
+    lastPosition.lon,
+    nearestStopCoords.lat,
+    nearestStopCoords.lon
+  );
+}
 
 // Step 4: Update “Nearest Stop” card
 document.getElementById("closestStop").style.display = "block";
@@ -1199,6 +1213,143 @@ function startNavigation() {
 }
 
 
+function decodeValhalla(encoded) {
+	let coords = [];
+	let index = 0;
+	let lat = 0,
+		lon = 0;
+	while (index < encoded.length) {
+		let shift = 0,
+			result = 0;
+		let byte;
+		// Decodelatitude
+		do {
+			byte = encoded.charCodeAt(index++) - 63;
+			result |= (byte & 0x1f) << shift;
+			shift += 5;
+		} while (byte >= 0x20);
+		lat += (result & 1) ? ~(result >> 1) : (result >> 1);
+		// Decode longitude
+		shift = 0;
+		result = 0;
+		do {
+			byte = encoded.charCodeAt(index++) - 63;
+			result |= (byte & 0x1f) << shift;
+			shift += 5;
+		} while (byte >= 0x20);
+		lon += (result & 1) ? ~(result >> 1) : (result >> 1);
+		coords.push([lon / 1e6, lat / 1e6]);
+	}
+	return coords;
+}
+
+async function drawWalkingRouteValhalla(userLat, userLon, stopLat, stopLon) {
+  const url = "https://valhalla1.openstreetmap.de/route";
+
+  const body = {
+    locations: [
+      { lat: userLat, lon: userLon },
+      { lat: stopLat, lon: stopLon }
+    ],
+    costing: "pedestrian"
+  };
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  });
+
+  const data = await res.json();
+  const shape = data?.trip?.legs?.[0]?.shape;
+  if (!shape) return;
+
+  walkingRouteCoords = decodeValhalla(shape);
+  destinationCoords = [stopLon, stopLat];
+
+  updateWalkingRoute(walkingRouteCoords);
+}
+
+function updateWalkingRoute(coords) {
+  const geojson = {
+    type: "Feature",
+    geometry: { type: "LineString", coordinates: coords }
+  };
+
+  if (!map.getSource("walking-route")) {
+    map.addSource("walking-route", { type: "geojson", data: geojson });
+    map.addLayer({
+      id: "walking-route-line",
+      type: "line",
+      source: "walking-route",
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: {
+        "line-color": "#000",
+        "line-width": 3
+      }
+    });
+  } else {
+    map.getSource("walking-route").setData(geojson);
+  }
+}
+
+function metersBetween(a, b) {
+  const R = 6371e3;
+  const φ1 = a[1] * Math.PI / 180;
+  const φ2 = b[1] * Math.PI / 180;
+  const Δφ = (b[1] - a[1]) * Math.PI / 180;
+  const Δλ = (b[0] - a[0]) * Math.PI / 180;
+
+  const x = Math.sin(Δφ / 2) ** 2 +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ / 2) ** 2;
+  return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+}
+
+function advanceWalkingRoute(userLon, userLat) {
+  if (!walkingRouteCoords || !destinationCoords) return;
+
+  const userPoint = [userLon, userLat];
+
+  // 1. Remove route if close to destination
+  if (metersBetween(userPoint, destinationCoords) <= ROUTE_REMOVE_DISTANCE) {
+    walkingRouteCoords = null;
+    map.getSource("walking-route")?.setData({
+      type: "Feature",
+      geometry: { type: "LineString", coordinates: [] }
+    });
+    return;
+  }
+
+  // 2. Find nearest route index
+  let minDist = Infinity;
+  let closestIndex = 0;
+
+  for (let i = 0; i < walkingRouteCoords.length; i++) {
+    const d = metersBetween(userPoint, walkingRouteCoords[i]);
+    if (d < minDist) {
+      minDist = d;
+      closestIndex = i;
+    }
+  }
+
+  // 3. Reroute if user is too far away
+  if (minDist > REROUTE_DISTANCE) {
+    drawWalkingRouteValhalla(
+      userLat,
+      userLon,
+      destinationCoords[1],
+      destinationCoords[0]
+    );
+    return;
+  }
+
+  // 4. Trim route behind user
+  walkingRouteCoords = walkingRouteCoords.slice(closestIndex);
+  updateWalkingRoute(walkingRouteCoords);
+}
+
+
 /* 5️⃣ Hook to your button */
 let locatebtnthing = document.getElementById('locateBtn');
 
@@ -1225,6 +1376,8 @@ document.getElementById('locateBtn').addEventListener('click', () => {
 
         // Store as an object for consistency
         lastPosition = { lat: latitude, lon: longitude };
+        advanceWalkingRoute(longitude, latitude);
+
 
         // Update marker
         const lngLat = [longitude, latitude];
