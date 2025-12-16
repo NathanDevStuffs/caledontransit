@@ -2704,92 +2704,7 @@ map.loadImage('stop_marker.png', (error, image) => {
 
 	  <br>
 	  <br>
-  <div id="servicealerts" style="
-  background-color: rgba(255, 123, 0, 0.1);
-  padding: 18px 20px;
-  max-width: 380px;
-  margin: auto;
-  border-radius: 20px;
-  color: #111;
-  font-family: Outfit, sans-serif;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-  backdrop-filter: blur(8px);
-  display: none; TODO: set to block when alerts exist
-">
 
-  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-    <span class="material-symbols-outlined" style="font-size: 22px;">bus_alert</span>
-    <span style="font-weight: 600; font-size: 15px;">Live Service Alerts / Route Status</span>
-  </div>
-
-  <p id="allClear" style="
-    font-size: 13px;
-    margin-top: 6px;
-    margin-bottom: 12px;
-    background: rgba(255, 123, 0, 0.07);
-    padding: 8px 10px;
-    border-radius: 8px;
-    text-align: center;
-  ">
-    No service alerts or disruptions at this time.
-  </p>
-
-  <ul style="
-    padding: 0;
-    margin: 0;
-    list-style-type: none;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  ">
-
-    <!-- ✅ Route OK -->
-    <li style="background: white; padding: 10px 14px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 4px; transition: transform 0.15s, box-shadow 0.15s; transform: none; width: unset !important; font-family: Outfit !important; height: unset !important; margin-bottom: unset !important;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 3px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 1px 4px rgba(0,0,0,0.1)';">
-      <div style="display: flex; align-items: center; gap: 14px;">
-    <button class="pill" style="width: 60px; height: 40px;">41</button>
-    <p style="font-weight: 600; font-size: 15px; margin: 0;">Bolton</p>
-  </div>
-
-  <!-- Delay icon + text container -->
-  <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-    <span class="material-symbols-outlined" style="font-size: 20px; color: #d32f2f;"></span>
-    <span style="font-size: 13px; font-family: Outfit; font-weight: 600;" class="status"></span>
-    <p style="font-size: 12px; margin: 0; color: #d32f2f;" class="delayminutes"></p>
-  </div>
-    </li>
-
-    <!-- ⚠️ Minor delay -->
-    <li style="background: white; padding: 10px 14px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 4px; transition: transform 0.15s, box-shadow 0.15s; transform: none; width: unset !important; font-family: Outfit !important; height: unset !important; margin-bottom: unset !important;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 3px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 1px 4px rgba(0,0,0,0.1)';">
-      <div style="display: flex; align-items: center; gap: 14px;">
-    <button class="pill" style="width: 60px; height: 40px;">81</button>
-    <p style="font-weight: 600; font-size: 15px; margin: 0;">Mayfield West</p>
-  </div>
-
-  <!-- Delay icon + text container -->
-  <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-    <span class="material-symbols-outlined" style="font-size: 20px; color: #d32f2f;"></span>
-    <span style="font-size: 13px; font-family: Outfit; font-weight: 600;" class="status"></span>
-    <p style="font-size: 12px; margin: 0; color: #d32f2f;" class="delayminutes"></p>
-  </div>
-    </li>
-
-    <!-- ⛔ Major disruption -->
-    <li style="background: white; padding: 10px 14px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 4px; transition: transform 0.15s, box-shadow 0.15s; transform: none; width: unset !important; font-family: Outfit !important; height: unset !important; margin-bottom: unset !important;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 3px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 1px 4px rgba(0,0,0,0.1)';">
-      <div style="display: flex; align-items: center; gap: 14px;">
-    <button class="pill" style="width: 60px; height: 40px;">25</button>
-    <p style="font-weight: 600; font-size: 15px; margin: 0;">Edenbrooke</p>
-  </div>
-
-  <!-- Delay icon + text container -->
-  <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-    <span class="material-symbols-outlined" style="font-size: 20px; color: #d32f2f;"></span>
-    <span style="font-size: 13px; font-family: Outfit; font-weight: 600;" class="status"></span>
-    <p style="font-size: 12px; margin: 0; color: #d32f2f;" class="delayminutes"></p>
-  </div>
-    </li>
-
-  </ul>
-</div>
 
 <script>
 async function fetchServiceStatus() {
@@ -3053,6 +2968,128 @@ left: 50%;
         border-radius: 25px;
         border: 1px solid #ddd;
     ">
+    <div class="UserGeneric">
+        The current browser does not support Web pages that contain the IFRAME element. To use this Web Part, you must use a browser that supports this element, such as Internet Explorer 7.0 or later.
+    </div>
+</iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="disruptionsModal"
+     class="trip-modal-backdrop"
+     aria-hidden="true">
+  <div class="trip-modal"
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="tripModalTitle">
+    <div class="trip-modal-header">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="material-symbols-outlined">emergency_home<span>
+        <h2 id="tripModalTitle">Service Disruptions</h2>
+      </div>
+      <button type="button"
+              id="tripModalClose"
+              class="trip-modal-close"
+              aria-label="Close trip planner">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="trip-modal-body">
+      <!-- TODO: put your real trip planner UI here -->
+      <p style="margin-bottom:12px;">
+        Plan your trip with ease using Triplinx or the Transit app.
+
+      </p>
+      <div class="trip-modal-form">
+          <div id="servicealerts" style="
+  background-color: rgba(255, 123, 0, 0.1);
+  padding: 18px 20px;
+  max-width: 380px;
+  margin: auto;
+  border-radius: 20px;
+  color: #111;
+  font-family: Outfit, sans-serif;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  backdrop-filter: blur(8px);
+  display: none; TODO: set to block when alerts exist
+">
+
+  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+    <span class="material-symbols-outlined" style="font-size: 22px;">bus_alert</span>
+    <span style="font-weight: 600; font-size: 15px;">Live Service Alerts / Route Status</span>
+  </div>
+
+  <p id="allClear" style="
+    font-size: 13px;
+    margin-top: 6px;
+    margin-bottom: 12px;
+    background: rgba(255, 123, 0, 0.07);
+    padding: 8px 10px;
+    border-radius: 8px;
+    text-align: center;
+  ">
+    No service alerts or disruptions at this time.
+  </p>
+
+  <ul style="
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  ">
+
+    <!-- ✅ Route OK -->
+    <li style="background: white; padding: 10px 14px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 4px; transition: transform 0.15s, box-shadow 0.15s; transform: none; width: unset !important; font-family: Outfit !important; height: unset !important; margin-bottom: unset !important;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 3px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 1px 4px rgba(0,0,0,0.1)';">
+      <div style="display: flex; align-items: center; gap: 14px;">
+    <button class="pill" style="width: 60px; height: 40px;">41</button>
+    <p style="font-weight: 600; font-size: 15px; margin: 0;">Bolton</p>
+  </div>
+
+  <!-- Delay icon + text container -->
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+    <span class="material-symbols-outlined" style="font-size: 20px; color: #d32f2f;"></span>
+    <span style="font-size: 13px; font-family: Outfit; font-weight: 600;" class="status"></span>
+    <p style="font-size: 12px; margin: 0; color: #d32f2f;" class="delayminutes"></p>
+  </div>
+    </li>
+
+    <!-- ⚠️ Minor delay -->
+    <li style="background: white; padding: 10px 14px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 4px; transition: transform 0.15s, box-shadow 0.15s; transform: none; width: unset !important; font-family: Outfit !important; height: unset !important; margin-bottom: unset !important;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 3px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 1px 4px rgba(0,0,0,0.1)';">
+      <div style="display: flex; align-items: center; gap: 14px;">
+    <button class="pill" style="width: 60px; height: 40px;">81</button>
+    <p style="font-weight: 600; font-size: 15px; margin: 0;">Mayfield West</p>
+  </div>
+
+  <!-- Delay icon + text container -->
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+    <span class="material-symbols-outlined" style="font-size: 20px; color: #d32f2f;"></span>
+    <span style="font-size: 13px; font-family: Outfit; font-weight: 600;" class="status"></span>
+    <p style="font-size: 12px; margin: 0; color: #d32f2f;" class="delayminutes"></p>
+  </div>
+    </li>
+
+    <!-- ⛔ Major disruption -->
+    <li style="background: white; padding: 10px 14px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 4px; transition: transform 0.15s, box-shadow 0.15s; transform: none; width: unset !important; font-family: Outfit !important; height: unset !important; margin-bottom: unset !important;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 3px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 1px 4px rgba(0,0,0,0.1)';">
+      <div style="display: flex; align-items: center; gap: 14px;">
+    <button class="pill" style="width: 60px; height: 40px;">25</button>
+    <p style="font-weight: 600; font-size: 15px; margin: 0;">Edenbrooke</p>
+  </div>
+
+  <!-- Delay icon + text container -->
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+    <span class="material-symbols-outlined" style="font-size: 20px; color: #d32f2f;"></span>
+    <span style="font-size: 13px; font-family: Outfit; font-weight: 600;" class="status"></span>
+    <p style="font-size: 12px; margin: 0; color: #d32f2f;" class="delayminutes"></p>
+  </div>
+    </li>
+
+  </ul>
+</div>
     <div class="UserGeneric">
         The current browser does not support Web pages that contain the IFRAME element. To use this Web Part, you must use a browser that supports this element, such as Internet Explorer 7.0 or later.
     </div>
