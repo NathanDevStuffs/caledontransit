@@ -2095,7 +2095,7 @@ async function loadRoutes() {
       type: 'line',
       source: `route-${id}`,
       layout: { 'line-join': 'round', 'line-cap': 'round', visibility: 'none' },
-      paint: { 'line-color': color, 'line-width': 5 }
+      paint: { 'line-color': color, 'line-width': 8 }
     });
 
     map.on('click', `routeLineLayer-${id}`, e => {
