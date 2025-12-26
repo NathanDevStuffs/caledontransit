@@ -1365,7 +1365,7 @@ async function fetchTransitDeparturesForGtfsStop(stop) {
 async function getStopDepartures(stopId) {
   try {
     const [stopTimesRes, tripsRes] = await Promise.all([
-      fetch("https://github.com/NathanDevStuffs/caledontransit/releases/download/gtfs/stop_times.txt"),
+      fetch("https://busapi.caledontransit.com/stoptimes"),
       fetch("/gtfs-files/trips.txt")
     ]);
 
@@ -1436,7 +1436,7 @@ async function loadRoute41Stops() {
   stopsLoaded = true;
 
   const [stopTimesRes, stopsRes] = await Promise.all([
-    fetch("https://github.com/NathanDevStuffs/caledontransit/releases/download/gtfs/stop_times.txt"),
+    fetch("https://busapi.caledontransit.com/stoptimes"),
     fetch("/gtfs-files/stops.txt")
   ]);
 
@@ -1488,7 +1488,7 @@ async function loadRoute41Stops() {
 
       // create marker element
       const icon = document.createElement("img");
-      icon.src = "download (6).png";
+      icon.src = "stop_marker.png";
       icon.style.width = "12px";
       icon.style.height = "12px";
       icon.style.cursor = "pointer";
@@ -1685,7 +1685,7 @@ async function updateBusPositions() {
     const [realtimeRes, tripUpdateRes, stopTimesRes] = await Promise.all([
       fetch("https://busapi.caledontransit.com/"),
       fetch("https://busapi.caledontransit.com/tripupdate"),
-      fetch("https://github.com/NathanDevStuffs/caledontransit/releases/download/gtfs/stop_times.txt")
+      fetch("https://busapi.caledontransit.com/stoptimes")
     ]);
 
     const realtimeData = await realtimeRes.json();
@@ -2152,7 +2152,7 @@ async function fetchServiceStatus() {
   try {
     const [tripRes, stopRes] = await Promise.all([
       fetch("https://busapi.caledontransit.com/tripupdate"),
-      fetch("https://github.com/NathanDevStuffs/caledontransit/releases/download/gtfs/stop_times.txt")
+      fetch("https://busapi.caledontransit.com/stoptimes")
     ]);
 
     const tripData = await tripRes.json();
