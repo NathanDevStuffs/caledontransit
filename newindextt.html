@@ -1766,7 +1766,7 @@ async function getStopDepartures(stopId) {
   try {
     const [stopTimesRes, tripsRes] = await Promise.all([
       // fetch("/gtfs-files/stop_times.txt"),
-      fetch("https://gtfs.caledontransit.com/stop_times.txt"),
+      fetch("https://busapi.caledontransit.com/stoptimes"),
       fetch("/gtfs-files/trips.txt")
     ]);
 
@@ -1837,7 +1837,7 @@ async function loadRoute41Stops() {
 
   const [stopTimesRes, stopsRes] = await Promise.all([
     // fetch("/gtfs-files/stop_times.txt"),
-      fetch("https://gtfs.caledontransit.com/stop_times.txt"),
+      fetch("https://busapi.caledontransit.com/stoptimes"),
     fetch("/gtfs-files/stops.txt")
   ]);
 
@@ -2186,7 +2186,7 @@ async function updateBusPositions() {
     const realtimeRes   = await safeFetch("https://busapi.caledontransit.com/");
     const tripUpdateRes = await safeFetch("https://busapi.caledontransit.com/tripupdate");
     // const stopTimesRes  = await safeFetch("/gtfs-files/stop_times.txt");
-    const stopTimesRes  = await safeFetch("https://gtfs.caledontransit.com/stop_times.txt");
+    const stopTimesRes  = await safeFetch("https://busapi.caledontransit.com/stoptimes");
 
     const realtimeData   = (realtimeRes   ? await safeJson(realtimeRes)   : null) || { entity: [] };
     const tripUpdateData = (tripUpdateRes ? await safeJson(tripUpdateRes) : null) || { entity: [] };
@@ -2715,7 +2715,7 @@ async function fetchServiceStatus() {
     const [tripRes, stopRes] = await Promise.all([
       fetch("https://busapi.caledontransit.com/tripupdate"),
       // fetch("/gtfs-files/stop_times.txt"),
-      fetch("https://gtfs.caledontransit.com/stop_times.txt")
+      fetch("https://busapi.caledontransit.com/stoptimes")
     ]);
 
     const tripData = await tripRes.json();

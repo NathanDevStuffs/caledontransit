@@ -1365,7 +1365,7 @@ async function fetchTransitDeparturesForGtfsStop(stop) {
 async function getStopDepartures(stopId) {
   try {
     const [stopTimesRes, tripsRes] = await Promise.all([
-      fetch("https://gtfs.caledontransit.com/stop_times.txt"),
+      fetch("https://busapi.caledontransit.com/stoptimes"),
       fetch("/gtfs-files/trips.txt")
     ]);
 
@@ -1436,7 +1436,7 @@ async function loadRoute41Stops() {
   stopsLoaded = true;
 
   const [stopTimesRes, stopsRes] = await Promise.all([
-    fetch("https://gtfs.caledontransit.com/stop_times.txt"),
+    fetch("https://busapi.caledontransit.com/stoptimes"),
     fetch("/gtfs-files/stops.txt")
   ]);
 
@@ -1685,7 +1685,7 @@ async function updateBusPositions() {
     const [realtimeRes, tripUpdateRes, stopTimesRes] = await Promise.all([
       fetch("https://busapi.caledontransit.com/"),
       fetch("https://busapi.caledontransit.com/tripupdate"),
-      fetch("https://gtfs.caledontransit.com/stop_times.txt")
+      fetch("https://busapi.caledontransit.com/stoptimes")
     ]);
 
     const realtimeData = await realtimeRes.json();
@@ -1811,7 +1811,7 @@ async function updateBusPositions() {
         // ---- Create or update marker ----
         if (!busMarkers[id]) {
           const iconEl = document.createElement("img");
-          iconEl.src = "/New Project (8).png";
+          iconEl.src = "/bus.png";
           iconEl.style.width = "40px";
           iconEl.style.height = "40px";
 
@@ -2152,7 +2152,7 @@ async function fetchServiceStatus() {
   try {
     const [tripRes, stopRes] = await Promise.all([
       fetch("https://busapi.caledontransit.com/tripupdate"),
-      fetch("https://gtfs.caledontransit.com/stop_times.txt")
+      fetch("https://busapi.caledontransit.com/stoptimes")
     ]);
 
     const tripData = await tripRes.json();
