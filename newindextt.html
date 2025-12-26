@@ -1045,7 +1045,7 @@ let nearbyMarkers = [];
 /* 1️⃣ Load all GTFS stops from stops.txt */
 async function loadAllStops() {
   if (allStops.length) return allStops; // cache
-  const res = await fetch('/stops.txt');
+  const res = await fetch('/gtfs-files/stops.txt');
   const text = await res.text();
   const lines = text.trim().split('\n');
   const headers = lines.shift().split(',');
@@ -1448,7 +1448,7 @@ function parseCSV(csv) {
 
 /* Service calendar (unchanged) */
 async function getServiceCalendar() {
-  const res = await fetch('/calendar.txt');
+  const res = await fetch('/gtfs-files/calendar.txt');
   const calendar = parseCSV(await res.text());
   const serviceMap = {};
   calendar.forEach(svc => {
@@ -1476,7 +1476,7 @@ let serviceMap = {};
 // Build trip_id → shape_id mapping (now includes route 41 and route 81)
 async function buildTripDirectionMap() {
   [serviceMap] = await Promise.all([getServiceCalendar()]);
-  const tripsRes = await fetch("/trips.txt");
+  const tripsRes = await fetch("/gtfs-files/trips.txt");
   const trips = parseCSV(await tripsRes.text());
   trips.forEach(trip => {
     if (trip.route_id === "41" || trip.route_id === "81" || trip.route_id === "25" || trip.route_id === "18" || trip.route_id === "501" || trip.route_id === "502" || trip.route_id === "505" || trip.route_id === "30") {
@@ -1765,8 +1765,8 @@ async function fetchTransitDeparturesForGtfsStop(stop) {
 async function getStopDepartures(stopId) {
   try {
     const [stopTimesRes, tripsRes] = await Promise.all([
-      fetch("/stop_times.txt"),
-      fetch("/trips.txt")
+      fetch("/gtfs-files/stop_times.txt"),
+      fetch("/gtfs-files/trips.txt")
     ]);
 
     const stopTimes = parseCSV(await stopTimesRes.text());
@@ -1835,8 +1835,8 @@ async function loadRoute41Stops() {
   stopsLoaded = true;
 
   const [stopTimesRes, stopsRes] = await Promise.all([
-    fetch("/stop_times.txt"),
-    fetch("/stops.txt")
+    fetch("/gtfs-files/stop_times.txt"),
+    fetch("/gtfs-files/stops.txt")
   ]);
 
   const stopTimes = parseCSV(await stopTimesRes.text());
@@ -2052,7 +2052,7 @@ async function loadRoute41Stops() {
    Load routes (unchanged)
    -------------------------*/
 async function loadRoutes() {
-  const response = await fetch('/shapes.txt');
+  const response = await fetch('/gtfs-files/shapes.txt');
   const parsed = parseCSV(await response.text());
   const routes = [
     { id: '410010', color: '#FF3399', label: 'Northbound' },
@@ -2183,7 +2183,7 @@ async function updateBusPositions() {
   try {
     const realtimeRes   = await safeFetch("https://busapi.caledontransit.com/");
     const tripUpdateRes = await safeFetch("https://busapi.caledontransit.com/tripupdate");
-    const stopTimesRes  = await safeFetch("/stop_times.txt");
+    const stopTimesRes  = await safeFetch("/gtfs-files/stop_times.txt");
 
     const realtimeData   = (realtimeRes   ? await safeJson(realtimeRes)   : null) || { entity: [] };
     const tripUpdateData = (tripUpdateRes ? await safeJson(tripUpdateRes) : null) || { entity: [] };
@@ -2711,7 +2711,7 @@ async function fetchServiceStatus() {
   try {
     const [tripRes, stopRes] = await Promise.all([
       fetch("https://busapi.caledontransit.com/tripupdate"),
-      fetch("/stop_times.txt")
+      fetch("/gtfs-files/stop_times.txt")
     ]);
 
     const tripData = await tripRes.json();
