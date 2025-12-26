@@ -1765,7 +1765,8 @@ async function fetchTransitDeparturesForGtfsStop(stop) {
 async function getStopDepartures(stopId) {
   try {
     const [stopTimesRes, tripsRes] = await Promise.all([
-      fetch("/gtfs-files/stop_times.txt"),
+      // fetch("/gtfs-files/stop_times.txt"),
+      fetch("https://media.githubusercontent.com/media/NathanDevStuffs/caledontransit/refs/heads/main/gtfs-files/stop_times.txt"),
       fetch("/gtfs-files/trips.txt")
     ]);
 
@@ -1835,7 +1836,8 @@ async function loadRoute41Stops() {
   stopsLoaded = true;
 
   const [stopTimesRes, stopsRes] = await Promise.all([
-    fetch("/gtfs-files/stop_times.txt"),
+    // fetch("/gtfs-files/stop_times.txt"),
+      fetch("https://media.githubusercontent.com/media/NathanDevStuffs/caledontransit/refs/heads/main/gtfs-files/stop_times.txt"),
     fetch("/gtfs-files/stops.txt")
   ]);
 
@@ -2183,7 +2185,8 @@ async function updateBusPositions() {
   try {
     const realtimeRes   = await safeFetch("https://busapi.caledontransit.com/");
     const tripUpdateRes = await safeFetch("https://busapi.caledontransit.com/tripupdate");
-    const stopTimesRes  = await safeFetch("/gtfs-files/stop_times.txt");
+    // const stopTimesRes  = await safeFetch("/gtfs-files/stop_times.txt");
+    const stopTimesRes  = await safeFetch("https://media.githubusercontent.com/media/NathanDevStuffs/caledontransit/refs/heads/main/gtfs-files/stop_times.txt");
 
     const realtimeData   = (realtimeRes   ? await safeJson(realtimeRes)   : null) || { entity: [] };
     const tripUpdateData = (tripUpdateRes ? await safeJson(tripUpdateRes) : null) || { entity: [] };
@@ -2711,7 +2714,8 @@ async function fetchServiceStatus() {
   try {
     const [tripRes, stopRes] = await Promise.all([
       fetch("https://busapi.caledontransit.com/tripupdate"),
-      fetch("/gtfs-files/stop_times.txt")
+      // fetch("/gtfs-files/stop_times.txt"),
+      fetch("https://media.githubusercontent.com/media/NathanDevStuffs/caledontransit/refs/heads/main/gtfs-files/stop_times.txt")
     ]);
 
     const tripData = await tripRes.json();
