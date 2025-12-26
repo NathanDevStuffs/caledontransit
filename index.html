@@ -840,7 +840,7 @@ let nearbyMarkers = [];
 /* 1️⃣ Load all GTFS stops from stops.txt */
 async function loadAllStops() {
   if (allStops.length) return allStops; // cache
-  const res = await fetch('/stops.txt');
+  const res = await fetch('/gtfs-files/stops.txt');
   const text = await res.text();
   const lines = text.trim().split('\n');
   const headers = lines.shift().split(',');
@@ -1048,7 +1048,7 @@ function parseCSV(csv) {
 
 /* Service calendar (unchanged) */
 async function getServiceCalendar() {
-  const res = await fetch('/calendar.txt');
+  const res = await fetch('/gtfs-files/calendar.txt');
   const calendar = parseCSV(await res.text());
   const serviceMap = {};
   calendar.forEach(svc => {
@@ -1076,7 +1076,7 @@ let serviceMap = {};
 // Build trip_id → shape_id mapping (now includes route 41 and route 81)
 async function buildTripDirectionMap() {
   [serviceMap] = await Promise.all([getServiceCalendar()]);
-  const tripsRes = await fetch("/trips.txt");
+  const tripsRes = await fetch("/gtfs-files/trips.txt");
   const trips = parseCSV(await tripsRes.text());
   trips.forEach(trip => {
     if (trip.route_id === "41" || trip.route_id === "81" || trip.route_id === "25" || trip.route_id === "18" || trip.route_id === "501" || trip.route_id === "502" || trip.route_id === "505") {
@@ -1365,8 +1365,8 @@ async function fetchTransitDeparturesForGtfsStop(stop) {
 async function getStopDepartures(stopId) {
   try {
     const [stopTimesRes, tripsRes] = await Promise.all([
-      fetch("/stop_times.txt"),
-      fetch("/trips.txt")
+      fetch("https://github.com/NathanDevStuffs/caledontransit/releases/download/gtfs/stop_times.txt"),
+      fetch("/gtfs-files/trips.txt")
     ]);
 
     const stopTimes = parseCSV(await stopTimesRes.text());
@@ -1436,8 +1436,8 @@ async function loadRoute41Stops() {
   stopsLoaded = true;
 
   const [stopTimesRes, stopsRes] = await Promise.all([
-    fetch("/stop_times.txt"),
-    fetch("/stops.txt")
+    fetch("https://github.com/NathanDevStuffs/caledontransit/releases/download/gtfs/stop_times.txt"),
+    fetch("/gtfs-files/stops.txt")
   ]);
 
   const stopTimes = parseCSV(await stopTimesRes.text());
@@ -1595,7 +1595,7 @@ const depHtml = departures.length
    Load routes (unchanged)
    -------------------------*/
 async function loadRoutes() {
-  const response = await fetch('/shapes.txt');
+  const response = await fetch('/gtfs-files/shapes.txt');
   const parsed = parseCSV(await response.text());
   const routes = [
     { id: '410010', color: '#FF3399', label: 'Northbound' },
@@ -1685,7 +1685,7 @@ async function updateBusPositions() {
     const [realtimeRes, tripUpdateRes, stopTimesRes] = await Promise.all([
       fetch("https://busapi.caledontransit.com/"),
       fetch("https://busapi.caledontransit.com/tripupdate"),
-      fetch("/stop_times.txt")
+      fetch("https://github.com/NathanDevStuffs/caledontransit/releases/download/gtfs/stop_times.txt")
     ]);
 
     const realtimeData = await realtimeRes.json();
@@ -2152,7 +2152,7 @@ async function fetchServiceStatus() {
   try {
     const [tripRes, stopRes] = await Promise.all([
       fetch("https://busapi.caledontransit.com/tripupdate"),
-      fetch("/stop_times.txt")
+      fetch("https://github.com/NathanDevStuffs/caledontransit/releases/download/gtfs/stop_times.txt")
     ]);
 
     const tripData = await tripRes.json();
@@ -2258,6 +2258,52 @@ setInterval(fetchServiceStatus, 60000);
     </div>
   </div>
 </main>
+<div id="newApp" style="
+      box-shadow: #060e1a33 0px 4px 12px;
+      background: white;
+  padding: 15px;
+  max-width: 350px;
+    width: 90%;
+  margin: auto;
+  height: auto;
+  border-radius: 25px;
+  color: black;
+  font-family: Outfit;
+  display: block;
+  bottom: 25px;
+  position: fixed;
+left: 50%;
+  transform: translateX(-50%);
+  z-index: 5000000000;
+  transition: all 0.3s ease-in-out;
+
+">
+  <div style="display: flex; align-items: center; justify-content: space-between;">
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <span class="material-symbols-outlined">diamond_shine</span>
+    <span style="font-weight: 600;">Check Out the New Caledon Transit</span>
+  </div>
+  <span class="material-symbols-outlined" style="cursor: pointer;" onclick="document.getElementById('installApp').style.display =  'none';">close</span>
+</div>
+
+  <p style="font-size: 12px; margin-top: 4px;">
+  From January 1, 2026, you’ll be automatically taken to our refreshed website, with a cleaner design and easier navigation.
+  </p>
+  <br>
+  <button onclick="window.location.href='https://caledontransit.com/newindextt'" style="
+  display: block;
+    background-color: #2d3399;
+    color: white;
+    font-family: Outfit;
+    font-weight: 600;
+    padding: 10px;
+    border-radius: 15px;
+    width: 70px;
+    border: none;
+    text-align: center;
+    margin: 0 auto;
+">Visit</button>
+</div>
 <div id="installApp" style="
       box-shadow: #060e1a33 0px 4px 12px;
       background: white;
