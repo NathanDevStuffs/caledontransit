@@ -2,7 +2,10 @@
 <html lang="en"><head>
 	
 	<meta name="description" content="Zoom with Caledon Transit! Track buses in real time, check schedules instantly, and never wait for your ride again.">
-	  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+/>
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.2.0/fonts/remixicon.css" rel="stylesheet">
  <link rel="stylesheet" href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,7 +15,7 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
-	  <link rel="stylesheet" href="https://api.tomtom.com/maps-sdk-for-web/cdn/6.x/6.15.0/maps/maps.css" />
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.css" rel="stylesheet" />
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 	<link rel="apple-touch-icon" href="/favicon.png">
   <link rel="manifest" href="manifest.json" />
@@ -79,21 +82,23 @@
       }
     }
   </style>
-	<style>    #map {
-        display: block;
-        width: 85%;
-        max-width: 1200px;
-        height: 80vh;
-        min-height: 600px;
-        margin: 0 auto;
-        border-radius: 25px;
-        border: 1px solid #ddd;}
-    .tt-popup {
-      background: white;
-      padding: 10px;
-      border-radius: 5px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    }
+  <style>
+  #map {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    z-index: 0; /* Keep it behind overlays if needed */
+  }
+  .tt-popup {
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
   </style>
 	
     <title>Caledon Transit</title>
@@ -171,9 +176,13 @@ img {vertical-align: middle;}
 }
 </style>
     <style>
-      body {
-        background: #fafafa;
-      }
+      html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden; /* Disables scrolling */
+}
+
     </style>
     <style>
     *{
@@ -186,7 +195,7 @@ img {vertical-align: middle;}
     
     :root{
       --bg-color: #fafafa;
-      --text-color: #fff;
+      --text-color: unset;
       --main-color: #3366CC;
     }
     
@@ -465,158 +474,50 @@ svg {
 
 </style>
   </head>
- <body><header style="white-space: nowrap;">
-      <a href="/" class=""><img src="caledon.png" alt="Caledon Transit" style="
-    width: 150px;
-"></a>
-    <ul class="navbar" style="list-style-type: none;">
-    <li class="topli"><a href="/" class="">Home</a></li>
-    <li><a href="/plan-your-trip">Plan a Trip</a></li>
-    <li><a href="/schedules">Bus Schedules</a></li>
-      <li><a href="/fare-info">Fare Info</a></li>
-    <li><a href="/contact">Contact</a></li>   </ul>
-    
-    <div class="main">
-<i class="bx bx-menu-alt-right" id="menu-icon"></i>    </div>
-    </header>
-	 <!-- <button class="status-btn">Live Service Alerts / Route Status</button> -->
-  <main style="
-    padding-top: 100px;
-">
-	  <div class="slideshow-container" style="border-radius: 50px; width: 75%; text-align: center;">
-
-<div class="mySlides fade" style="display: none;">
-  <img src="/ad (1).png" style="width:100%" class="slideimg" alt="Advertisement">
-	<a href="/blog/helloooooo-bolton" style="
-    cursor: pointer !important;
-"><button style="
-    padding: 15px;
-    border: none;
-    font-family: 'Outfit';
-    font-weight: bold;
-    border-radius: 50px;
-    background: #dddddd;
-    width: 150px;
-    margin-top: 25px;
-">Read Blog Post</button></a>
-</div>
-
-<div class="mySlides fade" style="display: block;">
-  <img src="/psd.png" style="width:100%" class="slideimg" alt="Advertisement">
-	<a href="/blog/connecting-bolton" style="
-    cursor: pointer !important;
-"><button style="
-    padding: 15px;
-    border: none;
-    font-family: 'Outfit';
-    font-weight: bold;
-    border-radius: 50px;
-    background: #dddddd;
-    width: 150px;
-    margin-top: 25px;
-">Read Blog Post</button></a>
-</div>
-
-<!--<div class="mySlides fade" style="display: none;">
-  <img src="/New Project (7).png" style="width:100%" class="slideimg" alt="Advertisement">
-	<a href="/blog/bike" style="
-    cursor: pointer !important;
-"><button style="
-    padding: 15px;
-    border: none;
-    font-family: 'Outfit';
-    font-weight: bold;
-    border-radius: 50px;
-    background: #dddddd;
-    width: 150px;
-    margin-top: 25px;
-">Learn More</button></a>
-</div>
--->
-
-
-</div>
-<br>
-
-<div style="text-align:center">
-<a class="prev" onclick="plusSlides(-1)"><i class="ri-arrow-left-line"></i></a>
-
-  <span class="dot" onclick="currentSlide(1)"></span> 
-  <span class="dot active" onclick="currentSlide(2)"></span> 
-<!--  <span class="dot" onclick="currentSlide(3)"></span> -->
-  <a class="next" onclick="plusSlides(1)"><i class="ri-arrow-right-line"></i></a>
-</div><br><br>
-
-<script>
-let slideIndex = 1;
-showSlides(slideIndex);
-
-function plusSlides(n) {
-  showSlides(slideIndex += n);
-}
-
-function currentSlide(n) {
-  showSlides(slideIndex = n);
-}
-
-function showSlides(n) {
-  let i;
-  let slides = document.getElementsByClassName("mySlides");
-  let dots = document.getElementsByClassName("dot");
-  if (n > slides.length) {slideIndex = 1}    
-  if (n < 1) {slideIndex = slides.length}
-  for (i = 0; i < slides.length; i++) {
-    slides[i].style.display = "none";  
-  }
-  for (i = 0; i < dots.length; i++) {
-    dots[i].className = dots[i].className.replace(" active", "");
-  }
-  slides[slideIndex-1].style.display = "block";  
-  dots[slideIndex-1].className += " active";
-}
-</script><h1 style="
-    color: black;
-    font-family: Outfit;
-    text-align: center;
-">Route Map &amp; Live Bus Locations</h1>
-	  
-<h4 style="
-    color: black;
-    font-family: Outfit;
-    text-align: center;
-    font-weight: 400;
-">See real-time bus locations on the map below for Caledon Transit. Route 41 is operated by Brampton Transit. Press on the bus stop markers to see real-time arrivals.</h4><br>
+ <body>
 <div id="accuracyWarning" style="
+  position: fixed;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
   background-color: rgb(255, 95, 21);
-  padding: 15px;
+  padding: 15px 20px;
   max-width: 350px;
-  margin: auto;
-  height: 90px;
+  width: 90%;
   border-radius: 25px;
   color: white;
-  font-family: Outfit;
+  font-family: Outfit, sans-serif;
   display: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 ">
   <div style="display: flex; align-items: center; gap: 8px;">
     <span class="material-symbols-outlined">warning</span>
     <span style="font-weight: 600;">Reduced real-time bus accuracy</span>
+    
   </div>
   <p style="font-size: 12px; margin-top: 8px;">
     We’re working with limited live data, so bus locations and arrivals may not be exact for now.
   </p>
+
 </div>
 
+
 <div id="offlineAlert" style="
+  position: fixed;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
   background-color: #808080;
-  padding: 15px;
+  padding: 15px 20px;
   max-width: 350px;
-  margin: auto;
-  height: 90px;
+  width: 90%;
   border-radius: 25px;
   color: white;
-  font-family: Outfit;
+  font-family: Outfit, sans-serif;
   display: none;
-  transition: all 0.5s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 ">
   <div style="display: flex; align-items: center; gap: 8px;">
     <span class="material-symbols-outlined">warning</span>
@@ -700,7 +601,7 @@ It looks like you’re offline right now. Live updates aren’t available, so we
     </span>
   </div>
 </div>
-<div style="padding-top: 20px; margin: auto; display: flex; justify-content: center; gap: 10px; padding-bottom: 20px">
+<!-- <div style="padding-top: 20px; margin: auto; display: flex; justify-content: center; gap: 10px; padding-bottom: 20px">
   <button class="pill pillact" id="button41">41</button>
 
   <button class="pill" id="button81">81</button>
@@ -719,17 +620,354 @@ It looks like you’re offline right now. Live updates aren’t available, so we
   <button class="pill" id="button502" style="background: #c24947 !important;">502</button>
   <button class="pill" id="button505" style="background: #c24947 !important;">505</button>
 
+</div> -->
+
+
+<!-- Direction Select + Locate Button -->
+<!-- Direction + Route + Locate -->
+<div class="direction-container" style="z-index: 2000000;">
+  <!-- Route pill dropdown -->
+  <div class="pill-dropdown">
+    <button id="routePill" class="pill" aria-haspopup="true" aria-expanded="false" style="white-space: nowrap; height: 48px;">
+    41
+      <span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle;">expand_more</span>
+    </button>
+
+    <ul id="routeMenu" class="pill-menu" role="menu" aria-label="Select route">
+  <li data-route="41" style="list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
+    <div class="route-item">
+      <div class="route-pill">41</div>
+      <span>Bolton</span>
+    </div>
+  </li>
+
+  <li data-route="81" style="list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
+    <div class="route-item">
+      <div class="route-pill">81</div>
+      <span>Mayfield West</span>
+    </div>
+  </li>
+
+  <li data-route="25" style="list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
+    <div class="route-item">
+      <div class="route-pill">25</div>
+      <span>Edenbrooke</span>
+    </div>
+  </li>
+
+  <li data-route="30" style="list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
+    <div class="route-item">
+      <div class="route-pill">30</div>
+      <span>Airport Road</span>
+    </div>
+  </li>
+
+  <li class="zum" data-route="501" style="list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
+    <div class="route-item">
+      <div class="route-pill zum-pill">501</div>
+      <span>Zum Queen</span>
+    </div>
+  </li>
+
+  <li class="zum" data-route="502" style="list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
+    <div class="route-item">
+      <div class="route-pill zum-pill">502</div>
+      <span>Zum Main</span>
+    </div>
+  </li>
+
+  <li class="zum" data-route="505" style="list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
+    <div class="route-item">
+      <div class="route-pill zum-pill">505</div>
+      <span>Zum Bovaird</span>
+    </div>
+  </li>
+</ul>
+
+  </div>
+
+  <!-- direction selects -->
+  <select id="direction41select" class="direction-select">
+    <option value="410009">Southbound to Queen St / Highway 7</option>
+    <option value="410010">Northbound to Columbia Way</option>
+  </select>
+
+  <select id="direction81select" class="direction-select" style="display:none;">
+    <option value="810002">Southbound to Sandalwood Loop</option>
+    <option value="810005">Northbound to Caledon</option>
+  </select>
+
+  <select id="direction25select" class="direction-select" style="display:none;">
+        <option value="250032">Southbound to Peel Memorial Hospital</option>
+    <option value="250033">Northbound to Caledon</option>
+  </select>
+
+  <select id="direction18select" class="direction-select" style="display:none;">
+    <option value="180227">Southbound</option>
+    <option value="180209">Northbound</option>
+    <option value="180231">Northbound A</option>
+  </select>
+
+  <select id="direction501select" class="direction-select" style="display:none;">
+    <option value="5010073">Eastbound to SmartVMC Terminal</option>
+    <option value="5010072">Westbound to Downtown Brampton</option>
+  </select>
+
+  <select id="direction502select" class="direction-select" style="display:none;">
+    <option value="5020016">Southbound to Square One</option>
+    <option value="5020013">Northbound to Sandalwood Loop</option>
+  </select>
+
+  <select id="direction505select" class="direction-select" style="display:none;">
+    <option value="5050005">East to Malton GO Station (505)</option>
+    <option value="5050008">East to Viscount Station (505A)</option>
+    <option value="5050006">West to Mount Pleasant GO Station (505)</option>
+    <option value="5050010">West to Trinity Commons Terminal (505A)</option>
+  </select>
+
+  <select id="direction30select" class="direction-select" style="display:none;">
+    <option value="300086">North to Mayfield Road</option>
+    <option value="300087">North to Caledon</option>
+    <option value="300083">South to Westwood Mall Terminal</option>
+    <option value="300077">South to Westwood Mall Terminal via Caledon</option>
+  </select>
+
+  <!-- locate button -->
+  
 </div>
-
-
-<div style="
+<button id="locateBtn" class="locate-btn" aria-label="Locate Me">
+    <img src="/location.png" alt="Locate" class="locate-icon">
+  </button>
+<style>
+.direction-container {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
-  column-gap: 10px; /* tighter control */
-  margin: 0;
+  gap: 10px;
+  z-index: 1000;
+  background: rgba(255,255,255,0.95);
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  padding: 6px 10px;
+  height: 60px;
+  backdrop-filter: blur(10px);
+  max-width: 95%;
+  overflow-x: visible; /* ✅ fix: dropdowns are no longer clipped */
+  scrollbar-width: none;
+}
+
+.direction-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* direction dropdowns */
+.direction-select {
+  height: 48px;
+  text-wrap: wrap;
+    max-width: 250px;
+  padding: 10px 14px;
+  border: none;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  border-radius: 15px;
+  background: #e5e5e5;
+  color: #111;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.direction-select:hover,
+.direction-select:focus {
+  background: #d8d8d8;
+  outline: none;
+}
+
+/* locate button */
+.locate-btn {
+z-index: 10000;
+    position: absolute;
+    right: 10px;
+    bottom: 160px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(6,14,26,0.2);
+  width: 48px;
+  height: 48px;
+  background-color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 0;
-  ">
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  flex-shrink: 0;
+}
+
+.locate-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 14px rgba(6,14,26,0.25);
+}
+
+.locate-icon {
+  width: 32px;
+  height: 32px;
+}
+
+/* pill dropdown */
+.pill-dropdown {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* --- Improved Route Menu (light version) --- */
+.pill-menu {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  list-style: none;
+  padding: 6px 0;
+  margin: 0;
+  min-width: 220px;
+  display: none;
+  font-family: 'Outfit', sans-serif;
+  z-index: 9999;
+}
+
+.pill-menu.show {
+  display: block;
+}
+
+.pill-menu li {
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.pill-menu li:hover {
+  background: #f5f7ff;
+}
+
+/* Inner flex for number + text */
+.route-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Route number pill */
+.route-pill {
+  background: #2d3399;
+  color: white;
+  font-weight: 600;
+  font-family: 'Outfit';
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-size: 15px;
+  min-width: 45px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* Route label text */
+.route-item span {
+  font-size: 15px;
+  font-weight: 500;
+  color: #222;
+}
+
+/* Zum routes */
+.zum-pill {
+  background: linear-gradient(90deg, #c24947, #d56765);
+}
+
+.zum span {
+  color: #c24947;
+  font-weight: 600;
+}
+
+/* Divider before Zum section */
+.pill-menu .zum:first-of-type {
+  border-top: 1px solid #eee;
+  margin-top: 4px;
+  padding-top: 4px;
+}
+
+/* ✅ Responsive tweak for smaller screens */
+@media (max-width: 600px) {
+  .direction-container {
+    max-width: 100%;
+    gap: 6px;
+    padding: 4px 6px;
+  }
+
+  .direction-select {
+    font-size: 13px;
+    padding: 8px 10px;
+    
+  }
+
+  .locate-btn {
+    width: 42px;
+    height: 42px;
+  }
+
+  .locate-icon {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+</style>
+
+<script>
+const routePill = document.getElementById('routePill');
+const routeMenu = document.getElementById('routeMenu');
+
+routePill.addEventListener('click', () => {
+  const expanded = routePill.getAttribute('aria-expanded') === 'true';
+  routePill.setAttribute('aria-expanded', !expanded);
+  routeMenu.classList.toggle('show');
+});
+
+document.addEventListener('click', (e) => {
+  if (!routePill.contains(e.target) && !routeMenu.contains(e.target)) {
+    routeMenu.classList.remove('show');
+    routePill.setAttribute('aria-expanded', 'false');
+  }
+});
+
+routeMenu.querySelectorAll('li').forEach(item => {
+  item.addEventListener('click', (e) => {
+const route = e.currentTarget.getAttribute('data-route');
+    routePill.innerHTML = `${route} <span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle;">expand_more</span>`;
+    routeMenu.classList.remove('show');
+    routePill.setAttribute('aria-expanded', 'false');
+
+    [dir41, dir81, dir25, dir18, dir501, dir502, dir505,dir30].forEach(d => d.style.display = 'none');
+
+    switch (route) {
+      case '41': dir41.style.display='inline-block'; routePill.classList.remove("zum-pill"); updateRouteDisplay(dir41.value); map.flyTo({center:[-79.7254859,43.8333433],zoom:11}); break;
+      case '81': dir81.style.display='inline-block'; routePill.classList.remove("zum-pill"); updateRouteDisplay(dir81.value); map.flyTo({center:[-79.820941,43.7401914],zoom:13}); break;
+      case '25': dir25.style.display='inline-block'; routePill.classList.remove("zum-pill"); updateRouteDisplay(dir25.value); map.flyTo({center:[-79.8092108,43.7042705],zoom:11}); break;
+      case '18': dir18.style.display='inline-block'; routePill.classList.remove("zum-pill"); updateRouteDisplay(dir18.value); map.flyTo({center:[-79.740512,43.689343],zoom:12}); break;
+      case '501': dir501.style.display='inline-block'; routePill.classList.add("zum-pill"); updateRouteDisplay(dir501.value); map.flyTo({center:[-79.6400479,43.7655184],zoom:10}); break;
+      case '502': dir502.style.display='inline-block'; routePill.classList.add("zum-pill"); updateRouteDisplay(dir502.value); map.flyTo({center:[-79.7714951,43.6632282],zoom:10}); break;
+      case '505': dir505.style.display='inline-block'; routePill.classList.add("zum-pill"); updateRouteDisplay(dir505.value); map.flyTo({center:[-79.630529,43.686823],zoom:11}); break;
+      case '30': dir30.style.display='inline-block'; routePill.classList.remove("zum-pill"); updateRouteDisplay(dir30.value); map.flyTo({center:[-79.7254859,43.8333433],zoom:11}); break;
+    }
+  });
+});
+</script>
+
+
 <!-- <select id="routeSelect" style="
     padding: 10px;
     border: none;
@@ -744,37 +982,7 @@ It looks like you’re offline right now. Live updates aren’t available, so we
     <option value="81">Route 81 - Mayfield West</option>
 </select> -->
 
-<select id="direction41select" style="padding: 10px; border: none; font-family: Montserrat; font-weight: bold; border-radius: 15px; background: rgb(221, 221, 221); height: 48px; margin: 0px; display: inline-block;">
-  <option value="410009">Southbound to Queen St / Highway 7</option>
-    <option value="410010">Northbound to Columbia Way</option>
-</select>
-<select id="direction81select" style="padding: 10px; border: none; font-family: Montserrat; font-weight: bold; border-radius: 15px; background: rgb(221, 221, 221); height: 48px; margin: 0px; display: none;">
-  <option value="810002">Southbound to Sandalwood Loop</option>
-    <option value="810005">Northbound to Caledon</option>
-</select>
-<select id="direction25select" style="padding: 10px; border: none; font-family: Montserrat; font-weight: bold; border-radius: 15px; background: rgb(221, 221, 221); height: 48px; margin: 0px; display: none;">
-  <option value="250032">Southbound</option>
-    <option value="250033">Northbound</option>
-</select>
-<select id="direction18select" style="padding: 10px; border: none; font-family: Montserrat; font-weight: bold; border-radius: 15px; background: rgb(221, 221, 221); height: 48px; margin: 0px; display: none;">
-  <option value="180227">Southbound</option>
-    <option value="180209">Northbound</option>
-        <option value="180231">Northbound A</option>
-</select>
-<select id="direction501select" style="padding: 10px; border: none; font-family: Montserrat; font-weight: bold; border-radius: 15px; background: rgb(221, 221, 221); height: 48px; margin: 0px; display: none;">
-  <option value="5010073">Eastbound to SmartVMC Terminal</option>
-    <option value="5010072">Westbound to Downtown Brampton</option>
-</select>
-<select id="direction502select" style="padding: 10px; border: none; font-family: Montserrat; font-weight: bold; border-radius: 15px; background: rgb(221, 221, 221); height: 48px; margin: 0px; display: none;">
-  <option value="5020016">Southbound to Square One</option>
-    <option value="5020013">Northbound to Sandalwood Loop</option>
-</select>
-<select id="direction505select" style="padding: 10px; border: none; font-family: Montserrat; font-weight: bold; border-radius: 15px; background: rgb(221, 221, 221); height: 48px; margin: 0px; display: none;">
-  <option value="5050005">East to Malton GO Station (505)</option>
-  <option value="5050008">East to Viscount Station (505A)</option>
-  <option value="5050006">West to Mount Pleasant GO Station (505)</option>
-  <option value="5050010">West to Viscount Station (505A)</option>
-</select>
+
 <!-- <select id="directionSelect" style="
     padding: 10px;
     border: none;
@@ -790,43 +998,40 @@ It looks like you’re offline right now. Live updates aren’t available, so we
 	<option value="810005">Route 81: Northbound</option>
   <option value="810002">Route 81: Southbound</option>
 </select>Show My Location Button -->
-<button id="locateBtn" style="
-    border-radius: 16px;
-      box-shadow: #060e1a33 0px 4px 12px;
-      width: 48px;
-      height: 48px;
-      background-color: white;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0;       /* remove default button padding */
-      margin: 0;  
-"><img src="/location.png" style="width: 35px;height: 35px;"></button></div><br>
+<br>
 
 <div id="map"></div>
 <!-- Scripts -->
-<script src="https://api.tomtom.com/maps-sdk-for-web/cdn/6.x/6.15.0/maps/maps-web.min.js"></script>
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
 <script>
 const WORKER_BASE = "https://busapi.caledontransit.com/";
 
 /* TomTom map init (unchanged) */
-const map = tt.map({
-  key: 'XVUXC7GLhrBCR47wKHSTSabpLRTnEzv2',
+mapboxgl.accessToken = 'pk.eyJ1IjoibmF0aGFuc3R1ZmZzIiwiYSI6ImNtaHczbm50NDAyczQyanB0ZmtiaHF6bWYifQ.y2W0WNhox37OR6JyJR-1Pg';
+const map = new mapboxgl.Map({
   container: 'map',
-  center: [-79.7254859,43.8333433],
+  style: 'mapbox://styles/nathanstuffs/cmhw53npb000s01s09fqeh9ir',
+  center: [-79.7254859, 43.8333433],
   zoom: 11
 });
-map.addControl(new tt.NavigationControl());
-const popup = new tt.Popup({ closeButton: true, closeOnClick: true });
+map.addControl(new mapboxgl.NavigationControl());
+
+const popup = new mapboxgl.Popup({ closeButton: true, closeOnClick: true });
 
 let userMarker = null;
 let watchId = null;
-let lastPosition = null;
+let lastPosition = null; // { lat, lon } of user
+let userHeading = 0;     // degrees, from Geolocation API if available
+let isFollowingUser = false; // are we in "follow my location" mode?
 
 // at top (globals)
 let nearestStopCoords = null;       // { lat, lon }
+let walkingRouteCoords = null;   // full decoded route
+let destinationCoords = null;   // [lon, lat]
+let ROUTE_REMOVE_DISTANCE = 300; // meters
+let REROUTE_DISTANCE = 60;       // meters off-route
+
+
 
 
 /* ------------------------------
@@ -968,6 +1173,15 @@ if (!nearest || !Number.isFinite(nearest.stop_lat) || !Number.isFinite(nearest.s
 
 // ✅ store for navigation
 nearestStopCoords = { lat: nearest.stop_lat, lon: nearest.stop_lon };
+// 🔹 draw walking route ONCE
+if (lastPosition && nearestStopCoords) {
+  drawWalkingRouteValhalla(
+    lastPosition.lat,
+    lastPosition.lon,
+    nearestStopCoords.lat,
+    nearestStopCoords.lon
+  );
+}
 
 // Step 4: Update “Nearest Stop” card
 document.getElementById("closestStop").style.display = "block";
@@ -999,18 +1213,174 @@ function startNavigation() {
 }
 
 
-/* 5️⃣ Hook to your button */
+function decodeValhalla(encoded) {
+	let coords = [];
+	let index = 0;
+	let lat = 0,
+		lon = 0;
+	while (index < encoded.length) {
+		let shift = 0,
+			result = 0;
+		let byte;
+		// Decodelatitude
+		do {
+			byte = encoded.charCodeAt(index++) - 63;
+			result |= (byte & 0x1f) << shift;
+			shift += 5;
+		} while (byte >= 0x20);
+		lat += (result & 1) ? ~(result >> 1) : (result >> 1);
+		// Decode longitude
+		shift = 0;
+		result = 0;
+		do {
+			byte = encoded.charCodeAt(index++) - 63;
+			result |= (byte & 0x1f) << shift;
+			shift += 5;
+		} while (byte >= 0x20);
+		lon += (result & 1) ? ~(result >> 1) : (result >> 1);
+		coords.push([lon / 1e6, lat / 1e6]);
+	}
+	return coords;
+}
 
+async function drawWalkingRouteValhalla(userLat, userLon, stopLat, stopLon) {
+  const url = "https://valhalla1.openstreetmap.de/route";
+
+  const body = {
+    locations: [
+      { lat: userLat, lon: userLon },
+      { lat: stopLat, lon: stopLon }
+    ],
+    costing: "pedestrian"
+  };
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  });
+
+  const data = await res.json();
+  const shape = data?.trip?.legs?.[0]?.shape;
+  if (!shape) return;
+
+  walkingRouteCoords = decodeValhalla(shape);
+  destinationCoords = [stopLon, stopLat];
+
+  updateWalkingRoute(walkingRouteCoords);
+}
+
+function updateWalkingRoute(coords) {
+  const geojson = {
+    type: "Feature",
+    geometry: { type: "LineString", coordinates: coords }
+  };
+
+  if (!map.getSource("walking-route")) {
+    map.addSource("walking-route", { type: "geojson", data: geojson });
+    map.addLayer({
+      id: "walking-route-line",
+      type: "line",
+      source: "walking-route",
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: {
+        "line-color": "#000",
+        "line-width": 3
+      }
+    });
+  } else {
+    map.getSource("walking-route").setData(geojson);
+  }
+}
+
+function metersBetween(a, b) {
+  const R = 6371e3;
+  const φ1 = a[1] * Math.PI / 180;
+  const φ2 = b[1] * Math.PI / 180;
+  const Δφ = (b[1] - a[1]) * Math.PI / 180;
+  const Δλ = (b[0] - a[0]) * Math.PI / 180;
+
+  const x = Math.sin(Δφ / 2) ** 2 +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ / 2) ** 2;
+  return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+}
+
+function advanceWalkingRoute(userLon, userLat) {
+  if (!walkingRouteCoords || !destinationCoords) return;
+
+  const userPoint = [userLon, userLat];
+
+  // 1. Remove route if close to destination
+  if (metersBetween(userPoint, destinationCoords) <= ROUTE_REMOVE_DISTANCE) {
+    walkingRouteCoords = null;
+    map.getSource("walking-route")?.setData({
+      type: "Feature",
+      geometry: { type: "LineString", coordinates: [] }
+    });
+    return;
+  }
+
+  // 2. Find nearest route index
+  let minDist = Infinity;
+  let closestIndex = 0;
+
+  for (let i = 0; i < walkingRouteCoords.length; i++) {
+    const d = metersBetween(userPoint, walkingRouteCoords[i]);
+    if (d < minDist) {
+      minDist = d;
+      closestIndex = i;
+    }
+  }
+
+  // 3. Reroute if user is too far away
+  if (minDist > REROUTE_DISTANCE) {
+    drawWalkingRouteValhalla(
+      userLat,
+      userLon,
+      destinationCoords[1],
+      destinationCoords[0]
+    );
+    return;
+  }
+
+  // 4. Trim route behind user
+  walkingRouteCoords = walkingRouteCoords.slice(closestIndex);
+  updateWalkingRoute(walkingRouteCoords);
+}
+
+
+/* 5️⃣ Hook to your button */
+let locatebtnthing = document.getElementById('locateBtn');
 
 document.getElementById('locateBtn').addEventListener('click', () => {
-  if (!navigator.geolocation) return console.warn('Geolocation not supported.');
+  if (!navigator.geolocation) {
+    console.warn('Geolocation not supported.');
+    return;
+  }
+
+  // Still show nearest stops as you do now
   showNearbyStops();
+
+  // Turn on follow mode
+  isFollowingUser = true;
+  console.log('follow mode on');
+
+  locatebtnthing.style.backgroundColor = '#BBDEFB';
+
   if (!watchId) {
+    // Start watching position if not already
     watchId = navigator.geolocation.watchPosition(
       (position) => {
-        const userLat = position.coords.latitude;
-        const userLng = position.coords.longitude;
-        lastPosition = [userLng, userLat];
+        const { latitude, longitude, heading } = position.coords;
+
+        // Store as an object for consistency
+        lastPosition = { lat: latitude, lon: longitude };
+        advanceWalkingRoute(longitude, latitude);
+
+
+        // Update marker
+        const lngLat = [longitude, latitude];
 
         if (!userMarker) {
           const icon2 = document.createElement("img");
@@ -1018,18 +1388,48 @@ document.getElementById('locateBtn').addEventListener('click', () => {
           icon2.style.width = "40px";
           icon2.style.height = "40px";
 
-          userMarker = new tt.Marker({ element: icon2 })
-            .setLngLat(lastPosition)
+          userMarker = new mapboxgl.Marker({ element: icon2 })
+            .setLngLat(lngLat)
             .addTo(map);
         } else {
-          userMarker.setLngLat(lastPosition);
+          userMarker.setLngLat(lngLat);
+        }
+
+        // Save heading if provided by the device
+        if (typeof heading === 'number' && !Number.isNaN(heading)) {
+          userHeading = heading;
+        }
+
+        // If we’re in follow mode, keep the camera locked on the user
+        if (isFollowingUser) {
+          console.log('continue follow')
+          map.easeTo({
+            center: lngLat,
+            zoom: Math.max(map.getZoom(), 15),     // don’t zoom out below 15 while following
+            bearing: userHeading || map.getBearing(),
+            pitch: 55,                             // tilt, "3D" style
+            duration: 1000,
+            essential: true
+          });
         }
       },
       (error) => console.error('Location error:', error.message),
-      { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
+      {
+        enableHighAccuracy: true,
+        maximumAge: 5000,
+        timeout: 10000
+      }
     );
   } else if (lastPosition) {
-    map.flyTo({ center: lastPosition, zoom: 15 });
+    // Already watching: recenter and re-enable follow mode
+    map.easeTo({
+      center: [lastPosition.lon, lastPosition.lat],
+      zoom: Math.max(map.getZoom(), 15),
+      bearing: userHeading || map.getBearing(),
+      pitch: 55,
+      duration: 1000,
+      essential: true
+    });
   }
 });
 
@@ -1079,7 +1479,7 @@ async function buildTripDirectionMap() {
   const tripsRes = await fetch("/gtfs-files/trips.txt");
   const trips = parseCSV(await tripsRes.text());
   trips.forEach(trip => {
-    if (trip.route_id === "41" || trip.route_id === "81" || trip.route_id === "25" || trip.route_id === "18" || trip.route_id === "501" || trip.route_id === "502" || trip.route_id === "505") {
+    if (trip.route_id === "41" || trip.route_id === "81" || trip.route_id === "25" || trip.route_id === "18" || trip.route_id === "501" || trip.route_id === "502" || trip.route_id === "505" || trip.route_id === "30") {
       tripDirectionMap[trip.trip_id] = trip.shape_id;
        const stem = trip.trip_id.split('-')[0];
       if (!tripDirectionMap[stem]) tripDirectionMap[stem] = trip.shape_id;
@@ -1365,6 +1765,7 @@ async function fetchTransitDeparturesForGtfsStop(stop) {
 async function getStopDepartures(stopId) {
   try {
     const [stopTimesRes, tripsRes] = await Promise.all([
+      // fetch("/gtfs-files/stop_times.txt"),
       fetch("https://busapi.caledontransit.com/stoptimes"),
       fetch("/gtfs-files/trips.txt")
     ]);
@@ -1381,7 +1782,7 @@ async function getStopDepartures(stopId) {
     });
 
     const now = new Date();
-    const allowedRoutes = new Set(['41', '81', '25', '18', '501', '502', '505']); // allow both routes
+    const allowedRoutes = new Set(['41', '81', '25', '18', '501', '502', '505', '30']); // allow both routes
     const departures = stopTimes
       // .filter(st => st.stop_id === stopId && allowedRoutes.has(tripRouteMap[st.trip_id]) && isTripRunningToday(st.trip_id, tripServiceMap))
 	.filter(st => st.stop_id === stopId && allowedRoutes.has(tripRouteMap[st.trip_id]))
@@ -1425,171 +1826,229 @@ async function getStopDepartures(stopId) {
 let selectedDirection = "410009"; // default direction: northbound
 
 // ---- Stop marker storage & guard ----
-const stopMarkers = { "410010": [], "410009": [], "810002": [], "810005": [], "250032": [], "250033": [], "180209": [], "180231": [], "5010073": [], "5010072": [], "5020016": [], "5020013": [], "5050005": [], "5050008": [], "5050006": [], "5050010": [] }; // northbound, southbound
-let stopsLoaded = false; // prevents double-loading
+const stopMarkers = { "410010": [], "410009": [], "810002": [], "810005": [], "250032": [], "250033": [], "180209": [], "180231": [], "5010073": [], "5010072": [], "5020016": [], "5020013": [], "5050005": [], "5050008": [], "5050006": [], "5050010": [], "300086": [], "300087": [], "300083": [], "300077": []}; // northbound, southbound
+// keep your existing globals:
+let stopsLoaded = false;
+// stopMarkers can stay defined but won't be used for stops anymore
 
-
-
-// ---- loadRoute41Stops: loads stops and creates markers for every direction a stop is used ----
 async function loadRoute41Stops() {
   if (stopsLoaded) return;
   stopsLoaded = true;
 
   const [stopTimesRes, stopsRes] = await Promise.all([
-    fetch("https://busapi.caledontransit.com/stoptimes"),
+    // fetch("/gtfs-files/stop_times.txt"),
+      fetch("https://busapi.caledontransit.com/stoptimes"),
     fetch("/gtfs-files/stops.txt")
   ]);
 
   const stopTimes = parseCSV(await stopTimesRes.text());
   const stops = parseCSV(await stopsRes.text());
 
-  const routeTrips = new Set(Object.keys(tripDirectionMap)); // now contains trips for route 41 & 81
+  // Same as before: all trips we care about (for 41, 81, 25, 18, 501, 502, 505)
+  const routeTrips = new Set(Object.keys(tripDirectionMap));
+
+  // Only stops used by those trips
   const routeStopIds = new Set(
-    stopTimes.filter(st => routeTrips.has(st.trip_id)).map(st => st.stop_id)
+    stopTimes
+      .filter(st => routeTrips.has(st.trip_id))
+      .map(st => st.stop_id)
   );
 
-  // map shape_id to route number + direction label
+  // map shape_id to route number + direction label (same content as before)
   const shapeInfo = {
-    '410010': { route: '41', dir: 'Northbound' },
-    '410009': { route: '41', dir: 'Southbound' },
-    '810005': { route: '81', dir: 'Northbound' },
-    '810002': { route: '81', dir: 'Southbound' },
-    '250033': { route: '25', dir: 'Northbound' },
-    '250032': { route: '25', dir: 'Southbound' },
+    '410010': { route: '41', dir: 'Northbound to Columbia Way' },
+    '410009': { route: '41', dir: 'Southbound to Queen St / Highway 7' },
+    '810005': { route: '81', dir: 'Northbound to Caledon' },
+    '810002': { route: '81', dir: 'Southbound to Sandalwood Loop' },
+    '250033': { route: '25', dir: 'Northbound to Caledon' },
+    '250032': { route: '25', dir: 'Southbound to Peel Memorial Hospital' },
     '180209': { route: '18', dir: 'Northbound' },
     '180231': { route: '18', dir: 'Northbound A' },
-    '5010073': { route: '501', dir: 'Eastbound' },
-    '5010072': { route: '501', dir: 'Westbound' },
-    '5020016': { route: '502', dir: 'Southbound' },
-    '5020013': { route: '502', dir: 'Northbound' },
-    '5050005': { route: '505', dir: 'East to Malton GO Station' },
-    '5050008': { route: '505A', dir: 'East to Viscount Station (A)' },
-    '5050006': { route: '505', dir: 'West to Mount Pleasant GO Station' },
-    '5050010': { route: '505A', dir: 'West to Trinity Commons Terminal' },
+    '5010073': { route: '501', dir: 'Eastbound to SmartVMC Terminal' },
+    '5010072': { route: '501', dir: 'Westbound to Downtown Brampton' },
+    '5020016': { route: '502', dir: 'Southbound to Square One' },
+    '5020013': { route: '502', dir: 'Northbound to Sandalwood Loop' },
+    '5050005': { route: '505', dir: 'East to Malton GO Station (505)' },
+    '5050008': { route: '505A', dir: 'East to Viscount Station (505A)' },
+    '5050006': { route: '505', dir: 'West to Mount Pleasant GO Station (505)' },
+    '5050010': { route: '505A', dir: 'West to Trinity Commons Terminal (505A)' },
+    '300086': { route: '30', dir: 'North to Mayfield Road' },
+    '300087': { route: '30', dir: 'North to Caledon' },
+    '300083': { route: '30', dir: 'South to Westwood Mall Terminal' },
+    '300077': { route: '30', dir: 'South to Westwood Mall Terminal via Caledon' }
   };
 
-  // iterate only stops that belong to these routes
-  stops.filter(s => routeStopIds.has(s.stop_id)).forEach(stop => {
-    const lat = parseFloat(stop.stop_lat);
-    const lon = parseFloat(stop.stop_lon);
-    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+  // Build GeoJSON features for all relevant stops
+  const features = [];
 
-    // find all trips for this stop that belong to routeTrips (41 or 81)
-    const stopTrips = stopTimes.filter(st => st.stop_id === stop.stop_id && routeTrips.has(st.trip_id));
+  // Pre-index stopTimes per stop_id to speed up direction lookup
+  const stopTripsByStop = {};
+  stopTimes.forEach(st => {
+    if (!routeTrips.has(st.trip_id)) return;
+    if (!routeStopIds.has(st.stop_id)) return;
+    if (!stopTripsByStop[st.stop_id]) stopTripsByStop[st.stop_id] = [];
+    stopTripsByStop[st.stop_id].push(st);
+  });
 
-    stopTrips.forEach(st => {
-      const direction = tripDirectionMap[st.trip_id];
-      if (!direction) return;
+  stops
+    .filter(s => routeStopIds.has(s.stop_id))
+    .forEach(stop => {
+      const lat = parseFloat(stop.stop_lat);
+      const lon = parseFloat(stop.stop_lon);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
 
-      // Avoid duplicate markers for same stop & direction using stop_id
-      if (!stopMarkers[direction]) stopMarkers[direction] = [];
-      if (stopMarkers[direction].some(m => m.stopId === stop.stop_id)) return;
+      const stopTrips = stopTripsByStop[stop.stop_id] || [];
+      const directions = new Set();
 
+      stopTrips.forEach(st => {
+        const dir = tripDirectionMap[st.trip_id];
+        if (dir) directions.add(dir);
+      });
 
-      // create marker element
-      const icon = document.createElement("img");
-      icon.src = "stop_marker.png";
-      icon.style.width = "12px";
-      icon.style.height = "12px";
-      icon.style.cursor = "pointer";
-		icon.alt = "Bus Stop Marker";
+      const dirArray = Array.from(directions);
+      if (!dirArray.length) return;
 
-      // add marker to map
-      const marker = new tt.Marker({ element: icon }).setLngLat([lon, lat]).addTo(map);
-
-      // attach metadata so toggling is easy
-      marker.stopId = stop.stop_id;
-      marker.direction = direction; // shape_id like '410008' or '810002'
-      marker.coords = { lat, lon };
-      marker.stop = stop; // attach GTFS stop object for later use
-
-      // store marker
-      stopMarkers[direction].push(marker);
-
-      // set initial visibility based on selectedDirection
-      marker.getElement().style.display = (direction === selectedDirection) ? "block" : "none";
-
-      // popup listener (uses Transit App via worker for departures)
-      marker.getElement().addEventListener("click", async () => {
-        // find a representative trip for this stop to determine shape/route
-        const rep = stopTrips.find(x => x.stop_id === stop.stop_id && routeTrips.has(x.trip_id));
-        const shape = tripDirectionMap[rep.trip_id];
-        const info = shapeInfo[shape] || { route: '', dir: 'Unknown' };
-        console.log(info.route, info.dir);
-        const directionLabel = `Route ${info.route} — ${info.dir}`;
-
-        let departures = [];
-
-        // Try fetching real-time departures from Transit API
-        try {
-          departures = await fetchTransitDeparturesForGtfsStop(stop);
-        } catch (err) {
-          console.error("Transit API error:", err);
-          departures = [];
+      features.push({
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [lon, lat]
+        },
+        properties: {
+          stop_id: stop.stop_id,
+          stop_name: stop.stop_name,
+          stop_lat: lat,
+          stop_lon: lon,
+          directions: dirArray // array of shape_ids this stop belongs to
         }
+      });
+    });
 
-        // If Transit API fails or returns empty, fall back to GTFS schedule
-        if (!departures.length) {
-          departures = await getStopDepartures(stop.stop_id);
-        }
+  const stopsGeoJSON = {
+    type: "FeatureCollection",
+    features
+  };
 
+  // Add source + layer for all stops
+  if (!map.getSource("route-stops")) {
+    map.addSource("route-stops", {
+      type: "geojson",
+      data: stopsGeoJSON
+    });
 
-  // Build HTML with your current styling
-const depHtml = departures.length
-  ? departures.map(d => {
-      // Determine fallback route name if route_long_name is missing
-      let routeName = d.route_long_name;
-      if (!routeName || routeName === "—" || routeName.trim() === "") {
-        if (d.routeId === "41") routeName = "Bolton";
-        else if (d.routeId === "81") routeName = "Mayfield West";
-        else if (d.routeId === "25") routeName = "Edenbrooke";
-        else if (d.routeId === "18") routeName = "Dixie";
-        else if (d.routeId === "501") routeName = "Zum Queen";
-        else if (d.routeId === "502") routeName = "Zum Main";
-        else routeName = "Unknown Route";
+    // visual style of stops; tweak as you like
+    map.addLayer({
+      id: "route-stops-layer",
+      type: "symbol",
+      source: "route-stops",
+      layout: {
+        'icon-image': 'stop-marker',   // ← name you added with map.addImage
+        'icon-size': 0.07,
+        'icon-allow-overlap': true,
+        'icon-ignore-placement': true,
+        'icon-anchor': 'center'
+      },
+      // only show stops for the currently selected direction
+      filter: ["in", selectedDirection, ["get", "directions"]]
+    });
+
+    // CLICK HANDLER (this replaces your marker click listener)
+    map.on("click", "route-stops-layer", async (e) => {
+      if (!e.features || !e.features.length) return;
+      const feature = e.features[0];
+
+      const stopId = feature.properties.stop_id;
+      const stopName = feature.properties.stop_name;
+      const lat = feature.properties.stop_lat;
+      const lon = feature.properties.stop_lon;
+
+      // We only need minimal GTFS-like object for your existing helpers
+      const stop = {
+        stop_id: stopId,
+        stop_name: stopName,
+        stop_lat: lat,
+        stop_lon: lon
+      };
+
+      // Build direction label from the currently selectedDirection
+      const info = shapeInfo[selectedDirection] || { route: "", dir: "Unknown" };
+      const directionLabel = info.route
+        ? `Route ${info.route} — ${info.dir}`
+        : info.dir;
+
+      let departures = [];
+
+      // Try Transit API first
+      try {
+        departures = await fetchTransitDeparturesForGtfsStop(stop);
+      } catch (err) {
+        console.error("Transit API error:", err);
+        departures = [];
       }
 
-      return `
-        <li style="display:flex; align-items:center; justify-content:space-between; padding:4px 0; border-top:1px solid #eee; list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
-          <span style="font-weight:600;padding: 2px 12px;border-radius:6px;background: #2d3399;color:#fff;">${d.routeId}</span>
-          <span style="flex:1; margin:0 6px;">${routeName}</span>
-          <span style="font-weight:600; white-space:nowrap;">
-            ${d.displayTime || d.time.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
-          </span>
-        </li>`;
-    }).join("")
-  : `<li style="padding:6px 0; margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
-      <p style="color:#333; text-decoration:none;">No upcoming departures</p>
-    </li>`;
+      // Fallback to GTFS schedule
+      if (!departures.length) {
+        departures = await getStopDepartures(stopId);
+      }
 
-  const popupHTML = `
-    <div style="font-family: 'Outfit';font-size:14px;min-width:240px;background: white;border-radius: 12px;padding: 17px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-        <b style="font-size:15px;">${stop.stop_name}</b>
-      </div>
-      <div style="margin-bottom:6px; font-size:13px; color:#444;">
-        <span style="padding:2px 6px; border-radius:10px; background:#f1f1f1;">${directionLabel}</span>
-      </div>
-      <ul style="list-style:none; padding:0; margin:0;">${depHtml}</ul>
-	  <div style="
-    display: flex;
-    justify-content: space-between;
-"><div style="margin-top:6px;font-size: 12px;color:#666;">
-        Updated ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
-      </div><img src="/transit-api-badge.png" style="
-    width: 100px;
-" alt="Powered by Transit API"></div>
-    </div>`;
+      const depHtml = departures.length
+        ? departures.map(d => {
+            // Determine fallback route name if route_long_name is missing
+            let routeName = d.route_long_name;
+            if (!routeName || routeName === "—" || routeName.trim() === "") {
+              if (d.routeId === "41") routeName = "Bolton";
+              else if (d.routeId === "81") routeName = "Mayfield West";
+              else if (d.routeId === "25") routeName = "Edenbrooke";
+              else if (d.routeId === "18") routeName = "Dixie";
+              else if (d.routeId === "501") routeName = "Zum Queen";
+              else if (d.routeId === "502") routeName = "Zum Main";
+              else if (d.routeId === "505") routeName = "Zum Bovaird";
+              else if (d.routeId === "30") routeName = "Airport Road";
+              else routeName = "Unknown Route";
+            }
 
-  new tt.Popup().setLngLat([lon, lat]).setHTML(popupHTML).addTo(map);
-});
+            return `
+              <li style="display:flex; align-items:center; justify-content:space-between; padding:4px 0; border-top:1px solid #eee; list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
+                <span style="font-weight:600;padding: 2px 12px;border-radius:6px;background: #2d3399;color:#fff;">${d.routeId}</span>
+                <span style="flex:1; margin:0 6px;">${routeName}</span>
+                <span style="font-weight:600; white-space:nowrap;">
+                  ${d.displayTime || d.time.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+                </span>
+              </li>`;
+          }).join("")
+        : `<li style="padding:6px 0; margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
+            <p style="color:#333; text-decoration:none;">No upcoming departures</p>
+           </li>`;
 
+      const popupHTML = `
+        <div style="font-family: 'Outfit';font-size:14px;min-width:240px;background: white;border-radius: 12px;padding: 17px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <b style="font-size:15px;">${stopName}</b>
+          </div>
+          <div style="margin-bottom:6px; font-size:13px; color:#444;">
+            <span style="padding:2px 6px; border-radius:10px; background:#f1f1f1;">${directionLabel}</span>
+          </div>
+          <ul style="list-style:none; padding:0; margin:0;">${depHtml}</ul>
+          <div style="display: flex; justify-content: space-between;">
+            <div style="margin-top:6px;font-size: 12px;color:#666;">
+              Updated ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+            </div>
+            <img src="/transit-api-badge.png" style="width: 100px;" alt="Powered by Transit API">
+          </div>
+        </div>`;
 
-
-
+      new mapboxgl.Popup()
+        .setLngLat([lon, lat])
+        .setHTML(popupHTML)
+        .addTo(map);
     });
-  });
+
+  } else {
+    // If you ever need to refresh data without re-adding source
+    map.getSource("route-stops").setData(stopsGeoJSON);
+  }
 }
+
 
 /* -------------------------
    Load routes (unchanged)
@@ -1608,12 +2067,16 @@ async function loadRoutes() {
     { id: '180231', color: '#FF3399', label: 'Northbound A' },
     { id: '5010073', color: '#c24947', label: 'Eastbound' },
     { id: '5010072', color: '#c24947', label: 'Westbound' },
-    { id: '5020016', color: '#47a3c2', label: 'Southbound' },
-    { id: '5020013', color: '#47a3c2', label: 'Northbound' },
-    { id: '5050005', color: '#ffa500', label: 'East to Malton GO Station' },
-    { id: '5050008', color: '#ffb84d', label: 'East to Viscount Station (A)' },
-    { id: '5050006', color: '#ffa500', label: 'West to Mount Pleasant GO Station' },
-    { id: '5050010', color: '#ffb84d', label: 'West to Trinity Commons Terminal (A)' },
+    { id: '5020016', color: '#c24947', label: 'Southbound' },
+    { id: '5020013', color: '#c24947', label: 'Northbound' },
+    { id: '5050005', color: '#c24947', label: 'East to Malton GO Station' },
+    { id: '5050008', color: '#c24947', label: 'East to Viscount Station (A)' },
+    { id: '5050006', color: '#c24947', label: 'West to Mount Pleasant GO Station' },
+    { id: '5050010', color: '#c24947', label: 'West to Trinity Commons Terminal (A)' },
+    { id: '300086', color: '#FF3399', label: 'North to Mayfield Road' },
+    { id: '300087', color: '#FF3399', label: 'North to Caledon' },
+    { id: '300083', color: '#3399FF', label: 'South to Westwood Mall Terminal' },
+    { id: '300077', color: '#3399FF', label: 'South to Westwood Mall Terminal via Caledon' }
 
   ];
 
@@ -1634,7 +2097,7 @@ async function loadRoutes() {
       type: 'line',
       source: `route-${id}`,
       layout: { 'line-join': 'round', 'line-cap': 'round', visibility: 'none' },
-      paint: { 'line-color': color, 'line-width': 5 }
+      paint: { 'line-color': color, 'line-width': 8 }
     });
 
     map.on('click', `routeLineLayer-${id}`, e => {
@@ -1646,33 +2109,64 @@ const routeNumber = routes.find(r => id.startsWith(r)) || '';
   }
 }
 
-/* Show/hide route (unchanged) */
 function updateRouteDisplay(selectedId) {
-  // Remove all existing bus markers from the map
-  Object.values(busMarkers).forEach(marker => {
-    marker.remove();
-  });
-  Object.keys(busMarkers).forEach(key => delete busMarkers[key]);
+  // 1) Remove all existing bus markers from the map (unchanged)
+  
 
-  const routes = ['410009', '410010', '810002', '810005', '250033', '250032', '180209', '180231', '5010073', '5010072', '5020016', '5020013', '5050005', '5050008', '5050006', '5050010'];
+  // 2) Show only the selected route line
+  const routes = [
+    '410009', '410010',
+    '810002', '810005',
+    '250033', '250032',
+    '180209', '180231',
+    '5010073', '5010072',
+    '5020016', '5020013',
+    '5050005', '5050008',
+    '5050006', '5050010',
+    '300086', '300087', '300083', '300077',
+  ];
 
   routes.forEach(id => {
     const visibility = id === selectedId ? 'visible' : 'none';
-    if (map.getLayer(`routeLineLayer-${id}`)) {
-      map.setLayoutProperty(`routeLineLayer-${id}`, 'visibility', visibility);
+    const layerId = `routeLineLayer-${id}`;
+    if (map.getLayer(layerId)) {
+      map.setLayoutProperty(layerId, 'visibility', visibility);
     }
   });
 
-  routes.forEach(id => {
-    if (!stopMarkers[id]) return;
-    stopMarkers[id].forEach(marker => {
-      const el = marker.getElement();
-      el.style.display = (id === selectedId) ? 'block' : 'none';
-    });
-  });
+  // 3) NEW: filter the GeoJSON stop layer by direction (shape_id)
+  // `directions` is the array we set on each feature in loadRoute41Stops()
+  if (map.getLayer('route-stops-layer')) {
+    map.setFilter(
+      'route-stops-layer',
+      ['in', selectedId, ['get', 'directions']]
+    );
+  }
 
+  // 4) Update the currently selected direction and refresh buses
   selectedDirection = selectedId;
   updateBusPositions(); // fetch fresh ones
+}
+
+async function safeFetch(url, options = {}) {
+  try {
+    const res = await fetch(url, options);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res;
+  } catch (err) {
+    console.warn("Fetch failed:", url, err);
+    return null;
+  }
+}
+
+async function safeJson(res) {
+  try {
+    const text = await res.text();
+    return JSON.parse(text);
+  } catch (err) {
+    console.warn("Invalid JSON from server:", err);
+    return null;
+  }
 }
 
 
@@ -1680,184 +2174,236 @@ function updateRouteDisplay(selectedId) {
 /* Live buses (unchanged) */
 /* Live buses (unchanged) */
 const busMarkers = {};
+let lastBusFeatures = null;              // previous FeatureCollection for buses
+let busAnimationFrame = null;           // current rAF id
+const BUS_ANIMATION_DURATION = 3000;    // ms for one move animation
+
 async function updateBusPositions() {
+  if (updateBusPositions.running) return;
+  updateBusPositions.running = true;
+
   try {
-    const [realtimeRes, tripUpdateRes, stopTimesRes] = await Promise.all([
-      fetch("https://busapi.caledontransit.com/"),
-      fetch("https://busapi.caledontransit.com/tripupdate"),
-      fetch("https://busapi.caledontransit.com/stoptimes")
-    ]);
+    const realtimeRes   = await safeFetch("https://busapi.caledontransit.com/");
+    const tripUpdateRes = await safeFetch("https://busapi.caledontransit.com/tripupdate");
+    // const stopTimesRes  = await safeFetch("/gtfs-files/stop_times.txt");
+    const stopTimesRes  = await safeFetch("https://busapi.caledontransit.com/stoptimes");
 
-    const realtimeData = await realtimeRes.json();
-    const tripUpdateData = await tripUpdateRes.json();
-    const stopTimes = parseCSV(await stopTimesRes.text());
+    const realtimeData   = (realtimeRes   ? await safeJson(realtimeRes)   : null) || { entity: [] };
+    const tripUpdateData = (tripUpdateRes ? await safeJson(tripUpdateRes) : null) || { entity: [] };
+    const stopTimes      = stopTimesRes ? parseCSV(await stopTimesRes.text()) : [];
 
-    const activeRoutes = ["41", "81", "25", "18", "501", "502","505"];
-
-    // Calculate how old the data is
-    const updateTime = new Date(realtimeData.header.timestamp * 1000);
-    const now = new Date();
-    const diffMin = Math.round((now - updateTime) / 60000);
-
-    // Build a map of trip updates for quick lookup
+    // Build trip update lookup
     const tripUpdateMap = {};
-    (tripUpdateData.entity || []).forEach(entity => {
-      const tu = entity.trip_update;
-      if (tu?.trip?.trip_id) {
-        tripUpdateMap[tu.trip.trip_id] = tu;
+    for (const ent of (tripUpdateData.entity || [])) {
+      if (ent.trip_update?.trip?.trip_id) {
+        tripUpdateMap[ent.trip_update.trip.trip_id] = ent.trip_update;
       }
-    });
+    }
 
-    realtimeData.entity
-      .filter(ent => activeRoutes.includes(ent.vehicle?.trip?.route_id))
-      .forEach(ent => {
-        const veh = ent.vehicle;
-        const id = veh.vehicle?.id || veh.id;
-        const tripId = veh.trip?.trip_id;
-        const lat = veh.position?.latitude;
-        const lon = veh.position?.longitude;
-        if (!lat || !lon) return;
+    const activeRoutes = ["41", "81", "25", "18", "501", "502", "505", "30"];
 
-        // Determine trip direction
-        let direction = tripDirectionMap[tripId];
-        if (!direction && tripId) {
-          const stem = String(tripId).split('-')[0];
-          direction = tripDirectionMap[stem];
-          document.getElementById('accuracyWarning').style.display = 'block';
-        }
+    // Header timestamp → how stale is the feed?
+    let diffMin = 0;
+    try {
+      const updateTime = new Date((realtimeData.header?.timestamp || 0) * 1000);
+      diffMin = Math.round((Date.now() - updateTime) / 60000);
+    } catch {}
 
-        if (!direction || direction !== selectedDirection) {
-          if (busMarkers[id]) busMarkers[id].getElement().style.display = "none";
-          return;
-        }
+    const features = [];
 
-        // ---- CORRECTED Adherence / Delay ----
-        let adherenceStatus = "Scheduled";
-        let adherenceColor = "#808080";
-        let delayMinutes = null;
+    for (const entity of (realtimeData.entity || [])) {
+      const veh = entity.vehicle;
+      if (!veh) continue;
 
-        // Method 1: Use trip update data (same as Route Status system)
-        const tripUpdate = tripUpdateMap[tripId];
-        if (tripUpdate?.stop_time_update?.length > 0) {
-          // Use the first stop time update for this trip (same logic as Route Status)
-          const firstStop = tripUpdate.stop_time_update[0];
-          if (firstStop?.departure?.time) {
-            // Find the scheduled time for this stop
-            const scheduledRow = stopTimes.find(st => 
-              st.trip_id.startsWith(tripId) && st.stop_id === firstStop.stop_id
-            );
-            
-            if (scheduledRow) {
-              // Convert scheduled time to Date object
-              const schedStr = scheduledRow.departure_time;
-              const [h, m, s] = schedStr.split(":").map(Number);
-              const sched = new Date();
-              sched.setHours(h, m, s || 0, 0);
-              
-              // Convert real-time to Date object
-              const realtime = Number(firstStop.departure.time) * 1000;
-              
-              // Calculate delay in minutes
-              delayMinutes = (realtime - sched.getTime()) / 60000;
-              
-              if (!isNaN(delayMinutes)) {
-                if (delayMinutes <= 2 && delayMinutes >= -2) {
-                  adherenceStatus = "On Time";
-                  adherenceColor = "#00c853";
-                } else if (delayMinutes > 2) {
-                  adherenceStatus = `Delayed ${Math.round(delayMinutes)} min`;
-                  adherenceColor = "#d32f2f";
-                } else if (delayMinutes < -2) {
-                  adherenceStatus = `Early ${Math.abs(Math.round(delayMinutes))} min`;
-                  adherenceColor = "#ffa000";
-                }
-              }
+      const route = veh.trip?.route_id;
+      if (!activeRoutes.includes(route)) continue;
+
+      const id  = veh.vehicle?.id || veh.id || Math.random().toString();
+      const lat = veh.position?.latitude;
+      const lon = veh.position?.longitude;
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
+
+      const tripIdRaw = veh.trip?.trip_id || "";
+      let direction = tripDirectionMap[tripIdRaw];
+
+      // fallback: stem match (tripId like "1234-1")
+      if (!direction && tripIdRaw.includes("-")) {
+        const stem = tripIdRaw.split("-")[0];
+        direction = tripDirectionMap[stem];
+      }
+
+      // Only show buses for the currently selected shape/direction
+      if (direction !== selectedDirection) continue;
+
+      // ---- adherence calculation (same logic, but stored in properties) ----
+      let adherenceStatus = "Live Tracking";
+      let adherenceColor  = "#3366CC";
+      let delayMinutes    = null;
+      let iconType        = "live";
+
+      const tu = tripUpdateMap[tripIdRaw];
+      if (tu && tu.stop_time_update && tu.stop_time_update.length > 0) {
+        const stu    = tu.stop_time_update[0];
+        const stopId = stu.stop_id;
+
+        const schedRow = stopTimes.find(st =>
+          st.stop_id === stopId && st.trip_id.startsWith(tripIdRaw)
+        );
+
+        if (schedRow) {
+          const [h, m, s] = schedRow.departure_time.split(":").map(Number);
+          const sched = new Date();
+          sched.setHours(h, m, s || 0, 0);
+
+          const realtimeMs = Number(stu.departure?.time || 0) * 1000;
+          if (!isNaN(realtimeMs)) {
+            delayMinutes = Math.round((realtimeMs - sched.getTime()) / 60000);
+
+            if (delayMinutes <= 2 && delayMinutes >= -2) {
+              adherenceStatus = "On Time";
+              adherenceColor  = "#00c853";
+              iconType        = "onTime";
+            } else if (delayMinutes > 2) {
+              adherenceStatus = `Delayed ${delayMinutes} min`;
+              adherenceColor  = "#d32f2f";
+              iconType        = "delayed";
+            } else if (delayMinutes < -2) {
+              adherenceStatus = `Early ${Math.abs(delayMinutes)} min`;
+              adherenceColor  = "#ffa000";
+              iconType        = "early";
             }
           }
         }
+      }
 
-        // Method 2: Fallback - use vehicle delay field if available
-
-        // Method 3: Final fallback - show basic status
-        if (delayMinutes === null) {
-          adherenceStatus = "Live Tracking";
-          adherenceColor = "#3366CC";
-        }
-
-        // ---- Popup HTML ----
-        const popupHTML = `
-          <div style="font-family:'Outfit';font-size:14px;background:white;border-radius:12px;padding:17px;">
-            <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">
-              <span class="material-symbols-outlined">directions_bus</span>
-              <span style="padding:2px 6px;border-radius:10px;background:#f1f1f1;font-weight:600;">
-                Bus ${veh.vehicle?.label || id}
-              </span>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px;color:${adherenceColor};margin-bottom:4px;">
-              <span class="material-symbols-outlined" style="font-size:16px;">
-                ${adherenceColor === '#00c853' ? 'check_circle' : 
-                  adherenceColor === '#d32f2f' ? 'warning' : 
-                  adherenceColor === '#ffa000' ? 'schedule' : 
-                  'location_on'}
-              </span>
-              <span>${adherenceStatus}</span>
-            </div>
-            <div style="font-size:12px;color:#666;margin-top:6px;">
-              Updated ${diffMin} min ago • Route ${veh.trip?.route_id || 'Unknown'}
-            </div>
-          </div>
-        `;
-
-        // ---- Create or update marker ----
-        if (!busMarkers[id]) {
-          const iconEl = document.createElement("img");
-          iconEl.src = "/bus.png";
-          iconEl.style.width = "40px";
-          iconEl.style.height = "40px";
-
-          const marker = new tt.Marker({ element: iconEl })
-            .setLngLat([lon, lat])
-            .setPopup(new tt.Popup().setHTML(popupHTML))
-            .addTo(map);
-
-          busMarkers[id] = marker;
-          marker.currentLngLat = [lon, lat];
-        } else {
-          animateMarkerMove(busMarkers[id], [lon, lat]);
-          busMarkers[id].getPopup().setHTML(popupHTML);
-          busMarkers[id].getElement().style.display = "block";
+      // ---- Build GeoJSON feature for this bus ----
+      features.push({
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [lon, lat]
+        },
+        properties: {
+          id,
+          label: veh.vehicle?.label || id,
+          route,
+          adherenceStatus,
+          adherenceColor,
+          delayMinutes: delayMinutes ?? 0,
+          updatedMinutesAgo: diffMin,
+          iconType
         }
       });
-  } catch (err) {
-    console.error("Bus update failed:", err);
-  }
+    }
+
+    const collection = {
+  type: "FeatureCollection",
+  features
+};
+
+const src = map.getSource("buses");
+if (src) {
+  animateBusTransition(lastBusFeatures, collection);
+  lastBusFeatures = collection;
 }
+
+
+  } catch (err) {
+    console.warn("updateBusPositions crashed but was caught safely:", err);
+  }
+
+  updateBusPositions.running = false;
+}
+
+
 
 /**
  * Smoothly animate a marker to its new position
  * @param {tt.Marker} marker - TomTom marker object
  * @param {[number, number]} newPos - [lon, lat] new position
  */
-function animateMarkerMove(marker, newPos) {
-  const duration = 5000; // ms
-  const frames = 60;
-  const interval = duration / frames;
+function animateBusTransition(fromCollection, toCollection) {
+  const src = map.getSource("buses");
+  if (!src) return;
 
-  const startPos = marker.currentLngLat || marker.getLngLat().toArray();
-  const [startLon, startLat] = startPos;
-  const [endLon, endLat] = newPos;
+  // First update: nothing to animate, just draw.
+  if (!fromCollection || !fromCollection.features.length) {
+    src.setData(toCollection);
+    return;
+  }
 
-  let step = 0;
-  const stepFn = () => {
-    step++;
-    const t = step / frames; // progress (0 → 1)
-    const lon = startLon + (endLon - startLon) * t;
-    const lat = startLat + (endLat - startLat) * t;
-    marker.setLngLat([lon, lat]);
-    if (step < frames) requestAnimationFrame(stepFn);
-    else marker.currentLngLat = newPos; // store final position
-  };
-  requestAnimationFrame(stepFn);
+  // Cancel any in-flight animation so we don’t fight ourselves.
+  if (busAnimationFrame) {
+    cancelAnimationFrame(busAnimationFrame);
+    busAnimationFrame = null;
+  }
+
+  // Index old and new positions by vehicle id for cheap lookup.
+  const fromById = Object.create(null);
+  fromCollection.features.forEach(f => {
+    const id = f.properties.id;
+    if (!id) return;
+    fromById[id] = f;
+  });
+
+  const toById = Object.create(null);
+  toCollection.features.forEach(f => {
+    const id = f.properties.id;
+    if (!id) return;
+    toById[id] = f;
+  });
+
+  const start = performance.now();
+
+  function frame(now) {
+    const tRaw = (now - start) / BUS_ANIMATION_DURATION;
+    const t = Math.max(0, Math.min(1, tRaw)); // clamp 0–1
+
+    // Build an interpolated FeatureCollection for this frame
+    const interpFeatures = toCollection.features.map(f => {
+      const id = f.properties.id;
+      const toCoords = f.geometry.coordinates;
+      const fromFeature = fromById[id];
+
+      let fromCoords = fromFeature ? fromFeature.geometry.coordinates : toCoords;
+
+      // Optional: skip animation for tiny moves to avoid jitter
+      const dx = toCoords[0] - fromCoords[0];
+      const dy = toCoords[1] - fromCoords[1];
+      const dist2 = dx * dx + dy * dy;
+      if (dist2 < 1e-10) {
+        // practically the same place
+        return f;
+      }
+
+      const lng = fromCoords[0] + dx * t;
+      const lat = fromCoords[1] + dy * t;
+
+      // Return a shallow-cloned feature with new geometry
+      return {
+        ...f,
+        geometry: {
+          ...f.geometry,
+          coordinates: [lng, lat]
+        }
+      };
+    });
+
+    src.setData({
+      type: "FeatureCollection",
+      features: interpFeatures
+    });
+
+    if (t < 1) {
+      busAnimationFrame = requestAnimationFrame(frame);
+    } else {
+      // Snap to final data at end to avoid drift
+      src.setData(toCollection);
+      busAnimationFrame = null;
+    }
+  }
+
+  busAnimationFrame = requestAnimationFrame(frame);
 }
 
 
@@ -1902,8 +2448,8 @@ const dir18 = document.getElementById('direction18select');
 const dir501 = document.getElementById('direction501select');
 const dir502 = document.getElementById('direction502select');
 const dir505 = document.getElementById('direction505select');
-
-const button41 = document.getElementById('button41');
+const dir30 = document.getElementById('direction30select');
+/*const button41 = document.getElementById('button41');
 const button81 = document.getElementById('button81');
 const button25 = document.getElementById('button25');
 const button18 = document.getElementById('button18');
@@ -2014,7 +2560,7 @@ button505.addEventListener('click', () => {
   dir502.style.display = 'none';
   dir505.style.display = 'inline-block';
   updateRouteDisplay(dir505.value);
-});
+}); */
 
 
 dir25.addEventListener('change', (e) => {
@@ -2045,113 +2591,130 @@ dir505.addEventListener('change', (e) => {
   updateRouteDisplay(e.target.value);
 });
 
+dir30.addEventListener('change', (e) => {
+  updateRouteDisplay(e.target.value);
+});
 
 /* Init */
 map.on('load', async () => {
+  map.loadImage('bus.png', (error, image) => {
+  if (error) {
+    console.error("Failed to load bus icon:", error);
+    return;
+  }
+  if (!map.hasImage('bus-icon')) {
+    map.addImage('bus-icon', image);
+  }
+});
+
+map.loadImage('stop_marker.png', (error, image) => {
+  if (error) {
+    console.error("Failed to load bus icon:", error);
+    return;
+  }
+  if (!map.hasImage('stop-marker')) {
+    map.addImage('stop-marker', image);
+  }
+});
+
   await buildTripDirectionMap();
   await loadRoute41Stops();
   await loadRoutes();
+
+  // 🔹 Add GeoJSON source for buses
+  map.addSource('buses', {
+    type: 'geojson',
+    data: {
+      type: 'FeatureCollection',
+      features: []
+    }
+  });
+
+  // 🔹 Simple circle layer for buses (you can later change to symbol/icon)
+  map.addLayer({
+  id: 'buses-layer',
+  type: 'symbol',
+  source: 'buses',
+  layout: {
+    'icon-image': 'bus-icon',   // ← name you added with map.addImage
+    'icon-size': 0.26,
+    'icon-allow-overlap': true,
+    'icon-ignore-placement': true,
+    'icon-anchor': 'center'
+  }
+});
+
+
+  // 🔹 Click handler for bus popups (uses properties we’ll set in updateBusPositions)
+  map.on('click', 'buses-layer', (e) => {
+    if (!e.features || !e.features.length) return;
+    const f = e.features[0];
+    const props = f.properties;
+    const coords = f.geometry.coordinates.slice();
+
+    const popupHTML = `
+      <div style="font-family:'Outfit';font-size:14px;background:white;border-radius:12px;padding:17px;">
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">
+          <span class="material-symbols-outlined">directions_bus</span>
+          <span style="padding:2px 6px;border-radius:10px;background:#f1f1f1;font-weight:600;">
+            Bus ${props.label || props.id}
+          </span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;color:${props.adherenceColor || '#3366CC'};margin-bottom:4px;">
+          <span class="material-symbols-outlined" style="font-size:16px;">
+            ${
+              props.iconType === 'onTime' ? 'check_circle' :
+              props.iconType === 'delayed' ? 'warning' :
+              props.iconType === 'early'   ? 'schedule' :
+              'location_on'
+            }
+          </span>
+          <span>${props.adherenceStatus || 'Live Tracking'}</span>
+        </div>
+        <div style="font-size:12px;color:#666;margin-top:6px;">
+          Updated ${props.updatedMinutesAgo ?? '?'} min ago • Route ${props.route || '—'}
+        </div>
+      </div>
+    `;
+
+    new mapboxgl.Popup()
+      .setLngLat(coords)
+      .setHTML(popupHTML)
+      .addTo(map);
+  });
+
+    // Disable follow mode when the user manually moves the map
+  ['dragstart'].forEach(evt => {
+    map.on(evt, () => {
+      if (isFollowingUser) {
+        isFollowingUser = false;
+      locatebtnthing.style.backgroundColor = '#FFFF';
+      console.log("disable follow")
+        // optionally: update the locate button UI to show "not following"
+      }
+    });
+  });
+
+
   updateRouteDisplay(selectedDirection);
   updateBusPositions();
   setInterval(updateBusPositions, 15000);
 });
+
 
 </script>
 
 
 	  <br>
 	  <br>
-  <div id="servicealerts" style="
-  background-color: rgba(255, 123, 0, 0.1);
-  padding: 18px 20px;
-  max-width: 380px;
-  margin: auto;
-  border-radius: 20px;
-  color: #111;
-  font-family: Outfit, sans-serif;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-  backdrop-filter: blur(8px);
-">
 
-  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-    <span class="material-symbols-outlined" style="font-size: 22px;">bus_alert</span>
-    <span style="font-weight: 600; font-size: 15px;">Live Service Alerts / Route Status</span>
-  </div>
-
-  <p id="allClear" style="
-    font-size: 13px;
-    margin-top: 6px;
-    margin-bottom: 12px;
-    background: rgba(255, 123, 0, 0.07);
-    padding: 8px 10px;
-    border-radius: 8px;
-    text-align: center;
-  ">
-    No service alerts or disruptions at this time.
-  </p>
-
-  <ul style="
-    padding: 0;
-    margin: 0;
-    list-style-type: none;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  ">
-
-    <!-- ✅ Route OK -->
-    <li style="background: white; padding: 10px 14px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 4px; transition: transform 0.15s, box-shadow 0.15s; transform: none; width: unset !important; font-family: Outfit !important; height: unset !important; margin-bottom: unset !important;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 3px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 1px 4px rgba(0,0,0,0.1)';">
-      <div style="display: flex; align-items: center; gap: 14px;">
-    <button class="pill" style="width: 60px; height: 40px;">41</button>
-    <p style="font-weight: 600; font-size: 15px; margin: 0;">Bolton</p>
-  </div>
-
-  <!-- Delay icon + text container -->
-  <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-    <span class="material-symbols-outlined" style="font-size: 20px; color: #d32f2f;"></span>
-    <span style="font-size: 13px; font-family: Outfit; font-weight: 600;" class="status"></span>
-    <p style="font-size: 12px; margin: 0; color: #d32f2f;" class="delayminutes"></p>
-  </div>
-    </li>
-
-    <!-- ⚠️ Minor delay -->
-    <li style="background: white; padding: 10px 14px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 4px; transition: transform 0.15s, box-shadow 0.15s; transform: none; width: unset !important; font-family: Outfit !important; height: unset !important; margin-bottom: unset !important;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 3px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 1px 4px rgba(0,0,0,0.1)';">
-      <div style="display: flex; align-items: center; gap: 14px;">
-    <button class="pill" style="width: 60px; height: 40px;">81</button>
-    <p style="font-weight: 600; font-size: 15px; margin: 0;">Mayfield West</p>
-  </div>
-
-  <!-- Delay icon + text container -->
-  <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-    <span class="material-symbols-outlined" style="font-size: 20px; color: #d32f2f;"></span>
-    <span style="font-size: 13px; font-family: Outfit; font-weight: 600;" class="status"></span>
-    <p style="font-size: 12px; margin: 0; color: #d32f2f;" class="delayminutes"></p>
-  </div>
-    </li>
-
-    <!-- ⛔ Major disruption -->
-    <li style="background: white; padding: 10px 14px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 4px; transition: transform 0.15s, box-shadow 0.15s; transform: none; width: unset !important; font-family: Outfit !important; height: unset !important; margin-bottom: unset !important;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 3px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 1px 4px rgba(0,0,0,0.1)';">
-      <div style="display: flex; align-items: center; gap: 14px;">
-    <button class="pill" style="width: 60px; height: 40px;">25</button>
-    <p style="font-weight: 600; font-size: 15px; margin: 0;">Edenbrooke</p>
-  </div>
-
-  <!-- Delay icon + text container -->
-  <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-    <span class="material-symbols-outlined" style="font-size: 20px; color: #d32f2f;"></span>
-    <span style="font-size: 13px; font-family: Outfit; font-weight: 600;" class="status"></span>
-    <p style="font-size: 12px; margin: 0; color: #d32f2f;" class="delayminutes"></p>
-  </div>
-    </li>
-
-  </ul>
-</div>
 
 <script>
 async function fetchServiceStatus() {
   try {
     const [tripRes, stopRes] = await Promise.all([
       fetch("https://busapi.caledontransit.com/tripupdate"),
+      // fetch("/gtfs-files/stop_times.txt"),
       fetch("https://busapi.caledontransit.com/stoptimes")
     ]);
 
@@ -2233,83 +2796,13 @@ fetchServiceStatus();
 setInterval(fetchServiceStatus, 60000);
 </script>
 
-
-	  <div class="container">
-    <div class="card" onclick="window.location.href = '/fare-info'" style="cursor: pointer;">
-      <img src="/New Project (6).png" alt="Paying Your Fare">
-      <div class="card-content">
-        <h2>Paying Your Fare</h2>
-        <p>Ready to ride? Learn how to pay →</p>
-      </div>
-    </div>
-<div class="card" onclick="window.location.href = '/plan-your-trip'" style="cursor: pointer;">
-      <img src="/plantrip.png" alt="Plan a Trip">
-      <div class="card-content">
-        <h2>Plan a Trip</h2>
-        <p>Quickly Plan Your Transit Ride →</p>
-      </div>
-    </div>
-    <div class="card" onclick="window.location.href = 'https://www.brampton.ca/EN/residents/transit/Contact-Us/pages/customer-service.aspx'" style="cursor: pointer;">
-      <img src="/cust.png" alt="Contact Brampton Transit">
-      <div class="card-content">
-        <h2>Contact Brampton Transit</h2>
-        <p>Get in touch with Brampton Transit →</p>
-      </div>
-    </div>
-  </div>
 </main>
-<div id="newApp" style="
+<div id="installApp" style="
       box-shadow: #060e1a33 0px 4px 12px;
       background: white;
   padding: 15px;
   max-width: 350px;
     width: 90%;
-  margin: auto;
-  height: auto;
-  border-radius: 25px;
-  color: black;
-  font-family: Outfit;
-  display: block;
-  bottom: 25px;
-  position: fixed;
-left: 50%;
-  transform: translateX(-50%);
-  z-index: 5000000000;
-  transition: all 0.3s ease-in-out;
-
-">
-  <div style="display: flex; align-items: center; justify-content: space-between;">
-  <div style="display: flex; align-items: center; gap: 8px;">
-    <span class="material-symbols-outlined">diamond_shine</span>
-    <span style="font-weight: 600;">Check Out the New Caledon Transit</span>
-  </div>
-  <span class="material-symbols-outlined" style="cursor: pointer;" onclick="document.getElementById('installApp').style.display =  'none';">close</span>
-</div>
-
-  <p style="font-size: 12px; margin-top: 4px;">
-  From January 1, 2026, you’ll be automatically taken to our refreshed website, with a cleaner design and easier navigation.
-  </p>
-  <br>
-  <button onclick="window.location.href='https://caledontransit.com/newindextt'" style="
-  display: block;
-    background-color: #2d3399;
-    color: white;
-    font-family: Outfit;
-    font-weight: 600;
-    padding: 10px;
-    border-radius: 15px;
-    width: 70px;
-    border: none;
-    text-align: center;
-    margin: 0 auto;
-">Visit</button>
-</div>
-<div id="installApp" style="
-      box-shadow: #060e1a33 0px 4px 12px;
-      background: white;
-  padding: 15px;
-  max-width: 500px;
-  min-width: 95%;
   margin: auto;
   height: auto;
   border-radius: 25px;
@@ -2350,42 +2843,527 @@ left: 50%;
     margin: 0 auto;
 ">Install</button>
 </div>
+<!-- Floating Bottom Scrollable Cards -->
+<!-- Floating Bottom Scrollable Action Cards -->
+<div class="bottom-card-container" role="region" aria-label="Transit quick actions">
+  <div class="card-scroll">
 
-	 <footer style="background-color: #f5f5f5; padding: 30px 20px; text-align: center; font-family: 'Montserrat', sans-serif;">
-  <div style="display: flex; justify-content: space-between; max-width: 1200px; margin: auto; flex-wrap: wrap;">
-    
-    <!-- Left Section: Logo and Social Links -->
-    <div style="flex: 1; padding: 10px; max-width: 200px;">
-      <img src="/caledon.png"  alt="Caledon Transit">
-      
-    </div>
-    
-    <!-- Middle Section: Contact Information -->
-    <div style="flex: 1; padding: 10px; max-width: 300px;">
-      <h3 style="font-size: 20px; margin-bottom: 15px;">Contact Centre</h3>
-      <p style="font-size: 16px;margin-bottom: 10px;display: inline;">Town of Caledon: </p><a href="tel:888-225-3366" style="
-    display: inline;
-    text-decoration: underline;
-">1-888-225-3366</a>
-      <p style="font-size: 16px;margin-bottom: 10px;display: inline;">Brampton Transit: </p><a href="tel:905-874-2999" style="display: inline; text-decoration: underline;">905.874.2999</a>
-      <p style="font-size: 16px; margin-bottom: 10px;">Emergency: 911</p>
-      <p style="font-size: 16px; margin-bottom: 10px;">Disclaimer: This website is not affiliated with, endorsed by, or officially connected to the Town of Caledon or Brampton Transit.</p>
+    <button class="info-card" aria-label="Plan your trip">
+      <div>
+        <h3>Plan your trip</h3>
+        <p>With us</p>
+      </div>
+      <span class="material-symbols-outlined card-icon">arrow_forward</span>
+    </button>
+
+    <button class="info-card" aria-label="Our blog and transit news">
+      <div>
+        <h3>Our blog</h3>
+        <p>and transit news</p>
+      </div>
+      <span class="material-symbols-outlined card-icon">campaign</span>
+    </button>
+<button class="info-card" aria-label="Payment Options">
+      <div>
+        <h3>Payment options</h3>
+        <p>Make paying your fare easy</p>
+      </div>
+      <span class="material-symbols-outlined card-icon">payment_card</span>
+    </button>
+    <button class="info-card" aria-label="Check live bus status">
+      <div>
+        <h3>Service Disruptions</h3>
+        <p>Live Alerts and Route Status</p>
+      </div>
+      <span class="material-symbols-outlined card-icon">emergency_home</span>
+    </button>
+    <button class="info-card" aria-label="Check live bus status">
+      <div>
+        <h3>Contact us</h3>
+        <p>For Help and Feedback</p>
+      </div>
+      <span class="material-symbols-outlined card-icon">chat</span>
+    </button>
+  </div>
+</div>
+
+<!-- Trip planner modal -->
+<div id="tripModal"
+     class="trip-modal-backdrop"
+     aria-hidden="true">
+  <div class="trip-modal"
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="tripModalTitle">
+    <div class="trip-modal-header">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="material-symbols-outlined">navigation</span>
+        <h2 id="tripModalTitle">Plan a trip</h2>
+      </div>
+      <button type="button"
+              id="tripModalClose"
+              class="trip-modal-close"
+              aria-label="Close trip planner">
+        <span class="material-symbols-outlined">close</span>
+      </button>
     </div>
 
-    <!-- Right Section: Quick Links -->
-    <div style="flex: 1; padding: 10px; max-width: 300px;">
-      <h3 style="font-size: 20px; margin-bottom: 15px;">Quick Links</h3>
-      <ul style="list-style: none; padding: 0;">
-        <li style="margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;"><a href="https://www.brampton.ca/EN/residents/transit" style="color: #333; text-decoration: none; font-size: 16px;">Brampton Transit</a></li>
-        <li style="margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;"><a href="/fare-info" style="color: #333; text-decoration: none; font-size: 16px;">Fare Info</a></li>
-		          <li style="margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;"><a href="https://prestocard.ca/" style="color: #333; text-decoration: none; font-size: 16px;">PRESTO Card</a></li>
-        <li style="margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;"><a href="/plan-your-trip" style="color: #333; text-decoration: none; font-size: 16px;">Trip Planner</a></li>
-		  <li style="margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;"><a href="/schedules" style="color: #333; text-decoration: none; font-size: 16px;">Bus Schedules</a></li>
-		          <li style="margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;"><a href="/privacy-policy" style="color: #333; text-decoration: none; font-size: 16px;">Privacy Policy</a></li>
-      </ul>
+    <div class="trip-modal-body">
+      <!-- TODO: put your real trip planner UI here -->
+      <p style="margin-bottom:12px;">
+      Plan your trip with ease using Triplinx or the 
+    <a href="https://transitapp.com/" style="color: #3366CC; text-decoration: underline;">Transit</a> app.
+</p>
+      <div class="trip-modal-form">
+        <iframe title="Page Viewer" frameborder="0" src="https://whitelabel.triplinx.ca/en/trip-planner/4/JourneyPlanner?partnerCode=BRAMPTON" style="
+        display: block;
+        width: 95%;
+        max-width: 1200px;
+        height: 100%;
+        max-height: 600px;
+        margin: 0 auto;
+        border-radius: 16px;
+        border: 1px solid #ddd;
+        min-height: 400px;
+    ">
+    <div class="UserGeneric">
+        The current browser does not support Web pages that contain the IFRAME element. To use this Web Part, you must use a browser that supports this element, such as Internet Explorer 7.0 or later.
+    </div>
+</iframe>
+      </div>
     </div>
   </div>
-</footer>
+</div>
+
+<div id="paymentsModal"
+     class="trip-modal-backdrop"
+     aria-hidden="true">
+  <div class="trip-modal"
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="tripModalTitle">
+    <div class="trip-modal-header">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="material-symbols-outlined">payment_cardspan>
+        <h2 id="tripModalTitle">Payment Options</h2>
+      </div>
+      <button type="button"
+              id="tripModalClose"
+              class="trip-modal-close"
+              aria-label="Close trip planner">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="trip-modal-body">
+      <!-- TODO: put your real trip planner UI here -->
+      <p style="margin-bottom:12px;">
+        Plan your trip with ease using Triplinx or the Transit app.
+
+      </p>
+      <div class="trip-modal-form">
+        <iframe title="Page Viewer" frameborder="0" src="https://whitelabel.triplinx.ca/en/trip-planner/4/JourneyPlanner?partnerCode=BRAMPTON" style="
+        display: block;
+        width: 85%;
+        max-width: 1200px;
+        height: 100%;
+        min-height: 600px;
+        margin: 0 auto;
+        border-radius: 25px;
+        border: 1px solid #ddd;
+    ">
+    <div class="UserGeneric">
+        The current browser does not support Web pages that contain the IFRAME element. To use this Web Part, you must use a browser that supports this element, such as Internet Explorer 7.0 or later.
+    </div>
+</iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="disruptionsModal"
+     class="trip-modal-backdrop"
+     aria-hidden="true">
+  <div class="trip-modal"
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="tripModalTitle">
+    <div class="trip-modal-header">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="material-symbols-outlined">emergency_home<span>
+        <h2 id="tripModalTitle">Service Disruptions</h2>
+      </div>
+      <button type="button"
+              id="tripModalClose"
+              class="trip-modal-close"
+              aria-label="Close trip planner">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="trip-modal-body">
+      <!-- TODO: put your real trip planner UI here -->
+      <p style="margin-bottom:12px;">
+        Plan your trip with ease using Triplinx or the Transit app.
+
+      </p>
+      <div class="trip-modal-form">
+          <div id="servicealerts" style="
+  background-color: rgba(255, 123, 0, 0.1);
+  padding: 18px 20px;
+  max-width: 380px;
+  margin: auto;
+  border-radius: 20px;
+  color: #111;
+  font-family: Outfit, sans-serif;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  backdrop-filter: blur(8px);
+  display: none; TODO: set to block when alerts exist
+">
+
+  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+    <span class="material-symbols-outlined" style="font-size: 22px;">bus_alert</span>
+    <span style="font-weight: 600; font-size: 15px;">Live Service Alerts / Route Status</span>
+  </div>
+
+  <p id="allClear" style="
+    font-size: 13px;
+    margin-top: 6px;
+    margin-bottom: 12px;
+    background: rgba(255, 123, 0, 0.07);
+    padding: 8px 10px;
+    border-radius: 8px;
+    text-align: center;
+  ">
+    No service alerts or disruptions at this time.
+  </p>
+
+  <ul style="
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  ">
+
+    <!-- ✅ Route OK -->
+    <li style="background: white; padding: 10px 14px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 4px; transition: transform 0.15s, box-shadow 0.15s; transform: none; width: unset !important; font-family: Outfit !important; height: unset !important; margin-bottom: unset !important;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 3px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 1px 4px rgba(0,0,0,0.1)';">
+      <div style="display: flex; align-items: center; gap: 14px;">
+    <button class="pill" style="width: 60px; height: 40px;">41</button>
+    <p style="font-weight: 600; font-size: 15px; margin: 0;">Bolton</p>
+  </div>
+
+  <!-- Delay icon + text container -->
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+    <span class="material-symbols-outlined" style="font-size: 20px; color: #d32f2f;"></span>
+    <span style="font-size: 13px; font-family: Outfit; font-weight: 600;" class="status"></span>
+    <p style="font-size: 12px; margin: 0; color: #d32f2f;" class="delayminutes"></p>
+  </div>
+    </li>
+
+    <!-- ⚠️ Minor delay -->
+    <li style="background: white; padding: 10px 14px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 4px; transition: transform 0.15s, box-shadow 0.15s; transform: none; width: unset !important; font-family: Outfit !important; height: unset !important; margin-bottom: unset !important;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 3px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 1px 4px rgba(0,0,0,0.1)';">
+      <div style="display: flex; align-items: center; gap: 14px;">
+    <button class="pill" style="width: 60px; height: 40px;">81</button>
+    <p style="font-weight: 600; font-size: 15px; margin: 0;">Mayfield West</p>
+  </div>
+
+  <!-- Delay icon + text container -->
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+    <span class="material-symbols-outlined" style="font-size: 20px; color: #d32f2f;"></span>
+    <span style="font-size: 13px; font-family: Outfit; font-weight: 600;" class="status"></span>
+    <p style="font-size: 12px; margin: 0; color: #d32f2f;" class="delayminutes"></p>
+  </div>
+    </li>
+
+    <!-- ⛔ Major disruption -->
+    <li style="background: white; padding: 10px 14px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 4px; transition: transform 0.15s, box-shadow 0.15s; transform: none; width: unset !important; font-family: Outfit !important; height: unset !important; margin-bottom: unset !important;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 3px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 1px 4px rgba(0,0,0,0.1)';">
+      <div style="display: flex; align-items: center; gap: 14px;">
+    <button class="pill" style="width: 60px; height: 40px;">25</button>
+    <p style="font-weight: 600; font-size: 15px; margin: 0;">Edenbrooke</p>
+  </div>
+
+  <!-- Delay icon + text container -->
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+    <span class="material-symbols-outlined" style="font-size: 20px; color: #d32f2f;"></span>
+    <span style="font-size: 13px; font-family: Outfit; font-weight: 600;" class="status"></span>
+    <p style="font-size: 12px; margin: 0; color: #d32f2f;" class="delayminutes"></p>
+  </div>
+    </li>
+
+  </ul>
+</div>
+    <div class="UserGeneric">
+        The current browser does not support Web pages that contain the IFRAME element. To use this Web Part, you must use a browser that supports this element, such as Internet Explorer 7.0 or later.
+    </div>
+</iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.trip-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 5000000002; /* above everything else */
+  font-family: 'Outfit', sans-serif;
+}
+
+.trip-modal-backdrop.open {
+  display: flex;
+}
+
+.trip-modal {
+  background: #fff;
+  border-radius: 24px;
+  padding: 18px 18px 20px;
+  width: 100%;
+  max-width: 460px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  position: relative;
+}
+
+.trip-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.trip-modal-header h2 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.trip-modal-close {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trip-modal-close:hover {
+  background: rgba(0,0,0,0.04);
+}
+
+.trip-modal-body {
+  font-size: 14px;
+  color: #333;
+}
+
+.trip-modal-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.trip-modal-form label {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  gap: 4px;
+}
+
+.trip-modal-form input {
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.trip-modal-primary-btn {
+  margin-top: 6px;
+  border: none;
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  background: #2d3399;
+  color: #fff;
+  cursor: pointer;
+}
+
+.trip-modal-primary-btn:hover {
+  filter: brightness(1.05);
+}
+
+/* Mobile: make it full screen */
+@media (max-width: 768px) {
+  .trip-modal-backdrop {
+    align-items: stretch;
+    justify-content: stretch;
+  }
+
+  .trip-modal {
+    border-radius: 0;
+    max-width: none;
+    max-height: none;
+    width: 100%;
+    height: 100vh;
+    padding: 16px 16px 20px;
+  }
+
+  .trip-modal-header {
+    padding-top: 8px;
+  }
+}
+</style>
+
+
+<style>
+.bottom-card-container {
+  position: absolute;
+  bottom: 30px;
+  left: 0;
+  width: 100%;
+  overflow-x: auto;
+  display: flex;
+  justify-content: flex-start;
+  scrollbar-width: none;
+  pointer-events: auto;
+}
+
+.card-scroll {
+  margin: auto;
+  display: flex;
+  gap: 12px;
+  padding: 0 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.info-card {
+  flex: 0 0 240px;
+  background: #fff;
+  border-radius: 22px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  font-family: 'Outfit', sans-serif;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.info-card:focus,
+.info-card:hover {
+  outline: none;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+}
+
+.info-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #111;
+}
+
+.info-card p {
+  font-size: 13px;
+  color: #666;
+  margin: 0 0 12px 0;
+}
+
+.route-btn {
+  background: #2d3399;
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: 14px;
+  width: 48px;
+  height: 36px;
+  font-family: 'Outfit';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-icon {
+  color: #2d3399;
+  font-size: 24px;
+  align-self: flex-end;
+}
+
+.bottom-card-container::-webkit-scrollbar {
+  display: none;
+}
+</style>
+
+<script>
+// Example click handlers — you can replace these with real logic later
+document.querySelectorAll('.info-card').forEach(card => {
+  card.addEventListener('click', () => {
+    const label = card.getAttribute('aria-label');
+    console.log(`Clicked: ${label}`);
+  });
+});
+
+</script>
+<script>
+(function () {
+  const planTripCard = document.querySelector('.info-card[aria-label="Plan your trip"]');
+  const tripModal = document.getElementById('tripModal');
+  const closeBtn = document.getElementById('tripModalClose');
+
+  if (!planTripCard || !tripModal) return;
+
+  function openTripModal() {
+    tripModal.classList.add('open');
+    tripModal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeTripModal() {
+    tripModal.classList.remove('open');
+    tripModal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  planTripCard.addEventListener('click', (e) => {
+    e.preventDefault();
+    openTripModal();
+  });
+
+  closeBtn.addEventListener('click', () => {
+    closeTripModal();
+  });
+
+  // Close when clicking outside modal content
+  tripModal.addEventListener('click', (e) => {
+    if (e.target === tripModal) {
+      closeTripModal();
+    }
+  });
+
+  // Esc key closes modal
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && tripModal.classList.contains('open')) {
+      closeTripModal();
+    }
+  });
+})();
+</script>
+
+
 	  <script>
         let menu = document.querySelector('#menu-icon');
       let navbar = document.querySelector('.navbar');
@@ -2456,5 +3434,10 @@ chat='true'>
     });
   }, 5000); // 5 seconds after page load
 });
+</script>
+<script>
+    setTimeout(() => {
+        window.fcWidget.hide();
+    }, 5000); // Hide after 10 seconds
 </script>
 </body></html>
