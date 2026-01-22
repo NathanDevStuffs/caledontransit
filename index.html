@@ -709,7 +709,7 @@ It looks like you’re offline right now. Live updates aren’t available, so we
   </select>
 
   <select id="direction501select" class="direction-select" style="display:none;">
-    <option value="5010073">Eastbound to SmartVMC Terminal</option>
+    <option value="5010074">Eastbound to SmartVMC Terminal</option>
     <option value="5010072">Westbound to Downtown Brampton</option>
   </select>
 
@@ -1826,7 +1826,7 @@ async function getStopDepartures(stopId) {
 let selectedDirection = "410009"; // default direction: northbound
 
 // ---- Stop marker storage & guard ----
-const stopMarkers = { "410010": [], "410009": [], "810002": [], "810005": [], "250032": [], "250033": [], "180209": [], "180231": [], "5010073": [], "5010072": [], "5020016": [], "5020013": [], "5050005": [], "5050008": [], "5050006": [], "5050010": [], "300086": [], "300087": [], "300083": [], "300077": []}; // northbound, southbound
+const stopMarkers = { "410010": [], "410009": [], "810002": [], "810005": [], "250032": [], "250033": [], "180209": [], "180231": [], "5010074": [], "5010072": [], "5020016": [], "5020013": [], "5050005": [], "5050008": [], "5050006": [], "5050010": [], "300086": [], "300087": [], "300083": [], "300077": []}; // northbound, southbound
 // keep your existing globals:
 let stopsLoaded = false;
 // stopMarkers can stay defined but won't be used for stops anymore
@@ -1864,7 +1864,7 @@ async function loadRoute41Stops() {
     '250032': { route: '25', dir: 'Southbound to Peel Memorial Hospital' },
     '180209': { route: '18', dir: 'Northbound' },
     '180231': { route: '18', dir: 'Northbound A' },
-    '5010073': { route: '501', dir: 'Eastbound to SmartVMC Terminal' },
+    '5010074': { route: '501', dir: 'Eastbound to SmartVMC Terminal' },
     '5010072': { route: '501', dir: 'Westbound to Downtown Brampton' },
     '5020016': { route: '502', dir: 'Southbound to Square One' },
     '5020013': { route: '502', dir: 'Northbound to Sandalwood Loop' },
@@ -2065,7 +2065,7 @@ async function loadRoutes() {
     { id: '250032', color: '#3399FF', label: 'Southbound' },
     { id: '180209', color: '#FF3399', label: 'Northbound' },
     { id: '180231', color: '#FF3399', label: 'Northbound A' },
-    { id: '5010073', color: '#c24947', label: 'Eastbound' },
+    { id: '5010074', color: '#c24947', label: 'Eastbound' },
     { id: '5010072', color: '#c24947', label: 'Westbound' },
     { id: '5020016', color: '#c24947', label: 'Southbound' },
     { id: '5020013', color: '#c24947', label: 'Northbound' },
@@ -2119,7 +2119,7 @@ function updateRouteDisplay(selectedId) {
     '810002', '810005',
     '250033', '250032',
     '180209', '180231',
-    '5010073', '5010072',
+    '5010074', '5010072',
     '5020016', '5020013',
     '5050005', '5050008',
     '5050006', '5050010',
