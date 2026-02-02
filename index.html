@@ -2797,6 +2797,149 @@ setInterval(fetchServiceStatus, 60000);
 </script>
 
 </main>
+<div
+  id="disclaimer"
+  style="
+    box-shadow: #060e1a33 0px 4px 12px;
+    background: white;
+    padding: 15px;
+    max-width: 350px;
+    width: 90%;
+    margin: auto;
+    height: auto;
+    border-radius: 25px;
+    color: black;
+    font-family: Outfit, sans-serif;
+    display: block;
+    bottom: 25px;
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5000000000;
+    transition: all 0.3s ease-in-out;
+  "
+>
+  <!-- Header -->
+  <div style="display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span class="material-symbols-outlined">info</span>
+      <span style="font-weight: 600;">Disclaimer</span>
+    </div>
+
+    <span
+      class="material-symbols-outlined"
+      style="cursor: pointer;"
+      onclick="document.getElementById('disclaimer').style.display='none';"
+      aria-label="Close"
+      title="Close"
+    >
+      close
+    </span>
+  </div>
+
+  <!-- Body -->
+  <p style="font-size: 12px; margin: 6px 0 0; line-height: 1.4;">
+    By continuing to use this site, you agree to our
+    <a
+      href="/privacy"
+      style="
+        font-size: 12px;
+        text-decoration-style: dotted;
+        text-decoration-thickness: 1px;
+        text-decoration-line: underline;
+        color: inherit;
+      "
+    >
+      Privacy Policy
+    </a>
+  
+  </p>
+
+  <p style="font-size: 12px; margin: 6px 0 0; line-height: 1.4;">
+    This website is run independently and isn’t affiliated with or endorsed by the
+    <a
+      href="https://www.caledon.ca/"
+      target="_blank"
+      rel="noopener noreferrer"
+      style="
+        font-size: 12px;
+        text-decoration-style: dotted;
+        text-decoration-thickness: 1px;
+        text-decoration-line: underline;
+        color: inherit;
+      "
+    >
+      Town of Caledon
+    </a>
+    or
+    <a
+      href="https://www.brampton.ca/EN/residents/transit/Pages/Welcome.aspx"
+      target="_blank"
+      rel="noopener noreferrer"
+      style="
+        font-size: 12px;
+        text-decoration-style: dotted;
+        text-decoration-thickness: 1px;
+        text-decoration-line: underline;
+        color: inherit;
+      "
+    >
+      Brampton Transit
+    </a>
+    .
+  </p>
+
+  <!-- Button -->
+  <div style="margin-top: 12px; display: flex; justify-content: center;">
+    <button
+      id="disclaimerGotIt"
+      style="
+        border: 0;
+        background: #3b3bb3;
+        color: white;
+        font-family: Outfit, sans-serif;
+        font-weight: 600;
+        padding: 10px 18px;
+        border-radius: 999px;
+        cursor: pointer;
+      "
+    >
+      Got it
+    </button>
+  </div>
+</div>
+
+<script>
+  // Hide popup forever after "Got it"
+  const disclaimer = document.getElementById("disclaimer");
+  const btn = document.getElementById("disclaimerGotIt");
+
+  // On load: if accepted before, hide it
+  if (localStorage.getItem("disclaimerAccepted") === "true") {
+    disclaimer.style.display = "none";
+  }
+
+  btn.addEventListener("click", () => {
+    localStorage.setItem("disclaimerAccepted", "true");
+    disclaimer.style.display = "none";
+  });
+</script>
+
+<br>
+  <button onclick="window.location.href='https://caledontransit.com/newindextt'" style="
+  display: block;
+    background-color: #2d3399;
+    color: white;
+    font-family: Outfit;
+    font-weight: 600;
+    padding: 10px;
+    border-radius: 15px;
+    width: 70px;
+    border: none;
+    text-align: center;
+    margin: 0 auto;
+">Got it</button>
+</div>
 <div id="installApp" style="
       box-shadow: #060e1a33 0px 4px 12px;
       background: white;
