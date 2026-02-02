@@ -1946,7 +1946,11 @@ async function loadRoute41Stops() {
         'icon-size': 0.07,
         'icon-allow-overlap': true,
         'icon-ignore-placement': true,
-        'icon-anchor': 'center'
+        'icon-anchor': 'center',
+        "icon-pitch-alignment": "map",
+
+  // optional but usually looks better
+  "icon-rotation-alignment": "map"
       },
       // only show stops for the currently selected direction
       filter: ["in", selectedDirection, ["get", "directions"]]
@@ -2640,7 +2644,7 @@ map.loadImage('stop_marker.png', (error, image) => {
     'icon-size': 0.26,
     'icon-allow-overlap': true,
     'icon-ignore-placement': true,
-    'icon-anchor': 'center'
+    'icon-anchor': 'center',
   }
 });
 
@@ -2926,19 +2930,6 @@ setInterval(fetchServiceStatus, 60000);
 </script>
 
 <br>
-  <button onclick="window.location.href='https://caledontransit.com/newindextt'" style="
-  display: block;
-    background-color: #2d3399;
-    color: white;
-    font-family: Outfit;
-    font-weight: 600;
-    padding: 10px;
-    border-radius: 15px;
-    width: 70px;
-    border: none;
-    text-align: center;
-    margin: 0 auto;
-">Got it</button>
 </div>
 <div id="installApp" style="
       box-shadow: #060e1a33 0px 4px 12px;
