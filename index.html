@@ -1,3 +1,4 @@
+<!-- crazy hidden message -->
 <!DOCTYPE html>
 <html lang="en"><head>
 	<meta name="description" content="Zoom with Caledon Transit! Track buses in real time, check schedules instantly, and never wait for your ride again.">
@@ -3044,12 +3045,11 @@ left: 50%;
     <div class="trip-modal-body">
       <!-- TODO: put your real trip planner UI here -->
       <p style="margin-bottom:12px;">
-      Plan your trip with ease using Triplinx or the 
+      Plan your trip with ease using the 
     <a href="https://transitapp.com/" style="color: #3366CC; text-decoration: underline;">Transit</a> app.
 </p>
       <div class="trip-modal-form">
-        <iframe title="Page Viewer" frameborder="0" src="https://whitelabel.triplinx.ca/en/trip-planner/4/JourneyPlanner?partnerCode=BRAMPTON" style="
-        display: block;
+        <div title="Page Viewer" frameborder="0" src="" style="
         width: 95%;
         max-width: 1200px;
         height: 100%;
@@ -3058,11 +3058,18 @@ left: 50%;
         border-radius: 16px;
         border: 1px solid #ddd;
         min-height: 400px;
-    ">
-    <div class="UserGeneric">
-        The current browser does not support Web pages that contain the IFRAME element. To use this Web Part, you must use a browser that supports this element, such as Internet Explorer 7.0 or later.
-    </div>
-</iframe>
+        background: #F5F5F5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 15px;
+    "><span class="material-symbols-outlined">
+open_in_new
+</span><h2 id="tripModalTitle" style="
+    font-size: 15px;
+    font-weight: 600;
+">Open Transit App Trip Planner</h2></div>
       </div>
     </div>
   </div>
