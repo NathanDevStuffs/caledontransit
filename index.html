@@ -3064,9 +3064,10 @@ left: 50%;
         justify-content: center;
         flex-direction: column;
         gap: 15px;
-    "><span class="material-symbols-outlined">
+        cursor: pointer;
+    " onclick="transitAppLaunch()"><span class="material-symbols-outlined" id="trippplannericon">
 open_in_new
-</span><h2 id="tripModalTitle" style="
+</span><h2 id="tripplannercaption" style="
     font-size: 15px;
     font-weight: 600;
 ">Open Transit App Trip Planner</h2></div>
@@ -3074,7 +3075,52 @@ open_in_new
     </div>
   </div>
 </div>
+<script>
+let transitWindow = null;
+let isTransitAppOpen = false;
 
+function transitAppLaunch() {
+  if (!isTransitAppOpen) {
+    const width = Math.min(900, screen.width * 0.5);
+  const height = Math.min(800, screen.height * 0.5);
+  const tripicon = document.getElementById("trippplannericon");
+  const tripcaption = document.getElementById("tripplannercaption");
+  const left = (screen.width - width) / 3;
+  const top = (screen.height - height) / 3;
+
+  transitWindow = window.open(
+    "https://www.transitapp.com/trip",
+    "TransitAppPlanner",
+    `
+      width=${width},
+      height=${height},
+      left=${left},
+      top=${top},
+      resizable=yes,
+      scrollbars=yes,
+      toolbar=no,
+      menubar=no,
+      location=no,
+      status=no
+    `
+  );
+
+  tripicon.textContent = "close";
+  tripcaption.textContent = "Close Transit App Trip Planner";
+  isTransitAppOpen = true;
+  } else {
+    if (transitWindow && !transitWindow.closed) {
+      transitWindow.close();
+    }
+    const tripicon = document.getElementById("trippplannericon");
+    const tripcaption = document.getElementById("tripplannercaption");
+    tripicon.textContent = "open_in_new";
+    tripcaption.textContent = "Open Transit App Trip Planner";
+    isTransitAppOpen = false;
+  }
+}
+
+</script>
 <div id="paymentsModal"
      class="trip-modal-backdrop"
      aria-hidden="true">
