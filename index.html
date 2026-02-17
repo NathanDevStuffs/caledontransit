@@ -477,7 +477,7 @@ svg {
  <body>
 <div id="accuracyWarning" style="
   position: fixed;
-  top: 100px;
+  top: 150px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 10000;
@@ -491,21 +491,38 @@ svg {
   display: none;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 ">
+
+  <!-- close button -->
+  <button onclick="document.getElementById('accuracyWarning').style.display='none'"
+          style="
+            position:absolute;
+            top:10px;
+            right:12px;
+            background:none;
+            border:none;
+            color:white;
+            font-size:20px;
+            cursor:pointer;
+            line-height:1;
+          ">
+    ×
+  </button>
+
   <div style="display: flex; align-items: center; gap: 8px;">
     <span class="material-symbols-outlined">warning</span>
     <span style="font-weight: 600;">Reduced real-time bus accuracy</span>
-    
   </div>
+
   <p style="font-size: 12px; margin-top: 8px;">
     We’re working with limited live data, so bus locations and arrivals may not be exact for now.
   </p>
-
 </div>
+
 
 
 <div id="offlineAlert" style="
   position: fixed;
-  top: 100px;
+  top: 150px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 10000;
@@ -625,6 +642,10 @@ It looks like you’re offline right now. Live updates aren’t available, so we
 
 <!-- Direction Select + Locate Button -->
 <!-- Direction + Route + Locate -->
+ <div class="top-ui">
+ <img src="caledon.png" style="
+       width: 140px;
+  ">
 <div class="direction-container" style="z-index: 2000000;">
   <!-- Route pill dropdown -->
   <div class="pill-dropdown">
@@ -735,15 +756,25 @@ It looks like you’re offline right now. Live updates aren’t available, so we
   <!-- locate button -->
   
 </div>
+</div>
 <button id="locateBtn" class="locate-btn" aria-label="Locate Me">
     <img src="/location.png" alt="Locate" class="locate-icon">
   </button>
 <style>
+.top-ui {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;   /* space between logo and selector */
+    z-index: 2000000;
+
+}
+
 .direction-container {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -755,7 +786,6 @@ It looks like you’re offline right now. Live updates aren’t available, so we
   padding: 6px 10px;
   height: 60px;
   backdrop-filter: blur(10px);
-  max-width: 95%;
   overflow-x: visible; /* ✅ fix: dropdowns are no longer clipped */
   scrollbar-width: none;
 }
