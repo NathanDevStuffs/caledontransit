@@ -3064,7 +3064,7 @@ if (!card) continue;
     const hoursUntil = (nextDate - new Date()) / (1000 * 60 * 60);
 
     // If next bus is within 3 hours → treat as normal service
-    if (hoursUntil <= 3) {
+    if (hoursUntil <= 1) {
       icon.textContent = "check_circle";
       icon.style.color = "#00c853";
       text.textContent = "Good Service";
