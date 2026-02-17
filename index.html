@@ -2008,8 +2008,37 @@ async function loadRoute41Stops() {
 
       const stopId = feature.properties.stop_id;
       const stopName = feature.properties.stop_name;
-      const lat = feature.properties.stop_lat;
-      const lon = feature.properties.stop_lon;
+      const lat = Number(feature.properties.stop_lat);
+const lon = Number(feature.properties.stop_lon);
+// ✅ Fly to stop
+map.flyTo({
+  center: [lon, lat],
+  zoom: 16,
+  duration: 900,
+  essential: true
+});
+
+// ✅ Split the line at the clicked stop
+const coords = routeShapes[selectedDirection] || [];
+if (coords.length >= 2) {
+  const { before, after } = splitLineAtPoint(coords, lon, lat);
+  const color = routeColors[selectedDirection] || "#3366CC";
+
+  // Common sense: fade "behind" (before) and keep "ahead" lit
+  map.setPaintProperty("route-faded-layer", "line-color", color);
+  map.setPaintProperty("route-lit-layer", "line-color", color);
+
+  map.getSource("route-faded")?.setData({
+    type: "Feature",
+    geometry: { type: "LineString", coordinates: before }
+  });
+
+  map.getSource("route-lit")?.setData({
+    type: "Feature",
+    geometry: { type: "LineString", coordinates: after }
+  });
+}
+
 
       // We only need minimal GTFS-like object for your existing helpers
       const stop = {
@@ -2135,6 +2164,9 @@ async function loadRoutes() {
       .sort((a, b) => Number(a.shape_pt_sequence) - Number(b.shape_pt_sequence))
       .map(pt => [Number(pt.shape_pt_lon), Number(pt.shape_pt_lat)]);
     if (!shapePoints.length) continue;
+    routeShapes[id] = shapePoints;
+routeColors[id] = color;
+
 
     map.addSource(`route-${id}`, {
       type: 'geojson',
@@ -2159,43 +2191,40 @@ const routeNumber = routes.find(r => id.startsWith(r)) || '';
 }
 
 function updateRouteDisplay(selectedId) {
-  // 1) Remove all existing bus markers from the map (unchanged)
-  
-
-  // 2) Show only the selected route line
   const routes = [
-    '410009', '410010',
-    '810002', '810005',
-    '250033', '250032',
-    '180209', '180231',
-    '5010074', '5010072',
-    '5020016', '5020013',
-    '5050005', '5050008',
-    '5050006', '5050010',
-    '300086', '300087', '300083', '300077',
+    '410009','410010',
+    '810002','810005',
+    '250033','250032',
+    '180209','180231',
+    '5010074','5010072',
+    '5020016','5020013',
+    '5050005','5050008',
+    '5050006','5050010',
+    '300086','300087','300083','300077'
   ];
 
+  // Hide all the original routeLineLayer-* layers (we use split layers now)
   routes.forEach(id => {
-    const visibility = id === selectedId ? 'visible' : 'none';
     const layerId = `routeLineLayer-${id}`;
-    if (map.getLayer(layerId)) {
-      map.setLayoutProperty(layerId, 'visibility', visibility);
-    }
+    if (map.getLayer(layerId)) map.setLayoutProperty(layerId, 'visibility', 'none');
   });
 
-  // 3) NEW: filter the GeoJSON stop layer by direction (shape_id)
-  // `directions` is the array we set on each feature in loadRoute41Stops()
+  // Keep stops filtered to the chosen direction
   if (map.getLayer('route-stops-layer')) {
-    map.setFilter(
-      'route-stops-layer',
-      ['in', selectedId, ['get', 'directions']]
-    );
+    map.setFilter('route-stops-layer', ['in', selectedId, ['get', 'directions']]);
   }
 
-  // 4) Update the currently selected direction and refresh buses
+  // Set active shape
   selectedDirection = selectedId;
-  updateBusPositions(); // fetch fresh ones
+  activeShapeId = selectedId;
+
+  // Reset split to normal (full lit)
+  resetRouteSplit();
+
+  // Update buses
+  updateBusPositions();
 }
+
 
 async function safeFetch(url, options = {}) {
   try {
@@ -2223,6 +2252,69 @@ async function safeJson(res) {
 /* Live buses (unchanged) */
 /* Live buses (unchanged) */
 const busMarkers = {};
+// --- Route split state ---
+const routeShapes = {}; // shape_id -> coords array [[lon,lat],...]
+const routeColors = {}; // shape_id -> color
+let activeShapeId = null; // currently shown direction/shape id
+
+function resetRouteSplit() {
+  if (!activeShapeId) return;
+
+  const coords = routeShapes[activeShapeId] || [];
+  const color = routeColors[activeShapeId] || "#3366CC";
+
+  // lit = full line, faded = empty
+  map.setPaintProperty("route-lit-layer", "line-color", color);
+  map.setPaintProperty("route-faded-layer", "line-color", color);
+
+  map.getSource("route-lit")?.setData({
+    type: "Feature",
+    geometry: { type: "LineString", coordinates: coords }
+  });
+
+  map.getSource("route-faded")?.setData({
+    type: "Feature",
+    geometry: { type: "LineString", coordinates: [] }
+  });
+}
+
+// Find closest point ON a segment + split there (looks clean)
+function splitLineAtPoint(coords, lon, lat) {
+  if (!coords || coords.length < 2) return { before: coords || [], after: coords || [] };
+
+  let best = { i: 0, t: 0, d2: Infinity, proj: coords[0] };
+
+  for (let i = 0; i < coords.length - 1; i++) {
+    const ax = coords[i][0], ay = coords[i][1];
+    const bx = coords[i+1][0], by = coords[i+1][1];
+
+    const abx = bx - ax, aby = by - ay;
+    const apx = lon - ax, apy = lat - ay;
+
+    const ab2 = abx*abx + aby*aby || 1e-12;
+    let t = (apx*abx + apy*aby) / ab2;
+    t = Math.max(0, Math.min(1, t));
+
+    const px = ax + abx * t;
+    const py = ay + aby * t;
+
+    const dx = lon - px, dy = lat - py;
+    const d2 = dx*dx + dy*dy;
+
+    if (d2 < best.d2) best = { i, t, d2, proj: [px, py] };
+  }
+
+  const i = best.i;
+  const P = best.proj;
+
+  const before = coords.slice(0, i + 1);
+  before.push(P);
+
+  const after = [P, ...coords.slice(i + 1)];
+
+  return { before, after };
+}
+
 let lastBusFeatures = null;              // previous FeatureCollection for buses
 let busAnimationFrame = null;           // current rAF id
 const BUS_ANIMATION_DURATION = 3000;    // ms for one move animation
@@ -2669,6 +2761,43 @@ map.loadImage('stop_marker.png', (error, image) => {
   await buildTripDirectionMap();
   await loadRoute41Stops();
   await loadRoutes();
+  // --- Split route layers (lit + faded) ---
+if (!map.getSource("route-lit")) {
+  map.addSource("route-lit", {
+    type: "geojson",
+    data: { type: "Feature", geometry: { type: "LineString", coordinates: [] } }
+  });
+
+  map.addLayer({
+    id: "route-lit-layer",
+    type: "line",
+    source: "route-lit",
+    layout: { "line-join": "round", "line-cap": "round" },
+    paint: { "line-color": "#3366CC", "line-width": 8, "line-opacity": 1 }
+  });
+}
+
+if (!map.getSource("route-faded")) {
+  map.addSource("route-faded", {
+    type: "geojson",
+    data: { type: "Feature", geometry: { type: "LineString", coordinates: [] } }
+  });
+
+  map.addLayer({
+    id: "route-faded-layer",
+    type: "line",
+    source: "route-faded",
+    layout: { "line-join": "round", "line-cap": "round" },
+    paint: { "line-color": "#3366CC", "line-width": 8, "line-opacity": 0.25 }
+  });
+}
+
+// Click-off resets line back to normal
+map.on("click", (e) => {
+  const hits = map.queryRenderedFeatures(e.point, { layers: ["route-stops-layer"] });
+  if (!hits.length) resetRouteSplit();
+});
+
 
   // 🔹 Add GeoJSON source for buses
   map.addSource('buses', {
