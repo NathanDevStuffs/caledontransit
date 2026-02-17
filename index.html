@@ -1062,6 +1062,21 @@ let ROUTE_REMOVE_DISTANCE = 300; // meters
 let REROUTE_DISTANCE = 60;       // meters off-route
 
 
+let stopTimesCache = null;
+let stopTimesCacheTs = 0;
+
+async function getStopTimesCached(maxAgeMs = 5 * 60 * 1000) { // 5 minutes
+  const now = Date.now();
+  if (stopTimesCache && (now - stopTimesCacheTs) < maxAgeMs) return stopTimesCache;
+
+  const res = await safeFetch("https://busapi.caledontransit.com/stoptimes");
+  if (!res) return stopTimesCache || [];
+  const text = await res.text();
+
+  stopTimesCache = parseCSV(text);
+  stopTimesCacheTs = now;
+  return stopTimesCache;
+}
 
 
 /* ------------------------------
@@ -2220,11 +2235,11 @@ async function updateBusPositions() {
     const realtimeRes   = await safeFetch("https://busapi.caledontransit.com/");
     const tripUpdateRes = await safeFetch("https://busapi.caledontransit.com/tripupdate");
     // const stopTimesRes  = await safeFetch("/gtfs-files/stop_times.txt");
-    const stopTimesRes  = await safeFetch("https://busapi.caledontransit.com/stoptimes");
+
 
     const realtimeData   = (realtimeRes   ? await safeJson(realtimeRes)   : null) || { entity: [] };
     const tripUpdateData = (tripUpdateRes ? await safeJson(tripUpdateRes) : null) || { entity: [] };
-    const stopTimes      = stopTimesRes ? parseCSV(await stopTimesRes.text()) : [];
+    const stopTimes = await getStopTimesCached();
 
     // Build trip update lookup
     const tripUpdateMap = {};
@@ -2731,8 +2746,18 @@ map.loadImage('stop_marker.png', (error, image) => {
 
 
   updateRouteDisplay(selectedDirection);
-  updateBusPositions();
-  setInterval(updateBusPositions, 15000);
+
+// run once immediately
+await updateBusPositions();
+
+// then keep looping, but only after each run finishes
+(async function busLoop() {
+  while (true) {
+    await new Promise(r => setTimeout(r, 15000));
+    await updateBusPositions();
+  }
+})();
+
 });
 
 
