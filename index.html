@@ -3057,17 +3057,35 @@ if (!card) continue;
 
       // ✅ No buses running
       if (!arr.length) {
-        icon.textContent = "schedule";
-        icon.style.color = "#666";
-        text.textContent = "Service Resumes";
 
-        const nextDate = getNextScheduledDepartureDate(route, stopTimesWithRoutes);
-        delayminutes.style.color = "#666";
-        delayminutes.textContent = nextDate
-          ? `on ${formatFullDateTime(nextDate)}`
-          : "No scheduled trips found";
-        continue;
-      }
+  const nextDate = getNextScheduledDepartureDate(route, stopTimesWithRoutes);
+
+  if (nextDate) {
+    const hoursUntil = (nextDate - new Date()) / (1000 * 60 * 60);
+
+    // If next bus is within 3 hours → treat as normal service
+    if (hoursUntil <= 3) {
+      icon.textContent = "check_circle";
+      icon.style.color = "#00c853";
+      text.textContent = "Good Service";
+      delayminutes.textContent = "";
+    } else {
+      icon.textContent = "schedule";
+      icon.style.color = "#666";
+      text.textContent = "Service Resumes";
+      delayminutes.style.color = "#666";
+      delayminutes.textContent = `on ${formatFullDateTime(nextDate)}`;
+    }
+
+  } else {
+    icon.textContent = "schedule";
+    icon.style.color = "#666";
+    text.textContent = "No Scheduled Service";
+    delayminutes.textContent = "";
+  }
+
+  continue;
+}
 
       // ✅ Use max delay (ignore early buses hiding late ones)
       const maxDelay = Math.max(...arr.map(v => Math.max(0, v)));
