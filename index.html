@@ -2069,34 +2069,91 @@ if (coords.length >= 2) {
         departures = await getStopDepartures(stopId);
       }
 
-      const depHtml = departures.length
-        ? departures.map(d => {
-            // Determine fallback route name if route_long_name is missing
-            let routeName = d.route_long_name;
-            if (!routeName || routeName === "—" || routeName.trim() === "") {
-              if (d.routeId === "41") routeName = "Bolton";
-              else if (d.routeId === "81") routeName = "Mayfield West";
-              else if (d.routeId === "25") routeName = "Edenbrooke";
-              else if (d.routeId === "18") routeName = "Dixie";
-              else if (d.routeId === "501") routeName = "Zum Queen";
-              else if (d.routeId === "502") routeName = "Zum Main";
-              else if (d.routeId === "505") routeName = "Zum Bovaird";
-              else if (d.routeId === "30") routeName = "Airport Road";
-              else routeName = "Unknown Route";
-            }
+      // --- improved fallback: show when service resumes ---
+let depHtml;
+if (departures.length) {
+  depHtml = departures.map(d => {
+    // existing mapping (keep as-is)
+    let routeName = d.route_long_name;
+    if (!routeName || routeName === "—" || routeName.trim() === "") {
+      if (d.routeId === "41") routeName = "Bolton";
+      else if (d.routeId === "81") routeName = "Mayfield West";
+      else if (d.routeId === "25") routeName = "Edenbrooke";
+      else if (d.routeId === "18") routeName = "Dixie";
+      else if (d.routeId === "501") routeName = "Zum Queen";
+      else if (d.routeId === "502") routeName = "Zum Main";
+      else if (d.routeId === "505") routeName = "Zum Bovaird";
+      else if (d.routeId === "30") routeName = "Airport Road";
+      else routeName = "Unknown Route";
+    }
 
-            return `
-              <li style="display:flex; align-items:center; justify-content:space-between; padding:4px 0; border-top:1px solid #eee; list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
-                <span style="font-weight:600;padding: 2px 12px;border-radius:6px;background: #2d3399;color:#fff;">${d.routeId}</span>
-                <span style="flex:1; margin:0 6px;">${routeName}</span>
-                <span style="font-weight:600; white-space:nowrap;">
-                  ${d.displayTime || d.time.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
-                </span>
-              </li>`;
-          }).join("")
-        : `<li style="padding:6px 0; margin-bottom: 10px;list-style-type: unset !important;margin-bottom: 10px !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
-            <p style="color:#333; text-decoration:none;">No upcoming departures</p>
-           </li>`;
+    return `
+      <li style="display:flex; align-items:center; justify-content:space-between; padding:4px 0; border-top:1px solid #eee; list-style-type: unset !important;">
+        <span style="font-weight:600;padding: 2px 12px;border-radius:6px;background: #2d3399;color:#fff;">${d.routeId}</span>
+        <span style="flex:1; margin:0 6px;">${routeName}</span>
+        <span style="font-weight:600; white-space:nowrap;">
+          ${d.displayTime || d.time.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+        </span>
+      </li>`;
+  }).join("");
+} else {
+  // Try to find the next scheduled departure (across midnight / next day)
+  try {
+    // stopTimes with route_id (fast helper already in your file)
+    const stopTimesWithRoutes = await loadStopTimesWithRouteIds();
+
+    // If we know the route for this popup try per-route; otherwise per-stop fallback.
+    const routeId = info.route || null; // `info` is the shapeInfo[selectedDirection] used earlier
+    let nextDate = null;
+
+    if (routeId) {
+      nextDate = getNextScheduledDepartureDate(routeId, stopTimesWithRoutes);
+    }
+
+    // If no route-level result, try next departure for this stop (any route)
+    if (!nextDate) {
+      // filter rows that match this stopId and find the earliest > now across next days
+      const rowsForStop = stopTimesWithRoutes.filter(r => r.stop_id === stopId);
+      if (rowsForStop.length) {
+        // Reuse your existing helper: getNextScheduledDepartureDate expects routeId, but we only have stop rows.
+        // We'll implement a tiny helper inline:
+        const now = new Date();
+        for (let dayOffset = 0; dayOffset <= 2 && !nextDate; dayOffset++) {
+          const base = new Date(now);
+          base.setHours(0,0,0,0);
+          base.setDate(base.getDate() + dayOffset);
+          for (const r of rowsForStop) {
+            if (!r.departure_time) continue;
+            const [hh, mm, ss = 0] = r.departure_time.split(":").map(Number);
+            if (!Number.isFinite(hh) || !Number.isFinite(mm)) continue;
+            const dep = new Date(base);
+            dep.setDate(dep.getDate() + Math.floor(hh / 24));
+            dep.setHours(hh % 24, mm, ss, 0);
+            if (dep > now && (!nextDate || dep < nextDate)) nextDate = dep;
+          }
+        }
+      }
+    }
+
+    if (nextDate) {
+      depHtml = `
+        <li style="padding:6px 0; list-style-type: none; display:flex; justify-content:center;">
+          <div style="display:flex; flex-direction: column; align-items: center; gap: 4px;border: 1px solid #D9D9D9;
+    padding: 10px 14px;
+    border-radius: 14px;">
+            <span class="material-symbols-outlined" style="font-size: 20px; color: rgb(102, 102, 102);">schedule</span>
+            <span style="font-size: 13px; font-family: Outfit; font-weight: 600;" class="status">Service Resumes</span>
+            <p style="font-size: 12px; margin: 0px; color: rgb(102, 102, 102);" class="delayminutes">on ${formatFullDateTime(nextDate)}</p>
+          </div>
+        </li>`;
+    } else {
+      depHtml = `<li style="padding:6px 0;"><p style="color:#333;">No upcoming departures</p></li>`;
+    }
+  } catch (err) {
+    console.error("Failed to compute next scheduled departure:", err);
+    depHtml = `<li style="padding:6px 0;"><p style="color:#333;">No upcoming departures</p></li>`;
+  }
+}
 
       const popupHTML = `
         <div style="font-family: 'Outfit';font-size:14px;min-width:240px;background: white;border-radius: 12px;padding: 17px;">
@@ -3057,35 +3114,17 @@ if (!card) continue;
 
       // ✅ No buses running
       if (!arr.length) {
+        icon.textContent = "schedule";
+        icon.style.color = "#666";
+        text.textContent = "Service Resumes";
 
-  const nextDate = getNextScheduledDepartureDate(route, stopTimesWithRoutes);
-
-  if (nextDate) {
-    const hoursUntil = (nextDate - new Date()) / (1000 * 60 * 60);
-
-    // If next bus is within 3 hours → treat as normal service
-    if (hoursUntil <= 1) {
-      icon.textContent = "check_circle";
-      icon.style.color = "#00c853";
-      text.textContent = "Good Service";
-      delayminutes.textContent = "";
-    } else {
-      icon.textContent = "schedule";
-      icon.style.color = "#666";
-      text.textContent = "Service Resumes";
-      delayminutes.style.color = "#666";
-      delayminutes.textContent = `on ${formatFullDateTime(nextDate)}`;
-    }
-
-  } else {
-    icon.textContent = "schedule";
-    icon.style.color = "#666";
-    text.textContent = "No Scheduled Service";
-    delayminutes.textContent = "";
-  }
-
-  continue;
-}
+        const nextDate = getNextScheduledDepartureDate(route, stopTimesWithRoutes);
+        delayminutes.style.color = "#666";
+        delayminutes.textContent = nextDate
+          ? `on ${formatFullDateTime(nextDate)}`
+          : "No scheduled trips found";
+        continue;
+      }
 
       // ✅ Use max delay (ignore early buses hiding late ones)
       const maxDelay = Math.max(...arr.map(v => Math.max(0, v)));
