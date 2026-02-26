@@ -1711,10 +1711,32 @@ async function fetchTransitDeparturesByGlobalId(globalId) {
           const minutesAway = Math.round((time.getTime() - Date.now()) / 60000);
 
           let displayTime;
-          if (isCancelled) displayTime = "Cancelled";
-          else if (minutesAway <= 0) displayTime = "Due";
-          else if (minutesAway < 60) displayTime = `In ${minutesAway} min`;
-          else displayTime = time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+          if (isCancelled) {
+            displayTime = "Cancelled";
+          } else if (minutesAway <= 0) {
+            displayTime = "Due";
+          } else if (minutesAway < 60) {
+            displayTime = `In ${minutesAway} min`;
+          } else {
+            const now = new Date();
+            const isToday = time.getDate() === now.getDate() && 
+                            time.getMonth() === now.getMonth() && 
+                            time.getFullYear() === now.getFullYear();
+            
+            const timeString = time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+            
+            if (isToday) {
+              displayTime = timeString;
+            } else {
+              const dateString = time.toLocaleDateString("en-US", {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+                year: "numeric"
+              });
+              displayTime = `${dateString} at ${timeString}`;
+            }
+          }
 
           const status = isCancelled ? "Cancelled" : (isRealtime ? "Live" : "Scheduled");
 
@@ -1754,10 +1776,32 @@ async function fetchTransitDeparturesByGlobalId(globalId) {
             const isRealtime = !!si.is_real_time;
             const minutesAway = Math.round((time.getTime() - Date.now()) / 60000);
             let displayTime;
-            if (isCancelled) displayTime = "Cancelled";
-            else if (minutesAway <= 0) displayTime = "Due";
-            else if (minutesAway < 60) displayTime = `In ${minutesAway} min`;
-            else displayTime = time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+          if (isCancelled) {
+            displayTime = "Cancelled";
+          } else if (minutesAway <= 0) {
+            displayTime = "Due";
+          } else if (minutesAway < 60) {
+            displayTime = `In ${minutesAway} min`;
+          } else {
+            const now = new Date();
+            const isToday = time.getDate() === now.getDate() && 
+                            time.getMonth() === now.getMonth() && 
+                            time.getFullYear() === now.getFullYear();
+            
+            const timeString = time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+            
+            if (isToday) {
+              displayTime = timeString;
+            } else {
+              const dateString = time.toLocaleDateString("en-US", {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+                year: "numeric"
+              });
+              displayTime = `${dateString} at ${timeString}`;
+            }
+          }
             const status = isCancelled ? "Cancelled" : (isRealtime ? "Live" : "Scheduled");
 
             departures.push({
@@ -2001,7 +2045,7 @@ async function loadRoute41Stops() {
       filter: ["in", selectedDirection, ["get", "directions"]]
     });
 
-    // CLICK HANDLER (this replaces your marker click listener)
+// CLICK HANDLER (GTFS fix + Title/Subtext Swap)
     map.on("click", "route-stops-layer", async (e) => {
       if (!e.features || !e.features.length) return;
       const feature = e.features[0];
@@ -2009,54 +2053,23 @@ async function loadRoute41Stops() {
       const stopId = feature.properties.stop_id;
       const stopName = feature.properties.stop_name;
       const lat = Number(feature.properties.stop_lat);
-const lon = Number(feature.properties.stop_lon);
-// ✅ Fly to stop
-map.flyTo({
-  center: [lon, lat],
-  zoom: 16,
-  duration: 900,
-  essential: true
-});
+      const lon = Number(feature.properties.stop_lon);
 
-// ✅ Split the line at the clicked stop
-const coords = routeShapes[selectedDirection] || [];
-if (coords.length >= 2) {
-  const { before, after } = splitLineAtPoint(coords, lon, lat);
-  const color = routeColors[selectedDirection] || "#3366CC";
+      map.flyTo({ center: [lon, lat], zoom: 16, duration: 900, essential: true });
 
-  // Common sense: fade "behind" (before) and keep "ahead" lit
-  map.setPaintProperty("route-faded-layer", "line-color", color);
-  map.setPaintProperty("route-lit-layer", "line-color", color);
+      const coords = routeShapes[selectedDirection] || [];
+      if (coords.length >= 2) {
+        const { before, after } = splitLineAtPoint(coords, lon, lat);
+        const color = routeColors[selectedDirection] || "#3366CC";
+        map.getSource("route-faded")?.setData({ type: "Feature", geometry: { type: "LineString", coordinates: before } });
+        map.getSource("route-lit")?.setData({ type: "Feature", geometry: { type: "LineString", coordinates: after } });
+      }
 
-  map.getSource("route-faded")?.setData({
-    type: "Feature",
-    geometry: { type: "LineString", coordinates: before }
-  });
-
-  map.getSource("route-lit")?.setData({
-    type: "Feature",
-    geometry: { type: "LineString", coordinates: after }
-  });
-}
-
-
-      // We only need minimal GTFS-like object for your existing helpers
-      const stop = {
-        stop_id: stopId,
-        stop_name: stopName,
-        stop_lat: lat,
-        stop_lon: lon
-      };
-
-      // Build direction label from the currently selectedDirection
+      const stop = { stop_id: stopId, stop_name: stopName, stop_lat: lat, stop_lon: lon };
       const info = shapeInfo[selectedDirection] || { route: "", dir: "Unknown" };
-      const directionLabel = info.route
-        ? `Route ${info.route} — ${info.dir}`
-        : info.dir;
+      const directionLabel = info.route ? `Route ${info.route} — ${info.dir}` : info.dir;
 
       let departures = [];
-
-      // Try Transit API first
       try {
         departures = await fetchTransitDeparturesForGtfsStop(stop);
       } catch (err) {
@@ -2064,115 +2077,108 @@ if (coords.length >= 2) {
         departures = [];
       }
 
-      // Fallback to GTFS schedule
+      // If no live departures, check GTFS
       if (!departures.length) {
         departures = await getStopDepartures(stopId);
       }
 
-      // --- improved fallback: show when service resumes ---
-let depHtml;
-if (departures.length) {
-  depHtml = departures.map(d => {
-    // existing mapping (keep as-is)
-    let routeName = d.route_long_name;
-    if (!routeName || routeName === "—" || routeName.trim() === "") {
-      if (d.routeId === "41") routeName = "Bolton";
-      else if (d.routeId === "81") routeName = "Mayfield West";
-      else if (d.routeId === "25") routeName = "Edenbrooke";
-      else if (d.routeId === "18") routeName = "Dixie";
-      else if (d.routeId === "501") routeName = "Zum Queen";
-      else if (d.routeId === "502") routeName = "Zum Main";
-      else if (d.routeId === "505") routeName = "Zum Bovaird";
-      else if (d.routeId === "30") routeName = "Airport Road";
-      else routeName = "Unknown Route";
-    }
+      let depHtml = "";
+      const now = new Date();
 
-    return `
-      <li style="display:flex; align-items:center; justify-content:space-between; padding:4px 0; border-top:1px solid #eee; list-style-type: unset !important;">
-        <span style="font-weight:600;padding: 2px 12px;border-radius:6px;background: #2d3399;color:#fff;">${d.routeId}</span>
-        <span style="flex:1; margin:0 6px;">${routeName}</span>
-        <span style="font-weight:600; white-space:nowrap;">
-          ${d.displayTime || d.time.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
-        </span>
-      </li>`;
-  }).join("");
-} else {
-  // Try to find the next scheduled departure (across midnight / next day)
-  try {
-    // stopTimes with route_id (fast helper already in your file)
-    const stopTimesWithRoutes = await loadStopTimesWithRouteIds();
-
-    // If we know the route for this popup try per-route; otherwise per-stop fallback.
-    const routeId = info.route || null; // `info` is the shapeInfo[selectedDirection] used earlier
-    let nextDate = null;
-
-    if (routeId) {
-      nextDate = getNextScheduledDepartureDate(routeId, stopTimesWithRoutes);
-    }
-
-    // If no route-level result, try next departure for this stop (any route)
-    if (!nextDate) {
-      // filter rows that match this stopId and find the earliest > now across next days
-      const rowsForStop = stopTimesWithRoutes.filter(r => r.stop_id === stopId);
-      if (rowsForStop.length) {
-        // Reuse your existing helper: getNextScheduledDepartureDate expects routeId, but we only have stop rows.
-        // We'll implement a tiny helper inline:
-        const now = new Date();
-        for (let dayOffset = 0; dayOffset <= 2 && !nextDate; dayOffset++) {
-          const base = new Date(now);
-          base.setHours(0,0,0,0);
-          base.setDate(base.getDate() + dayOffset);
-          for (const r of rowsForStop) {
-            if (!r.departure_time) continue;
-            const [hh, mm, ss = 0] = r.departure_time.split(":").map(Number);
-            if (!Number.isFinite(hh) || !Number.isFinite(mm)) continue;
-            const dep = new Date(base);
-            dep.setDate(dep.getDate() + Math.floor(hh / 24));
-            dep.setHours(hh % 24, mm, ss, 0);
-            if (dep > now && (!nextDate || dep < nextDate)) nextDate = dep;
+      if (departures.length) {
+        depHtml = departures.map(d => {
+          let routeName = d.route_long_name;
+          if (!routeName || routeName === "—" || routeName.trim() === "") {
+            const names = { "41": "Bolton", "81": "Mayfield West", "25": "Edenbrooke", "18": "Dixie", "501": "Zum Queen", "502": "Zum Main", "505": "Zum Bovaird", "30": "Airport Road" };
+            routeName = names[d.routeId] || "Unknown Route";
           }
+
+          const depTime = d.time; 
+          const diffMs = depTime - now;
+          const minutesAway = Math.floor(diffMs / (1000 * 60));
+          
+          const routeColor = d.route_raw?.route_color ? `#${d.route_raw.route_color}` : "#2d3399";
+          const routeTextColor = d.route_raw?.route_text_color ? `#${d.route_raw.route_text_color}` : "#ffffff";
+
+          let titleText = "";
+          let subText = "";
+          let subStyle = "font-size: 11px; margin: 0px; color: #666;";
+
+          // --- FIXED LOGIC: Relative time if < 60 mins, otherwise Time/Date ---
+          if (minutesAway >= 0 && minutesAway < 60 && depTime.toDateString() === now.toDateString()) {
+            // Coming soon: Title is relative, hide subtext
+            titleText = minutesAway <= 0 ? "Due" : `In ${minutesAway} min`;
+            subStyle += " display: none;"; 
+          } else {
+            // Further away: Title is Time, Subtext is Date
+            titleText = depTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            subText = depTime.toLocaleDateString("en-US", {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+              year: "numeric"
+            });
+          }
+
+          return `
+            <li style="border: 1px solid #D9D9D9; background: white; padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; font-family: Outfit !important; width: 330px; min-height: 65px; margin-bottom: 8px; list-style-type: none !important;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <button class="pill" style="width: 50px; height: 34px; background: ${routeColor}; color: ${routeTextColor}; border: none; border-radius: 10px; font-weight: 600; font-family: Outfit; font-size: 14px;">
+                  ${d.routeId}
+                </button>
+                <p style="font-weight: 600; font-size: 14px; margin: 0; color: #1a1a1a;">${routeName}</p>
+              </div>
+              <div style="display: flex; flex-direction: column; align-items: flex-end; text-align: right; min-width: 140px;">
+                <span style="font-size: 13px; font-family: Outfit; font-weight: 600; color: #1a1a1a;">${titleText}</span>
+                <p style="${subStyle}">${subText}</p>
+              </div>
+            </li>`;
+        }).join("");
+      } else {
+        // --- GTFS FALLBACK (Shows Route Info + Swapped Date/Time) ---
+        try {
+          const stopTimesWithRoutes = await loadStopTimesWithRouteIds();
+          const routeId = info.route || "—";
+          const routeName = info.dir.split(" to ")[0] || "Route"; 
+          let nextDate = getNextScheduledDepartureDate(routeId, stopTimesWithRoutes);
+
+          if (nextDate) {
+            const dateStr = nextDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+            const timeStr = nextDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+            depHtml = `
+              <li style="border: 1px solid #D9D9D9; background: white; padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; font-family: Outfit !important; width: 330px; min-height: 65px; list-style-type: none !important;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <button class="pill" style="width: 50px; height: 34px; background: #2d3399; color: #fff; border: none; border-radius: 10px; font-weight: 600; font-size: 14px;">${routeId}</button>
+                  <p style="font-weight: 600; font-size: 14px; margin: 0;">${routeName}</p>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; text-align: right;">
+                  <span style="font-size: 13px; font-weight: 600;">${timeStr}</span>
+                  <p style="font-size: 11px; margin: 0; color: #666;">${dateStr}</p>
+                </div>
+              </li>`;
+          } else {
+            depHtml = `<li style="list-style: none; text-align: center; width: 330px; color: #666;">No upcoming departures</li>`;
+          }
+        } catch (err) {
+          depHtml = `<li style="list-style: none; text-align: center; width: 330px; color: #666;">No upcoming departures</li>`;
         }
       }
-    }
-
-    if (nextDate) {
-      depHtml = `
-        <li style="padding:6px 0; list-style-type: none; display:flex; justify-content:center;">
-          <div style="display:flex; flex-direction: column; align-items: center; gap: 4px;border: 1px solid #D9D9D9;
-    padding: 10px 14px;
-    border-radius: 14px;">
-            <span class="material-symbols-outlined" style="font-size: 20px; color: rgb(102, 102, 102);">schedule</span>
-            <span style="font-size: 13px; font-family: Outfit; font-weight: 600;" class="status">Service Resumes</span>
-            <p style="font-size: 12px; margin: 0px; color: rgb(102, 102, 102);" class="delayminutes">on ${formatFullDateTime(nextDate)}</p>
-          </div>
-        </li>`;
-    } else {
-      depHtml = `<li style="padding:6px 0;"><p style="color:#333;">No upcoming departures</p></li>`;
-    }
-  } catch (err) {
-    console.error("Failed to compute next scheduled departure:", err);
-    depHtml = `<li style="padding:6px 0;"><p style="color:#333;">No upcoming departures</p></li>`;
-  }
-}
 
       const popupHTML = `
-        <div style="font-family: 'Outfit';font-size:14px;min-width:240px;background: white;border-radius: 12px;padding: 17px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-            <b style="font-size:15px;">${stopName}</b>
-          </div>
-          <div style="margin-bottom:6px; font-size:13px; color:#444;">
-            <span style="padding:2px 6px; border-radius:10px; background:#f1f1f1;">${directionLabel}</span>
+        <div style="font-family: 'Outfit'; min-width:350px; background: white; border-radius: 16px; padding: 12px;">
+          <div style="margin-bottom:8px; padding: 0 5px;">
+            <b style="font-size:15px; color: #1a1a1a; display: block;">${stopName}</b>
+            <span style="padding:2px 6px;border-radius:10px;background:#f1f1f1;font-weight:500;font-weight:500;color:#777;">${directionLabel}</span>
           </div>
           <ul style="list-style:none; padding:0; margin:0;">${depHtml}</ul>
-          <div style="display: flex; justify-content: space-between;">
-            <div style="margin-top:6px;font-size: 12px;color:#666;">
-              Updated ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
-            </div>
-            <img src="/transit-api-badge.png" style="width: 100px;" alt="Powered by Transit API">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top:8px; padding: 0 5px;">
+            <div style="font-size: 10px; color:#aaa;">Updated ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+            <img src="/transit-api-badge.png" style="width: 80px; opacity: 0.7;">
           </div>
         </div>`;
 
-      new mapboxgl.Popup()
+      new mapboxgl.Popup({ maxWidth: 'none', focusAfterOpen: false })
         .setLngLat([lon, lat])
         .setHTML(popupHTML)
         .addTo(map);
