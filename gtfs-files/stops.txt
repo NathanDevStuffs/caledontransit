@@ -68,6 +68,7 @@ stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,locatio
 00000790,1076,Steeles Ave E at 3389 Steeles Ave E,,43.730908,-79.660502,,,0,,,1
 00000800,1077,Steeles Ave E at Goreway Dr,,43.732727,-79.65842,,,0,,,1
 00000810,1078,Goreway Dr s/of Steeles Ave E,,43.732258,-79.657241,,,0,,,0
+00000820,1081,Goreway Dr at Kenview Blvd,,43.730598,-79.654914,,,0,,,1
 00000830,1082,Kenview Blvd e/of Goreway Dr,,43.730828,-79.653569,,,0,,,0
 00000840,1083,Kenview Blvd at 5 Kenview Blvd,,43.732225,-79.652079,,,0,,,0
 00000850,1084,Kenview Blvd at 11 Kenview Blvd,,43.734576,-79.651319,,,0,,,0
@@ -413,6 +414,7 @@ stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,locatio
 00005940,6071,Dixie Rd n/of Derry Rd,,43.675948,-79.675033,,,0,,,1
 00005943,6194,Dixie Rd opp Sikh Temple,,43.677835,-79.677807,,,0,,,1
 00005950,6072,Dixie Rd s/of Drew Rd,,43.680976,-79.681805,,,0,,,1
+00005955,6219,Dixie Rd at Emancipation Park,,43.68476,-79.686921,,,0,,,1
 00005960,1498,Dixie Rd s/of Advance Blvd,,43.69062,-79.694769,,,0,,,1
 00005970,1499,Dixie Rd at Steeles Ave E,,43.694897,-79.700538,,,0,,,1
 00005980,1500,Dixie Rd n/of Steeles Ave,,43.695848,-79.701941,,,0,,,1
@@ -1090,7 +1092,6 @@ stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,locatio
 00014970,2276,Airport Rd s/of Lacoste Blvd,,43.786528,-79.753535,,,0,,,0
 00014980,2277,Airport Rd s/of Mayfield Rd,,43.790917,-79.759413,,,0,,,1
 00014989,5001,12101 Airport Rd,,43.793246,-79.762665,,,0,,,1
-00014990,5000,Airport Rd n/of Davis Ln,,43.795449,-79.765628,,,0,,,1
 00015085,2288,Goreway Dr s/of Luross Gate,,43.778521,-79.718913,,,0,,,0
 00015090,2289,Goreway Dr at Paper Birch Rd,,43.776065,-79.715582,,,0,,,1
 00015105,2291,Castlemore Rd w/of Goreway Dr,,43.772325,-79.712058,,,0,,,1
@@ -1237,7 +1238,11 @@ stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,locatio
 00016810,2468,Goreway Dr opp 8495 Goreway Dr,,43.743322,-79.671759,,,0,,,1
 00016820,2469,Goreway Dr at Intermodal Dr,,43.739625,-79.66696,,,0,,,1
 00016830,2470,Goreway Dr btwn Hwy 407 Ramp & Steeles Ave E,,43.733562,-79.658943,,,0,,,1
+00016870,6101,Goreway Dr s/of Brandon Gate (7560 Goreway Dr),,43.725101,-79.647496,,,0,,,1
+00016880,6102,Goreway Dr s/of Brandon Gate (7500 Goreway Dr),,43.723335,-79.645049,,,0,,,1
 00016890,6104,Westwood Mall Terminal Route 5 Stop,,43.721599,-79.640154,,,0,place_WMAL,,1
+00016910,6105,Goreway Dr n/of Morning Star Dr (7475 Goreway Dr),,43.722986,-79.644261,,,0,,,1
+00016930,6107,Goreway Dr n/of Brandon Gate,,43.725854,-79.648112,,,0,,,1
 00016970,2479,Goreway Dr n/of Intermodal Dr,,43.739841,-79.666633,,,0,,,1
 00016980,2480,Goreway Dr at 8495 Goreway Dr,,43.742998,-79.670708,,,0,,,1
 00016990,2481,Goreway Dr at Armthorpe Rd,,43.744738,-79.673008,,,0,,,1
@@ -1492,8 +1497,10 @@ stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,locatio
 00020310,2792,Queen St w/of Auction Lane,,43.749832,-79.688064,,,0,,,1
 00020355,2796,Chrysler Dr s/of Williams Pky E,,43.748287,-79.71416,,,0,,,1
 00020370,7018,Hwy 7 w/of Roybridge Gate,,43.771787,-79.626013,,,0,,,1
+00020390,7019,Hwy 7 e/of Hwy 27 EB,,43.773542,-79.619161,,,0,,,1
 00020400,7021,Hwy 7 e/of Martin Grove Rd,,43.775921,-79.608659,,,0,,,1
 00020420,7023,Hwy 7 at Kipling Ave,,43.778486,-79.597502,,,0,,,1
+00020430,7024,Hwy 7 at Islington Ave EB,,43.780468,-79.589553,,,0,,,1
 00020450,7026,Hwy 7 at (EB) Helen Station,,43.78284,-79.578866,,,0,,,1
 00020460,7027,Hwy 7 at (EB) Pine Valley Station,,43.7842,-79.572199,,,0,,,1
 00020480,7029,Hwy 7 at (EB) Ansley Grove Station,,43.787695,-79.555273,,,0,,,1
@@ -1504,8 +1511,10 @@ stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,locatio
 00020960,7074,Hwy 7 at (WB) Ansley Grove Station,,43.787511,-79.556975,,,0,,,1
 00020980,7076,Hwy 7 at (WB) Pine Valley Station,,43.783988,-79.573933,,,0,,,1
 00020985,7077,Hwy 7 at (WB) Helen Station,,43.782625,-79.580427,,,0,,,1
+00021010,7079,Hwy 7 at Islington Ave WB,,43.780548,-79.590234,,,0,,,1
 00021020,7080,Hwy 7 w/of Kipling Ave,,43.778903,-79.597045,,,0,,,1
 00021040,7082,Hwy 7 at Martin Grove Rd,,43.776036,-79.609228,,,0,,,1
+00021060,7084,Hwy 7 e/of Hwy 27 WB,,43.773557,-79.620324,,,0,,,1
 00021070,7085,Hwy 7 e/of Vaughan Valley Blvd,,43.772439,-79.624919,,,0,,,1
 00021100,2881,Queen St E w/of Palleschi Dr,,43.765197,-79.661737,,,0,,,1
 00021135,2885,Queen St e/of Sun Pac Blvd,,43.750946,-79.687392,,,0,,,1
@@ -1878,6 +1887,7 @@ stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,locatio
 00040890,3273,Van Kirk Dr n/of Sandalwood Pkwy,,43.709526,-79.810692,,,0,,,1
 00040900,3274,Creditview Rd n/of Buick Blvd,,43.692986,-79.841053,,,0,,,1
 00040910,3275,Creditview Rd n/of Crown Victoria Dr,,43.695292,-79.844165,,,0,,,1
+00040920,3276,Wanless Dr w/of Thornbush Blvd,,43.697921,-79.844313,,,0,,,1
 00040930,3277,Brisdale Dr s/of Wanless Dr,,43.701725,-79.839141,,,0,,,1
 00040940,3278,Chinguacousy Rd s/of Queen St,,43.666008,-79.781202,,,0,,,1
 00040950,3279,Chinguacousy Rd s/of Bonnie Braes Dr,,43.660876,-79.774088,,,0,,,1
@@ -1885,6 +1895,7 @@ stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,locatio
 00040970,3281,Chinguacousy Rd at Queen St W,,43.66633,-79.780859,,,0,,,1
 00040980,3282,Chinguacousy Rd n/of Sterritt Dr,,43.661804,-79.774663,,,0,,,1
 00040982,3541,Chinguacousy Rd btwn Drinkwater & Sterritt,,43.659371,-79.771405,,,0,,,1
+00040984,3586,Wanless Dr e/of Thornbush Blvd,,43.698695,-79.843869,,,0,,,1
 00040985,3633,Chinguacousy Rd btwn Sterritt Dr & Queen St,,43.66375,-79.777373,,,0,,,1
 00040988,3283,Creditview Rd opp Crown Victoria Dr,,43.694556,-79.843628,,,0,,,1
 00040990,3284,Creditview Rd s/of Buick Blvd,,43.69232,-79.840581,,,0,,,1
@@ -2025,7 +2036,6 @@ stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,locatio
 00044550,3416,McVean Dr opp Lexington Rd,,43.778139,-79.694505,,,0,,,1
 00044560,3585,Castlemore Rd w/of McVean Dr,,43.781975,-79.701119,,,0,,,1
 00044570,3417,Castlemore Rd w/of Evergreen Ave,,43.778183,-79.705539,,,0,,,1
-00044580,3418,Castlemore Rd e/of Goreway Dr,,43.773223,-79.71102,,,0,,,1
 00044590,3419,Goreway Dr at Luana Crt,,43.775905,-79.714927,,,0,,,0
 00044592,3621,Goreway Dr at Luross Gt,,43.779289,-79.719614,,,0,,,0
 00044755,3437,Heart Lake Rd n/of Bovaird Dr,,43.722259,-79.770278,,,0,,,1
@@ -2078,7 +2088,6 @@ stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,locatio
 00045260,3493,James Potter Rd btwn Pefferlaw Cir and Oblate Cres,,43.647107,-79.760531,,,0,,,1
 00045262,3635,James Potter Rd at Arizona Dr,,43.64554,-79.759135,,,0,,,1
 00045270,3494,Charolais Blvd w/of Chinguacousy Rd,,43.650198,-79.760103,,,0,,,1
-00045280,3495,Castlemore Rd at Goreway Dr,,43.772309,-79.711425,,,0,,,1
 00045290,3496,Fernforest Dr s/of Father Tobin Rd,,43.756256,-79.772731,,,0,,,1
 00045505,3547,Downtown Terminal Route 1/1A EB,,43.686739,-79.763001,,,0,place_4CRN,,1
 00045510,3548,Downtown Terminal Route 1/1A WB /561 Stop,,43.686892,-79.763022,,,0,place_4CRN,,1
@@ -2165,8 +2174,10 @@ stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,locatio
 00050120,4030,Airport Road - Zum Queen Station Stop EB,,43.743893,-79.695058,,,0,,,1
 00050122,4031,Goreway - Zum Queen Station Stop EB,,43.753586,-79.683614,,,0,,,1
 00050124,4032,McVean - Zum Queen Station Stop EB,,43.761826,-79.672266,,,0,,,1
+00050126,4033,Gore Zum Queen Stop EB,,43.765937,-79.654724,,,0,,,1
 00050128,4034,Highway 50 - Zum Queen Stop EB,,43.76712,-79.647313,,,0,,,1
 00050150,4035,Highway 50 - Zum Queen Station Stop WB,,43.76712,-79.649676,,,0,place_QU50-W,,1
+00050152,4036,Gore Zum Queen Stop WB,,43.765988,-79.656708,,,0,,,1
 00050154,4037,McVean - Zum Queen Station Stop WB,,43.761528,-79.673772,,,0,,,1
 00050156,4038,Goreway - Zum Queen Station Stop WB,,43.752459,-79.685609,,,0,,,1
 00050158,4039,Airport Road - Zum Queen Station Stop WB,,43.742944,-79.696843,,,0,,,1
@@ -2281,7 +2292,6 @@ stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,locatio
 00093550,3842,Derry Rd w/of Financial Dr,,43.611444,-79.749414,,,0,,,1
 00093555,3843,Derry Rd w/of Creditview Rd,,43.613844,-79.744698,,,0,,,1
 00093560,3844,Financial Dr s/of Creditview Rd,,43.612621,-79.73945,,,0,,,1
-00093800,3854,Castlemore Rd w/of Valleycreek Dr,,43.773433,-79.710232,,,0,,,1
 00093805,3855,McVean Dr s/of Castlemore Rd,,43.78185,-79.700002,,,0,,,1
 00093810,3856,Clarkway Dr s/of Castlemore Rd,,43.800545,-79.678234,,,0,,,1
 00093815,3857,Clarkway Dr n/of Almond St,,43.799475,-79.676745,,,0,,,1
@@ -2375,6 +2385,7 @@ stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,locatio
 15051805,3948,Castlemore Rd e/of The Gore Rd,,43.792238,-79.68928,,,0,,,1
 15051806,3949,Creditview Rd s/of Aylesbury Rd,,43.683911,-79.82925,,,0,,,1
 15051807,3950,Queen St w/of Chinguacousy Rd,,43.665332,-79.782636,,,0,,,1
+15051808,3951,Wanless Dr e/of Creditview Rd,,43.69681,-79.845586,,,0,,,1
 15051809,3952,Creditview Rd s/of Wanless Dr,,43.695991,-79.845492,,,0,,,1
 15051810,3953,Castlemore Rd e/of Honeyview Trail,,43.7839,-79.698403,,,0,,,1
 15062901,3954,Castlemore Rd w/of Julian Dr,,43.788377,-79.693681,,,0,,,1
@@ -2618,6 +2629,7 @@ stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,locatio
 17030608,3302,Ray Lawson Blvd at 300 Ray Lawson Blvd,,43.653416,-79.73059,,,0,,,1
 17030610,3304,Timberlane Dr s/of Ray Lawson Blvd,,43.652564,-79.73258,,,0,,,1
 17030614,3340,Timberlane Dr btwn Garden Gate Cir & Gurdwara Gate,,43.648939,-79.731717,,,0,,,1
+17050103,3343,Wanless Dr btwn Brisdale Dr and Thornbush Blvd,,43.699921,-79.842543,,,0,,,0
 17090503,3346,Dixie Rd s/of Countryside Dr,,43.754401,-79.781267,,,0,,,1
 17090507,3399,Russell Creek Dr n/of Inspire Blvd,,43.762222,-79.78182,,,0,,,0
 17090508,3400,Russell Creek Dr s/of Dolbyhill Dr,,43.75966,-79.779062,,,0,,,1
@@ -2785,7 +2797,6 @@ stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,locatio
 22080102,4284,Steeles Ave at 1810 Steeles Ave,,43.705942,-79.689605,,,0,,,1
 22080103,4285,Steeles Ave e/of Bramalea Rd,,43.705198,-79.689823,,,0,,,1
 22080104,4286,Bramalea GO Station - Route 13/16 Stop,,43.701954,-79.691084,,,0,place_BLGO,,1
-22080105,4287,Bramalea GO Station - Route 115 NB / BT On Demand Stop,,43.701911,-79.691354,,,0,place_BLGO,,1
 22080106,4288,Bramalea GO Station - Route 15 SB/115 SB Stop,,43.701857,-79.691638,,,0,place_BLGO,,1
 22080107,4289,Bramalea GO Station - Route 15/15A NB Stop,,43.701803,-79.691894,,,0,place_BLGO,,1
 22080108,4290,Bramalea GO Station-Route 11/11A/511/A/C WB Stop,,43.701996,-79.692158,,,0,place_BLGO,,1
@@ -2851,6 +2862,7 @@ stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,locatio
 23103001,4352,Wanless Dr e/of McLaughlin Rd,,43.716209,-79.82433,,,0,place_WAMG,,1
 23103002,4353,Remembrance Rd w/of Chinguacousy Rd,,43.708624,-79.83911,,,0,,,1
 24010800,4354,Countryside Dr e/of John Carroll Dr,,43.804467,-79.724819,,,0,,,1
+24010801,4355,John Carroll Dr s/of Carl Finlay Dr,,43.807308,-79.728427,,,0,,,1
 24010802,4356,John Carroll Dr btwn Cloverhaven Rd and Venue Rd,,43.810434,-79.731804,,,0,,,1
 24042902,4359,Veterans Dr s/of Remembrance Rd,,43.690083,-79.855599,,,0,,,1
 24042903,4360,Exchange Blvd e/of Sun Pac Blvd,,43.753264,-79.689581,,,0,,,1
@@ -2911,12 +2923,6 @@ stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,locatio
 24062415,4415,Clockwork Dr btwn Hawtrey Rd and Benjamin Thorne Rd,,43.709548,-79.845653,,,0,,,1
 24062416,4416,Edwards Blvd n/of Export Blvd,,43.64956,-79.705257,,,0,,,1
 24062417,4417,Derry Rd w/of Hurontario St,,43.645763,-79.706757,,,0,,,1
-24072900,4419,Darcel Ave e/of Middleshire Dr,,43.730505,-79.636156,,,0,,,1
-24072901,4420,Darcel Ave e/of Rockhill Rd,,43.728665,-79.638225,,,0,,,1
-24072902,4421,Darcel Ave s/of Monica Dr,,43.726419,-79.639085,,,0,,,1
-24072903,4422,Darcel Ave opp Monica Dr,,43.726942,-79.639316,,,0,,,1
-24072904,4423,Darcel Ave w/of Darla Dr,,43.729008,-79.637497,,,0,,,1
-24072905,4424,Darcel Ave opp Middleshire Dr,,43.730524,-79.63585,,,0,,,1
 24072906,4425,Heart Lake Rd s/of Sandalwood Pkwy,,43.736205,-79.780357,,,0,,,0
 24072907,4426,Heart Lake Rd s/of Ecopark Cl,,43.747904,-79.796392,,,0,,,1
 24102800,4427,Financial Dr w/of Mississauga Rd,,43.634772,-79.787469,,,0,,,1
@@ -2971,20 +2977,18 @@ place_SPTE,,Trinity Common Terminal,,43.73109,-79.763603,,,1,,,1
 place_SWLP,,Sandalwood Loop,,43.720987,-79.808504,,,1,,,1
 place_WAMG,,Wanless Dr & McLaughlin Rd,,43.715545,-79.824774,,,1,,,1
 place_WMAL,,Westwood Mall Terminal,,43.721525,-79.640533,,,1,,,1
-00000820,1081,Goreway Dr at Kenview Blvd,,43.730598,-79.654914,,,0,,,1
-00005955,6219,Dixie Rd at Emancipation Park,,43.68476,-79.686921,,,0,,,1
-00016870,6101,Goreway Dr s/of Brandon Gate (7560 Goreway Dr),,43.725101,-79.647496,,,0,,,1
-00016880,6102,Goreway Dr s/of Brandon Gate (7500 Goreway Dr),,43.723335,-79.645049,,,0,,,1
-00016910,6105,Goreway Dr n/of Morning Star Dr (7475 Goreway Dr),,43.722986,-79.644261,,,0,,,1
-00016930,6107,Goreway Dr n/of Brandon Gate,,43.725854,-79.648112,,,0,,,1
-00020390,7019,Hwy 7 e/of Hwy 27 EB,,43.773542,-79.619161,,,0,,,1
-00020430,7024,Hwy 7 at Islington Ave EB,,43.780468,-79.589553,,,0,,,1
-00021010,7079,Hwy 7 at Islington Ave WB,,43.780548,-79.590234,,,0,,,1
-00021060,7084,Hwy 7 e/of Hwy 27 WB,,43.773557,-79.620324,,,0,,,1
-00040920,3276,Wanless Dr w/of Thornbush Blvd,,43.697921,-79.844313,,,0,,,1
-00040984,3586,Wanless Dr e/of Thornbush Blvd,,43.698695,-79.843869,,,0,,,1
-00050126,4033,Gore Zum Queen Stop EB,,43.765937,-79.654724,,,0,,,1
-00050152,4036,Gore Zum Queen Stop WB,,43.765988,-79.656708,,,0,,,1
-15051808,3951,Wanless Dr e/of Creditview Rd,,43.69681,-79.845586,,,0,,,1
-17050103,3343,Wanless Dr btwn Brisdale Dr and Thornbush Blvd,,43.699921,-79.842543,,,0,,,0
-24010801,4355,John Carroll Dr s/of Carl Finlay Dr,,43.807308,-79.728427,,,0,,,1
+00004580,1399,Tomken Rd s/of Steeles Ave E,,43.689694,-79.705816,,,0,,,1
+00014990,5000,Airport Rd n/of Davis Ln,,43.795168,-79.765203,,,0,,,1
+00016940,2477,Goreway Dr n/of Kenview Blvd,,43.73075,-79.654595,,,0,,,1
+00044580,3418,Castlemore Rd at Goreway Dr-WB,,43.773223,-79.71102,,,0,,,1
+00044825,3447,Westcreek Blvd btwn 80 and 100 Westcreek Blvd,,43.680848,-79.705005,,,0,,,0
+00044830,3448,Westcreek Blvd btwn 150 and 200 Westcreek Blvd,,43.679111,-79.702946,,,0,,,1
+00045280,3495,Castlemore Rd at Goreway Dr-EB,,43.772309,-79.711425,,,0,,,1
+00093800,3854,Castlemore Rd e/of Goreway Dr,,43.773433,-79.710232,,,0,,,1
+20010500,6226,Mississauga Rd at 7330 Mississauga Rd,,43.614127,-79.757803,,,0,,,0
+22080105,4287,Bramalea GO Station - Route 115 NB / 301,,43.701911,-79.691354,,,0,place_BLGO,,1
+26030200,5015,Airport Rd at NLS,,43.796626,-79.767835,,,0,,,1
+26030201,4459,Tomken Rd n/of Westcreek Blvd,,43.686048,-79.701197,,,0,,,0
+26030202,4460,Westcreek Blvd at Steelwell Rd,,43.683351,-79.703568,,,0,,,0
+26030204,4461,Pannahill Dr e/of Templeton Crt,,43.78124,-79.680966,,,0,,,0
+26030205,4462,Pannahill Dr w/of Dilworth Chase Rd,,43.781189,-79.680669,,,0,,,0
