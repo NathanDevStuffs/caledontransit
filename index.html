@@ -2975,7 +2975,6 @@ async function loadStopTimesWithRouteIds() {
   const stopCSV = await stRes.text();
   const tripCSV = await tripsRes.text();
 
-  // parse trips
   const tripLines = tripCSV.trim().split("\n");
   const tripHeaders = tripLines.shift().split(",");
   const trips = tripLines.map(line => {
@@ -2986,12 +2985,14 @@ async function loadStopTimesWithRouteIds() {
   });
 
   const tripRouteMap = {};
+  const tripServiceMap = {}; // ← ADD THIS
   for (const t of trips) {
     tripRouteMap[t.trip_id] = t.route_id;
-    tripRouteMap[stemTripId(t.trip_id)] = t.route_id; // ✅ stem match too
+    tripRouteMap[stemTripId(t.trip_id)] = t.route_id;
+    tripServiceMap[t.trip_id] = t.service_id; // ← ADD THIS
+    tripServiceMap[stemTripId(t.trip_id)] = t.service_id; // ← ADD THIS
   }
 
-  // parse stoptimes + attach route_id
   const stopLines = stopCSV.trim().split("\n");
   const stopHeaders = stopLines.shift().split(",");
   const stops = stopLines.map(line => {
@@ -2999,6 +3000,7 @@ async function loadStopTimesWithRouteIds() {
     const obj = {};
     stopHeaders.forEach((h, i) => (obj[h] = parts[i]));
     obj.route_id = tripRouteMap[obj.trip_id] || tripRouteMap[stemTripId(obj.trip_id)] || null;
+    obj.service_id = tripServiceMap[obj.trip_id] || tripServiceMap[stemTripId(obj.trip_id)] || null; // ← ADD THIS
     return obj;
   });
 
@@ -3029,39 +3031,64 @@ function formatFullDateTime(d) {
   });
 }
 
-function getNextScheduledDepartureDate(routeId, stopTimesRows) {
-  const now = new Date();
+async function getServiceCalendar() {
+  const res = await fetch('/gtfs-files/calendar_dates.txt');
+  const text = await res.text();
+  const lines = text.trim().split('\n');
+  lines.shift(); // remove header
 
-  // look ahead up to 2 days (safe for most GTFS)
-  for (let dayOffset = 0; dayOffset <= 2; dayOffset++) {
+  const serviceMap = {};
+  for (const line of lines) {
+    const [service_id, date, exception_type] = line.split(',');
+    if (!service_id || !date || exception_type?.trim() !== '1') continue;
+
+    // date is YYYYMMDD, convert to a date string "YYYY-MM-DD"
+    const dateStr = `${date.slice(0,4)}-${date.slice(4,6)}-${date.slice(6,8)}`;
+    if (!serviceMap[service_id]) serviceMap[service_id] = new Set();
+    serviceMap[service_id].add(dateStr);
+  }
+  return serviceMap;
+}
+
+async function getNextScheduledDepartureDate(routeId, stopTimesRows) {
+  const now = new Date();
+  const calendarDates = await getServiceCalendar();
+
+  for (let dayOffset = 0; dayOffset <= 30; dayOffset++) {
     const base = new Date(now);
     base.setHours(0, 0, 0, 0);
     base.setDate(base.getDate() + dayOffset);
+
+    // Format as "YYYY-MM-DD" to match our Set
+    const dateStr = base.toISOString().slice(0, 10);
 
     let best = null;
 
     for (const r of stopTimesRows) {
       if (r.route_id !== routeId) continue;
-      if (!r.departure_time) continue;
+      if (!r.departure_time || !r.service_id) continue;
 
-      const [hh, mm, ss = 0] = r.departure_time.split(":").map(Number);
+      // Check if this service_id runs on this date
+      const dates = calendarDates[r.service_id];
+      if (!dates || !dates.has(dateStr)) continue;
+
+      const [hh, mm, ss = 0] = r.departure_time.split(':').map(Number);
       if (!Number.isFinite(hh) || !Number.isFinite(mm)) continue;
 
-      // GTFS times can exceed 24:00:00
       const dep = new Date(base);
       dep.setDate(dep.getDate() + Math.floor(hh / 24));
       dep.setHours(hh % 24, mm, ss, 0);
 
-      if (dep <= now) continue;
+      if (dayOffset === 0 && dep <= now) continue;
       if (!best || dep < best) best = dep;
     }
 
     if (best) return best;
   }
 
+  console.warn(`No scheduled trips found for route ${routeId} in next 30 days`);
   return null;
 }
-
 
 
 async function fetchServiceStatus() {
@@ -3124,7 +3151,7 @@ if (!card) continue;
         icon.style.color = "#666";
         text.textContent = "Service Resumes";
 
-        const nextDate = getNextScheduledDepartureDate(route, stopTimesWithRoutes);
+        const nextDate = await getNextScheduledDepartureDate(route, stopTimesWithRoutes);
         delayminutes.style.color = "#666";
         delayminutes.textContent = nextDate
           ? `on ${formatFullDateTime(nextDate)}`
