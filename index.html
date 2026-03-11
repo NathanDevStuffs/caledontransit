@@ -675,7 +675,12 @@ It looks like you’re offline right now. Live updates aren’t available, so we
       <span>Edenbrooke</span>
     </div>
   </li>
-
+<li data-route="18" style="list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
+    <div class="route-item">
+      <div class="route-pill">18</div>
+      <span>Dixie</span>
+    </div>
+  </li>
   <li data-route="30" style="list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;width: unset !important;text-align: unset !important;font-family: unset !important;height: unset!important;">
     <div class="route-item">
       <div class="route-pill">30</div>
@@ -724,8 +729,9 @@ It looks like you’re offline right now. Live updates aren’t available, so we
   </select>
 
   <select id="direction18select" class="direction-select" style="display:none;">
-    <option value="18-0">Southbound</option>
-    <option value="18-1">Northbound</option>
+<option value="18-1">Southbound</option>
+    <option value="18-0">Northbound</option>
+
   </select>
 
   <select id="direction501select" class="direction-select" style="display:none;">
@@ -1515,9 +1521,9 @@ let serviceMap = {};
 const tripShapeMap = {}; // trip_id → shape_id (for polyline drawing only)
 
 // Simple routes: direction_id alone is enough (2 shapes max)
-const SIMPLE_ROUTES = ["41", "81", "25", "18", "501", "502"];
+const SIMPLE_ROUTES = ["41", "81", "25", "501", "502"];
 // Multi-shape routes: multiple shape variants per direction
-const MULTI_SHAPE_ROUTES = ["505", "30"];
+const MULTI_SHAPE_ROUTES = ["505", "30","18"];
 // Populated during buildTripDirectionMap: "505-0" → ["5050005","5050008"], etc.
 const directionShapes = {};
 
@@ -1969,8 +1975,8 @@ async function loadRoute41Stops() {
     '81-1': { route: '81', dir: 'Southbound to Sandalwood Loop' },
     '25-0': { route: '25', dir: 'Northbound to Caledon' },
     '25-1': { route: '25', dir: 'Southbound to Peel Memorial Hospital' },
-    '18-1': { route: '18', dir: 'Northbound' },
-    '18-0': { route: '18', dir: 'Southbound' },
+    '18-0': { route: '18', dir: 'Northbound' },
+    '18-1': { route: '18', dir: 'Southbound' },
     '501-0': { route: '501', dir: 'Eastbound to SmartVMC Terminal' },
     '501-1': { route: '501', dir: 'Westbound to Downtown Brampton' },
     '502-1': { route: '502', dir: 'Southbound to Square One' },
@@ -2241,8 +2247,10 @@ async function loadRoutes() {
     { id: '810002', color: '#3399FF', label: 'Southbound' },
     { id: '250033', color: '#FF3399', label: 'Northbound' },
     { id: '250032', color: '#3399FF', label: 'Southbound' },
-    { id: '180209', color: '#FF3399', label: 'Northbound' },
-    { id: '180231', color: '#FF3399', label: 'Northbound A' },
+    { id: '180235', color: '#FF3399', label: 'Northbound' },
+    { id: '180236', color: '#FF3399', label: 'Northbound A' },
+    { id: '180223', color: '#3399FF', label: 'Southbound' },
+    { id: '180233', color: '#3399FF', label: 'Southbound A' },
     { id: '5010074', color: '#c24947', label: 'Eastbound' },
     { id: '5010072', color: '#c24947', label: 'Westbound' },
     { id: '5020016', color: '#c24947', label: 'Southbound' },
@@ -2462,6 +2470,7 @@ function inferDirectionFromBearing(bearing, routeId) {
     case "41":  return isNorth ? "41-0"  : "41-1";
     case "81":  return isNorth ? "81-0"  : "81-1";
     case "25":  return isNorth ? "25-0"  : "25-1";
+    case "18":  return isNorth ? "18-0"  : "18-1";  // 18-1 = Northbound
     case "30":  return isNorth ? "30-0"  : "30-1";
     case "501": return isEast  ? "501-0" : "501-1";
     case "502": return isNorth ? "502-0" : "502-1";  // 502-0 = Northbound
