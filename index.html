@@ -3281,15 +3281,30 @@ if (!card) continue;
 
       // ✅ No buses running
       if (!arr.length) {
-        icon.textContent = "schedule";
-        icon.style.color = "#666";
-        text.textContent = "Service Resumes";
-
         const nextDate = await getNextScheduledDepartureDate(route, stopTimesWithRoutes);
-        delayminutes.style.color = "#666";
-        delayminutes.textContent = nextDate
-          ? `on ${formatFullDateTime(nextDate)}`
-          : "No scheduled trips found";
+
+        if (nextDate) {
+          const hoursUntil = (nextDate - new Date()) / (1000 * 60 * 60);
+
+          if (hoursUntil <= 1) {
+            icon.textContent = "check_circle";
+            icon.style.color = "#00c853";
+            text.textContent = "Good Service";
+            delayminutes.textContent = "";
+          } else {
+            icon.textContent = "schedule";
+            icon.style.color = "#666";
+            text.textContent = "Service Resumes";
+            delayminutes.style.color = "#666";
+            delayminutes.textContent = `on ${formatFullDateTime(nextDate)}`;
+          }
+        } else {
+          icon.textContent = "schedule";
+          icon.style.color = "#666";
+          text.textContent = "No Scheduled Service";
+          delayminutes.textContent = "";
+        }
+
         continue;
       }
 
