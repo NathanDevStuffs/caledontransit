@@ -2451,6 +2451,25 @@ function splitLineAtPoint(coords, lon, lat) {
   return { before, after };
 }
 
+function inferDirectionFromBearing(bearing, routeId) {
+  if (bearing == null) return null;
+  const b = ((bearing % 360) + 360) % 360;
+
+  const isNorth = (b >= 315 || b <= 45);
+  const isEast  = (b >= 45 && b <= 135);
+
+  switch (routeId) {
+    case "41":  return isNorth ? "41-0"  : "41-1";
+    case "81":  return isNorth ? "81-0"  : "81-1";
+    case "25":  return isNorth ? "25-0"  : "25-1";
+    case "30":  return isNorth ? "30-0"  : "30-1";
+    case "501": return isEast  ? "501-0" : "501-1";
+    case "502": return isNorth ? "502-0" : "502-1";  // 502-0 = Northbound
+    case "505": return isEast  ? "505-0" : "505-1";
+    default:    return null;
+  }
+}
+
 let lastBusFeatures = null;              // previous FeatureCollection for buses
 let busAnimationFrame = null;           // current rAF id
 const BUS_ANIMATION_DURATION = 3000;    // ms for one move animation
@@ -2501,22 +2520,32 @@ async function updateBusPositions() {
       if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
 
       const tripIdRaw = veh.trip?.trip_id || "";
-      let direction = tripDirectionMap[tripIdRaw];
+let direction = tripDirectionMap[tripIdRaw];
 
-      // fallback: stem match (tripId like "1234-1")
-      if (!direction && tripIdRaw.includes("-")) {
-        const stem = tripIdRaw.split("-")[0];
-        direction = tripDirectionMap[stem];
-      }
+// stem match fallback
+if (!direction && tripIdRaw.includes("-")) {
+  const stem = tripIdRaw.split("-")[0];
+  direction = tripDirectionMap[stem];
+}
 
-      // Only show buses for the currently selected shape/direction
-      if (direction !== selectedDirection) continue;
+// ADDED trip fallback — use bearing if moving
+if (!direction) {
+  const speed = veh.position?.speed ?? 0;
+  if (speed > 1) {
+    direction = inferDirectionFromBearing(veh.position?.bearing, route);
+  }
+}
+
+if (direction !== selectedDirection) continue;
 
       // ---- adherence calculation (same logic, but stored in properties) ----
-      let adherenceStatus = "Live Tracking";
+      const isAdded = !tripDirectionMap[tripIdRaw] && 
+  (!tripIdRaw.includes("-") || !tripDirectionMap[tripIdRaw.split("-")[0]]);
+
+let adherenceStatus = isAdded ? "Added Departure" : "Live Tracking";
       let adherenceColor  = "#3366CC";
       let delayMinutes    = null;
-      let iconType        = "live";
+      let iconType        = isAdded ? "added" : "live";
 
       const tu = tripUpdateMap[tripIdRaw];
       if (tu && tu.stop_time_update && tu.stop_time_update.length > 0) {
@@ -3003,6 +3032,7 @@ map.on("click", (e) => {
               props.iconType === 'onTime' ? 'check_circle' :
               props.iconType === 'delayed' ? 'warning' :
               props.iconType === 'early'   ? 'schedule' :
+              props.iconType === 'added' ? 'more_up' :
               'location_on'
             }
           </span>
