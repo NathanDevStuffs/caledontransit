@@ -709,18 +709,18 @@ It looks like you’re offline right now. Live updates aren’t available, so we
 
   <!-- direction selects -->
   <select id="direction41select" class="direction-select">
-    <option value="41-0">Southbound to Queen St / Highway 7</option>
-    <option value="41-1">Northbound to Columbia Way</option>
+    <option value="41-1">Southbound to Queen St / Highway 7</option>
+    <option value="41-0">Northbound to Columbia Way</option>
   </select>
 
   <select id="direction81select" class="direction-select" style="display:none;">
-    <option value="81-0">Southbound to Sandalwood Loop</option>
-    <option value="81-1">Northbound to Caledon</option>
+    <option value="81-1">Southbound to Sandalwood Loop</option>
+    <option value="81-0">Northbound to Caledon</option>
   </select>
 
   <select id="direction25select" class="direction-select" style="display:none;">
-    <option value="25-0">Southbound to Peel Memorial Hospital</option>
-    <option value="25-1">Northbound to Caledon</option>
+    <option value="25-1">Southbound to Peel Memorial Hospital</option>
+    <option value="25-0">Northbound to Caledon</option>
   </select>
 
   <select id="direction18select" class="direction-select" style="display:none;">
@@ -729,13 +729,13 @@ It looks like you’re offline right now. Live updates aren’t available, so we
   </select>
 
   <select id="direction501select" class="direction-select" style="display:none;">
-    <option value="501-1">Eastbound to SmartVMC Terminal</option>
-    <option value="501-0">Westbound to Downtown Brampton</option>
+    <option value="501-0">Eastbound to SmartVMC Terminal</option>
+    <option value="501-1">Westbound to Downtown Brampton</option>
   </select>
 
   <select id="direction502select" class="direction-select" style="display:none;">
-    <option value="502-0">Southbound to Square One</option>
-    <option value="502-1">Northbound to Sandalwood Loop</option>
+    <option value="502-1">Southbound to Square One</option>
+    <option value="502-0">Northbound to Sandalwood Loop</option>
   </select>
 
   <select id="direction505select" class="direction-select" style="display:none;">
@@ -1930,7 +1930,7 @@ async function getStopDepartures(stopId) {
    Stop markers, loadRoute41Stops (uses Transit API for departures)
    -------------------------*/
 
-let selectedDirection = "41-0"; // default direction
+let selectedDirection = "41-1"; // default direction
 
 // ---- Stop marker storage & guard ----
 const stopMarkers = { "41-0": [], "41-1": [], "81-0": [], "81-1": [], "25-0": [], "25-1": [], "18-0": [], "18-1": [], "501-0": [], "501-1": [], "502-0": [], "502-1": [], "505-0": [], "505-1": [], "30-0": [], "30-1": [] };
@@ -1963,18 +1963,18 @@ async function loadRoute41Stops() {
 
   // map direction key to route number + direction label
   const shapeInfo = {
-    '41-1': { route: '41', dir: 'Northbound to Columbia Way' },
-    '41-0': { route: '41', dir: 'Southbound to Queen St / Highway 7' },
-    '81-1': { route: '81', dir: 'Northbound to Caledon' },
-    '81-0': { route: '81', dir: 'Southbound to Sandalwood Loop' },
-    '25-1': { route: '25', dir: 'Northbound to Caledon' },
-    '25-0': { route: '25', dir: 'Southbound to Peel Memorial Hospital' },
+    '41-0': { route: '41', dir: 'Northbound to Columbia Way' },
+    '41-1': { route: '41', dir: 'Southbound to Queen St / Highway 7' },
+    '81-0': { route: '81', dir: 'Northbound to Caledon' },
+    '81-1': { route: '81', dir: 'Southbound to Sandalwood Loop' },
+    '25-0': { route: '25', dir: 'Northbound to Caledon' },
+    '25-1': { route: '25', dir: 'Southbound to Peel Memorial Hospital' },
     '18-1': { route: '18', dir: 'Northbound' },
     '18-0': { route: '18', dir: 'Southbound' },
-    '501-1': { route: '501', dir: 'Eastbound to SmartVMC Terminal' },
-    '501-0': { route: '501', dir: 'Westbound to Downtown Brampton' },
-    '502-0': { route: '502', dir: 'Southbound to Square One' },
-    '502-1': { route: '502', dir: 'Northbound to Sandalwood Loop' },
+    '501-0': { route: '501', dir: 'Eastbound to SmartVMC Terminal' },
+    '501-1': { route: '501', dir: 'Westbound to Downtown Brampton' },
+    '502-1': { route: '502', dir: 'Southbound to Square One' },
+    '502-0': { route: '502', dir: 'Northbound to Sandalwood Loop' },
     '505-0': { route: '505', dir: 'Eastbound' },
     '505-1': { route: '505', dir: 'Westbound' },
     '30-0': { route: '30', dir: 'Northbound' },
