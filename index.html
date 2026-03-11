@@ -1482,15 +1482,16 @@ document.getElementById('locateBtn').addEventListener('click', () => {
 // CSV parser (unchanged)
 function parseCSV(csv) {
   const lines = csv.trim().split('\n');
-  const headers = lines.shift().split(',');
+  const headers = lines.shift().split(',').map(h => h.trim());
   return lines.map(line => {
     const parts = line.split(',');
     return headers.reduce((obj, header, i) => {
-      obj[header] = parts[i];
+      obj[header] = parts[i]?.trim() ?? '';
       return obj;
     }, {});
   });
 }
+
 
 /* Service calendar (unchanged) */
 async function getServiceCalendar() {
@@ -2374,10 +2375,15 @@ let activeShapeId = null; // currently shown direction/shape id
 let activeShapeVariant = null; // for multi-shape routes: the specific shape_id currently lit (set when a bus is clicked)
 // Returns the first shape_id found for a given direction key like "41-0"
 function getShapeIdForDirection(dirKey) {
+  const shapeCounts = {};
   for (const [tripId, key] of Object.entries(tripDirectionMap)) {
-    if (key === dirKey && tripShapeMap[tripId]) return tripShapeMap[tripId];
+    if (key !== dirKey) continue;
+    const shapeId = tripShapeMap[tripId];
+    if (!shapeId) continue;
+    shapeCounts[shapeId] = (shapeCounts[shapeId] || 0) + 1;
   }
-  return null;
+  if (!Object.keys(shapeCounts).length) return null;
+  return Object.entries(shapeCounts).sort((a, b) => b[1] - a[1])[0][0];
 }
 
 function resetRouteSplit() {
