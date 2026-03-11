@@ -709,48 +709,43 @@ It looks like you’re offline right now. Live updates aren’t available, so we
 
   <!-- direction selects -->
   <select id="direction41select" class="direction-select">
-    <option value="410009">Southbound to Queen St / Highway 7</option>
-    <option value="410010">Northbound to Columbia Way</option>
+    <option value="41-0">Southbound to Queen St / Highway 7</option>
+    <option value="41-1">Northbound to Columbia Way</option>
   </select>
 
   <select id="direction81select" class="direction-select" style="display:none;">
-    <option value="810002">Southbound to Sandalwood Loop</option>
-    <option value="810005">Northbound to Caledon</option>
+    <option value="81-0">Southbound to Sandalwood Loop</option>
+    <option value="81-1">Northbound to Caledon</option>
   </select>
 
   <select id="direction25select" class="direction-select" style="display:none;">
-        <option value="250032">Southbound to Peel Memorial Hospital</option>
-    <option value="250033">Northbound to Caledon</option>
+    <option value="25-0">Southbound to Peel Memorial Hospital</option>
+    <option value="25-1">Northbound to Caledon</option>
   </select>
 
   <select id="direction18select" class="direction-select" style="display:none;">
-    <option value="180227">Southbound</option>
-    <option value="180209">Northbound</option>
-    <option value="180231">Northbound A</option>
+    <option value="18-0">Southbound</option>
+    <option value="18-1">Northbound</option>
   </select>
 
   <select id="direction501select" class="direction-select" style="display:none;">
-    <option value="5010074">Eastbound to SmartVMC Terminal</option>
-    <option value="5010072">Westbound to Downtown Brampton</option>
+    <option value="501-1">Eastbound to SmartVMC Terminal</option>
+    <option value="501-0">Westbound to Downtown Brampton</option>
   </select>
 
   <select id="direction502select" class="direction-select" style="display:none;">
-    <option value="5020016">Southbound to Square One</option>
-    <option value="5020013">Northbound to Sandalwood Loop</option>
+    <option value="502-0">Southbound to Square One</option>
+    <option value="502-1">Northbound to Sandalwood Loop</option>
   </select>
 
   <select id="direction505select" class="direction-select" style="display:none;">
-    <option value="5050005">East to Malton GO Station (505)</option>
-    <option value="5050008">East to Viscount Station (505A)</option>
-    <option value="5050006">West to Mount Pleasant GO Station (505)</option>
-    <option value="5050010">West to Trinity Commons Terminal (505A)</option>
+    <option value="505-0">Eastbound</option>
+    <option value="505-1">Westbound</option>
   </select>
 
   <select id="direction30select" class="direction-select" style="display:none;">
-    <option value="300086">North to Mayfield Road</option>
-    <option value="300087">North to Caledon</option>
-    <option value="300083">South to Westwood Mall Terminal</option>
-    <option value="300077">South to Westwood Mall Terminal via Caledon</option>
+    <option value="30-0">Northbound</option>
+    <option value="30-1">Southbound</option>
   </select>
 
   <!-- locate button -->
@@ -1517,19 +1512,42 @@ async function getServiceCalendar() {
 
 let tripDirectionMap = {};
 let serviceMap = {};
+const tripShapeMap = {}; // trip_id → shape_id (for polyline drawing only)
 
-// Build trip_id → shape_id mapping (now includes route 41 and route 81)
+// Simple routes: direction_id alone is enough (2 shapes max)
+const SIMPLE_ROUTES = ["41", "81", "25", "18", "501", "502"];
+// Multi-shape routes: multiple shape variants per direction
+const MULTI_SHAPE_ROUTES = ["505", "30"];
+// Populated during buildTripDirectionMap: "505-0" → ["5050005","5050008"], etc.
+const directionShapes = {};
+
+// Build trip_id → route-direction key mapping
 async function buildTripDirectionMap() {
   [serviceMap] = await Promise.all([getServiceCalendar()]);
   const tripsRes = await fetch("/gtfs-files/trips.txt");
   const trips = parseCSV(await tripsRes.text());
   trips.forEach(trip => {
-    if (trip.route_id === "41" || trip.route_id === "81" || trip.route_id === "25" || trip.route_id === "18" || trip.route_id === "501" || trip.route_id === "502" || trip.route_id === "505" || trip.route_id === "30") {
-      tripDirectionMap[trip.trip_id] = trip.shape_id;
-       const stem = trip.trip_id.split('-')[0];
-      if (!tripDirectionMap[stem]) tripDirectionMap[stem] = trip.shape_id;
+    if (![...SIMPLE_ROUTES, ...MULTI_SHAPE_ROUTES].includes(trip.route_id)) return;
+
+    const key = `${trip.route_id}-${trip.direction_id}`;
+    tripDirectionMap[trip.trip_id] = key;
+    tripShapeMap[trip.trip_id] = trip.shape_id;
+
+    const stem = trip.trip_id.split('-')[0];
+    if (!tripDirectionMap[stem]) tripDirectionMap[stem] = key;
+    if (!tripShapeMap[stem]) tripShapeMap[stem] = trip.shape_id;
+
+    // For multi-shape routes, track all unique shape_ids per direction key
+    if (MULTI_SHAPE_ROUTES.includes(trip.route_id)) {
+      if (!directionShapes[key]) directionShapes[key] = new Set();
+      directionShapes[key].add(trip.shape_id);
     }
   });
+
+  // Convert Sets to arrays
+  for (const key in directionShapes) {
+    directionShapes[key] = Array.from(directionShapes[key]);
+  }
 }
 
 
@@ -1912,10 +1930,10 @@ async function getStopDepartures(stopId) {
    Stop markers, loadRoute41Stops (uses Transit API for departures)
    -------------------------*/
 
-let selectedDirection = "410009"; // default direction: northbound
+let selectedDirection = "41-0"; // default direction
 
 // ---- Stop marker storage & guard ----
-const stopMarkers = { "410010": [], "410009": [], "810002": [], "810005": [], "250032": [], "250033": [], "180209": [], "180231": [], "5010074": [], "5010072": [], "5020016": [], "5020013": [], "5050005": [], "5050008": [], "5050006": [], "5050010": [], "300086": [], "300087": [], "300083": [], "300077": []}; // northbound, southbound
+const stopMarkers = { "41-0": [], "41-1": [], "81-0": [], "81-1": [], "25-0": [], "25-1": [], "18-0": [], "18-1": [], "501-0": [], "501-1": [], "502-0": [], "502-1": [], "505-0": [], "505-1": [], "30-0": [], "30-1": [] };
 // keep your existing globals:
 let stopsLoaded = false;
 // stopMarkers can stay defined but won't be used for stops anymore
@@ -1943,28 +1961,24 @@ async function loadRoute41Stops() {
       .map(st => st.stop_id)
   );
 
-  // map shape_id to route number + direction label (same content as before)
+  // map direction key to route number + direction label
   const shapeInfo = {
-    '410010': { route: '41', dir: 'Northbound to Columbia Way' },
-    '410009': { route: '41', dir: 'Southbound to Queen St / Highway 7' },
-    '810005': { route: '81', dir: 'Northbound to Caledon' },
-    '810002': { route: '81', dir: 'Southbound to Sandalwood Loop' },
-    '250033': { route: '25', dir: 'Northbound to Caledon' },
-    '250032': { route: '25', dir: 'Southbound to Peel Memorial Hospital' },
-    '180209': { route: '18', dir: 'Northbound' },
-    '180231': { route: '18', dir: 'Northbound A' },
-    '5010074': { route: '501', dir: 'Eastbound to SmartVMC Terminal' },
-    '5010072': { route: '501', dir: 'Westbound to Downtown Brampton' },
-    '5020016': { route: '502', dir: 'Southbound to Square One' },
-    '5020013': { route: '502', dir: 'Northbound to Sandalwood Loop' },
-    '5050005': { route: '505', dir: 'East to Malton GO Station (505)' },
-    '5050008': { route: '505A', dir: 'East to Viscount Station (505A)' },
-    '5050006': { route: '505', dir: 'West to Mount Pleasant GO Station (505)' },
-    '5050010': { route: '505A', dir: 'West to Trinity Commons Terminal (505A)' },
-    '300086': { route: '30', dir: 'North to Mayfield Road' },
-    '300087': { route: '30', dir: 'North to Caledon' },
-    '300083': { route: '30', dir: 'South to Westwood Mall Terminal' },
-    '300077': { route: '30', dir: 'South to Westwood Mall Terminal via Caledon' }
+    '41-1': { route: '41', dir: 'Northbound to Columbia Way' },
+    '41-0': { route: '41', dir: 'Southbound to Queen St / Highway 7' },
+    '81-1': { route: '81', dir: 'Northbound to Caledon' },
+    '81-0': { route: '81', dir: 'Southbound to Sandalwood Loop' },
+    '25-1': { route: '25', dir: 'Northbound to Caledon' },
+    '25-0': { route: '25', dir: 'Southbound to Peel Memorial Hospital' },
+    '18-1': { route: '18', dir: 'Northbound' },
+    '18-0': { route: '18', dir: 'Southbound' },
+    '501-1': { route: '501', dir: 'Eastbound to SmartVMC Terminal' },
+    '501-0': { route: '501', dir: 'Westbound to Downtown Brampton' },
+    '502-0': { route: '502', dir: 'Southbound to Square One' },
+    '502-1': { route: '502', dir: 'Northbound to Sandalwood Loop' },
+    '505-0': { route: '505', dir: 'Eastbound' },
+    '505-1': { route: '505', dir: 'Westbound' },
+    '30-0': { route: '30', dir: 'Northbound' },
+    '30-1': { route: '30', dir: 'Southbound' }
   };
 
   // Build GeoJSON features for all relevant stops
@@ -1989,9 +2003,12 @@ async function loadRoute41Stops() {
       const stopTrips = stopTripsByStop[stop.stop_id] || [];
       const directions = new Set();
 
+      const shapeIds = new Set();
       stopTrips.forEach(st => {
         const dir = tripDirectionMap[st.trip_id];
         if (dir) directions.add(dir);
+        const sid = tripShapeMap[st.trip_id];
+        if (sid) shapeIds.add(sid);
       });
 
       const dirArray = Array.from(directions);
@@ -2008,7 +2025,8 @@ async function loadRoute41Stops() {
           stop_name: stop.stop_name,
           stop_lat: lat,
           stop_lon: lon,
-          directions: dirArray // array of shape_ids this stop belongs to
+          directions: dirArray,
+          shapeIds: Array.from(shapeIds) // for filtering stops by exact shape variant
         }
       });
     });
@@ -2041,8 +2059,10 @@ async function loadRoute41Stops() {
   // optional but usually looks better
   "icon-rotation-alignment": "map"
       },
-      // only show stops for the currently selected direction
-      filter: ["in", selectedDirection, ["get", "directions"]]
+      // for multi-shape routes, start hidden; for simple routes show normally
+      filter: directionShapes[selectedDirection]
+        ? ["literal", false]
+        : ["in", selectedDirection, ["get", "directions"]]
     });
 
 // CLICK HANDLER (GTFS fix + Title/Subtext Swap)
@@ -2057,10 +2077,27 @@ async function loadRoute41Stops() {
 
       map.flyTo({ center: [lon, lat], zoom: 16, duration: 900, essential: true });
 
-      const coords = routeShapes[selectedDirection] || [];
+      // For multi-shape routes use the currently lit variant; for simple routes look up normally
+      const shapeId = activeShapeVariant || getShapeIdForDirection(selectedDirection) || selectedDirection;
+      const coords = routeShapes[shapeId] || [];
       if (coords.length >= 2) {
         const { before, after } = splitLineAtPoint(coords, lon, lat);
-        const color = routeColors[selectedDirection] || "#3366CC";
+        const color = routeColors[shapeId] || "#3366CC";
+
+        // For multi-shape routes: fade all other shapes, then apply the split to the active one
+        const shapes = directionShapes[selectedDirection];
+        if (shapes && shapes.length) {
+          shapes.forEach(sid => {
+            const layerId = `routeLineLayer-${sid}`;
+            if (map.getLayer(layerId)) {
+              map.setLayoutProperty(layerId, 'visibility', sid === shapeId ? 'none' : 'none');
+            }
+          });
+          // Use the split layers for the active shape
+          map.setPaintProperty("route-lit-layer", "line-color", color);
+          map.setPaintProperty("route-faded-layer", "line-color", color);
+        }
+
         map.getSource("route-faded")?.setData({ type: "Feature", geometry: { type: "LineString", coordinates: before } });
         map.getSource("route-lit")?.setData({ type: "Feature", geometry: { type: "LineString", coordinates: after } });
       }
@@ -2254,37 +2291,44 @@ const routeNumber = routes.find(r => id.startsWith(r)) || '';
 }
 
 function updateRouteDisplay(selectedId) {
-  const routes = [
-    '410009','410010',
-    '810002','810005',
-    '250033','250032',
-    '180209','180231',
-    '5010074','5010072',
-    '5020016','5020013',
-    '5050005','5050008',
-    '5050006','5050010',
-    '300086','300087','300083','300077'
-  ];
-
-  // Hide all the original routeLineLayer-* layers (we use split layers now)
-  routes.forEach(id => {
+  // Hide all shape-based route layers
+  for (const id in routeShapes) {
     const layerId = `routeLineLayer-${id}`;
     if (map.getLayer(layerId)) map.setLayoutProperty(layerId, 'visibility', 'none');
-  });
-
-  // Keep stops filtered to the chosen direction
-  if (map.getLayer('route-stops-layer')) {
-    map.setFilter('route-stops-layer', ['in', selectedId, ['get', 'directions']]);
   }
 
-  // Set active shape
+  // For multi-shape routes, hide stops until a bus is clicked
+  if (map.getLayer('route-stops-layer')) {
+    if (directionShapes[selectedId]) {
+      map.setFilter('route-stops-layer', ['literal', false]);
+    } else {
+      map.setFilter('route-stops-layer', ['in', selectedId, ['get', 'directions']]);
+    }
+  }
+
   selectedDirection = selectedId;
   activeShapeId = selectedId;
 
-  // Reset split to normal (full lit)
-  resetRouteSplit();
+  // For multi-shape routes: show all shapes for this direction faded
+  const shapes = directionShapes[selectedId];
+  if (shapes && shapes.length) {
+    // Clear split layers
+    map.getSource("route-lit")?.setData({ type: "Feature", geometry: { type: "LineString", coordinates: [] } });
+    map.getSource("route-faded")?.setData({ type: "Feature", geometry: { type: "LineString", coordinates: [] } });
 
-  // Update buses
+    // Show each shape as a faded line
+    shapes.forEach(shapeId => {
+      const layerId = `routeLineLayer-${shapeId}`;
+      if (map.getLayer(layerId)) {
+        map.setLayoutProperty(layerId, 'visibility', 'visible');
+        map.setPaintProperty(layerId, 'line-opacity', 0.3);
+      }
+    });
+  } else {
+    // Simple route: use the split lit/faded layers as before
+    resetRouteSplit();
+  }
+
   updateBusPositions();
 }
 
@@ -2319,12 +2363,41 @@ const busMarkers = {};
 const routeShapes = {}; // shape_id -> coords array [[lon,lat],...]
 const routeColors = {}; // shape_id -> color
 let activeShapeId = null; // currently shown direction/shape id
+let activeShapeVariant = null; // for multi-shape routes: the specific shape_id currently lit (set when a bus is clicked)
+// Returns the first shape_id found for a given direction key like "41-0"
+function getShapeIdForDirection(dirKey) {
+  for (const [tripId, key] of Object.entries(tripDirectionMap)) {
+    if (key === dirKey && tripShapeMap[tripId]) return tripShapeMap[tripId];
+  }
+  return null;
+}
 
 function resetRouteSplit() {
   if (!activeShapeId) return;
 
-  const coords = routeShapes[activeShapeId] || [];
-  const color = routeColors[activeShapeId] || "#3366CC";
+  // For multi-shape routes: re-fade all shapes and hide stops again
+  activeShapeVariant = null;
+  const shapes = directionShapes[activeShapeId];
+  if (shapes && shapes.length) {
+    shapes.forEach(shapeId => {
+      const layerId = `routeLineLayer-${shapeId}`;
+      if (map.getLayer(layerId)) {
+        map.setLayoutProperty(layerId, 'visibility', 'visible');
+        map.setPaintProperty(layerId, 'line-opacity', 0.3);
+      }
+    });
+    // Hide stops — they only show when a specific bus/shape is selected
+    if (map.getLayer('route-stops-layer')) {
+      map.setFilter('route-stops-layer', ['literal', false]);
+    }
+    map.getSource("route-lit")?.setData({ type: "Feature", geometry: { type: "LineString", coordinates: [] } });
+    map.getSource("route-faded")?.setData({ type: "Feature", geometry: { type: "LineString", coordinates: [] } });
+    return;
+  }
+
+  const shapeId = getShapeIdForDirection(activeShapeId) || activeShapeId;
+  const coords = routeShapes[shapeId] || [];
+  const color = routeColors[shapeId] || "#3366CC";
 
   // lit = full line, faded = empty
   map.setPaintProperty("route-lit-layer", "line-color", color);
@@ -2491,6 +2564,7 @@ async function updateBusPositions() {
           id,
           label: veh.vehicle?.label || id,
           route,
+          shapeId: tripShapeMap[tripIdRaw] || tripShapeMap[tripIdRaw.split('-')[0]] || null,
           adherenceStatus,
           adherenceColor,
           delayMinutes: delayMinutes ?? 0,
@@ -2857,7 +2931,7 @@ if (!map.getSource("route-faded")) {
 
 // Click-off resets line back to normal
 map.on("click", (e) => {
-  const hits = map.queryRenderedFeatures(e.point, { layers: ["route-stops-layer"] });
+  const hits = map.queryRenderedFeatures(e.point, { layers: ["route-stops-layer", "buses-layer"] });
   if (!hits.length) resetRouteSplit();
 });
 
@@ -2892,6 +2966,28 @@ map.on("click", (e) => {
     const f = e.features[0];
     const props = f.properties;
     const coords = f.geometry.coordinates.slice();
+
+    // For multi-shape routes: light up only this bus's exact shape + show its stops
+    const busShapeId = props.shapeId;
+    const shapes = directionShapes[selectedDirection];
+    if (shapes && shapes.length && busShapeId) {
+      activeShapeVariant = busShapeId; // remember which variant is lit
+      shapes.forEach(shapeId => {
+        const layerId = `routeLineLayer-${shapeId}`;
+        if (map.getLayer(layerId)) {
+          map.setLayoutProperty(layerId, 'visibility', 'visible');
+          map.setPaintProperty(layerId, 'line-opacity', 0.2);
+        }
+      });
+      const litLayerId = `routeLineLayer-${busShapeId}`;
+      if (map.getLayer(litLayerId)) {
+        map.setPaintProperty(litLayerId, 'line-opacity', 1.0);
+      }
+      // Show only stops that belong to this exact shape
+      if (map.getLayer('route-stops-layer')) {
+        map.setFilter('route-stops-layer', ['in', busShapeId, ['get', 'shapeIds']]);
+      }
+    }
 
     const popupHTML = `
       <div style="font-family:'Outfit';font-size:14px;background:white;border-radius:12px;padding:17px;">
