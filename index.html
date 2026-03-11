@@ -2537,21 +2537,20 @@ if (!direction && tripIdRaw.includes("-")) {
   direction = tripDirectionMap[stem];
 }
 
-// ADDED trip fallback — use bearing if moving
+let isAdded = false;
 if (!direction) {
   const speed = veh.position?.speed ?? 0;
   if (speed > 1) {
     direction = inferDirectionFromBearing(veh.position?.bearing, route);
+    isAdded = true;
   }
 }
 
 if (direction !== selectedDirection) continue;
 
       // ---- adherence calculation (same logic, but stored in properties) ----
-      const isAdded = !tripDirectionMap[tripIdRaw] && 
-  (!tripIdRaw.includes("-") || !tripDirectionMap[tripIdRaw.split("-")[0]]);
+      let adherenceStatus = isAdded ? "Added Departure" : "Live Tracking";
 
-let adherenceStatus = isAdded ? "Added Departure" : "Live Tracking";
       let adherenceColor  = "#3366CC";
       let delayMinutes    = null;
       let iconType        = isAdded ? "added" : "live";
