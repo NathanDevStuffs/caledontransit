@@ -3234,7 +3234,7 @@ async function fetchServiceStatus() {
 
     const tripData = await tripRes.json();
 
-    const routeDelays = { "41": [], "81": [], "25": [], "30": [] };
+    const routeDelays = { "41": [], "81": [], "25": [], "18": [], "30": [] };
 
     // Build delays from tripupdate (same logic you had)
     for (const entity of tripData.entity || []) {
@@ -3270,7 +3270,7 @@ async function fetchServiceStatus() {
     for (const route in routeDelays) {
       const arr = routeDelays[route];
 
-      const routeIndex = { "41": 1, "81": 2, "25": 3, "30": 4 };
+      const routeIndex = { "41": 1, "81": 2, "25": 3, "18": 4, "30": 5 };
 const card = document.querySelector(`#servicealerts li:nth-child(${routeIndex[route]})`);
 if (!card) continue;
 
@@ -3776,6 +3776,22 @@ function transitAppLaunch() {
     max-height: 90px;">      <div style="display: flex; align-items: center; gap: 14px;">
     <button class="pill" style="width: 60px; height: 40px;">25</button>
     <p style="font-weight: 600; font-size: 15px; margin: 0;">Edenbrooke</p>
+  </div>
+
+  <!-- Delay icon + text container -->
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+    <span class="material-symbols-outlined" style="font-size: 20px; color: #d32f2f;"></span>
+    <span style="font-size: 13px; font-family: Outfit; font-weight: 600;" class="status"></span>
+    <p style="font-size: 12px; margin: 0; color: #d32f2f;" class="delayminutes"></p>
+  </div>
+    </li>
+
+    <li style="    border: 1px solid #D9D9D9;background: white; padding: 10px 14px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 14px; transition: transform 0.15s, box-shadow 0.15s; transform: none; width: unset !important; font-family: Outfit !important; height: unset !important; margin-bottom: unset !important; white-space: nowrap; min-width: 400px;
+    max-width: 400px;
+    min-height: 90px;
+    max-height: 90px;">      <div style="display: flex; align-items: center; gap: 14px;">
+    <button class="pill" style="width: 60px; height: 40px;">18</button>
+    <p style="font-weight: 600; font-size: 15px; margin: 0;">Dixie</p>
   </div>
 
   <!-- Delay icon + text container -->
