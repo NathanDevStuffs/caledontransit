@@ -2066,10 +2066,10 @@ async function loadRoute41Stops() {
   // optional but usually looks better
   "icon-rotation-alignment": "map"
       },
-      // for multi-shape routes, start hidden; for simple routes show normally
-      filter: directionShapes[selectedDirection]
-        ? ["literal", false]
-        : ["in", selectedDirection, ["get", "directions"]]
+      paint: {
+        'icon-opacity': directionShapes[selectedDirection] ? 0.25 : 1
+      },
+      filter: ["in", selectedDirection, ["get", "directions"]]
     });
 
 // CLICK HANDLER (GTFS fix + Title/Subtext Swap)
@@ -2263,7 +2263,7 @@ async function loadRoutes() {
     { id: '300086', color: '#FF3399', label: 'North to Mayfield Road' },
     { id: '300087', color: '#FF3399', label: 'North to Caledon' },
     { id: '300083', color: '#3399FF', label: 'South to Westwood Mall Terminal' },
-    { id: '300077', color: '#3399FF', label: 'South to Westwood Mall Terminal via Caledon' }
+    { id: '300089', color: '#3399FF', label: 'South to Westwood Mall Terminal via Caledon' }
 
   ];
 
@@ -2306,13 +2306,11 @@ function updateRouteDisplay(selectedId) {
     if (map.getLayer(layerId)) map.setLayoutProperty(layerId, 'visibility', 'none');
   }
 
-  // For multi-shape routes, hide stops until a bus is clicked
   if (map.getLayer('route-stops-layer')) {
-    if (directionShapes[selectedId]) {
-      map.setFilter('route-stops-layer', ['literal', false]);
-    } else {
-      map.setFilter('route-stops-layer', ['in', selectedId, ['get', 'directions']]);
-    }
+    map.setFilter('route-stops-layer', ['in', selectedId, ['get', 'directions']]);
+    map.setPaintProperty('route-stops-layer', 'icon-opacity',
+      directionShapes[selectedId] ? 0.25 : 1
+    );
   }
 
   selectedDirection = selectedId;
@@ -2330,9 +2328,20 @@ function updateRouteDisplay(selectedId) {
       const layerId = `routeLineLayer-${shapeId}`;
       if (map.getLayer(layerId)) {
         map.setLayoutProperty(layerId, 'visibility', 'visible');
-        map.setPaintProperty(layerId, 'line-opacity', 0.3);
+        // Don't re-fade if a specific bus variant is already highlighted
+        if (!activeShapeVariant) {
+          map.setPaintProperty(layerId, 'line-opacity', 0.3);
+        }
       }
     });
+    // If a variant is active, re-apply the highlight in case bus positions refreshed
+    if (activeShapeVariant && map.getLayer(`routeLineLayer-${activeShapeVariant}`)) {
+      shapes.forEach(shapeId => {
+        if (map.getLayer(`routeLineLayer-${shapeId}`)) {
+          map.setPaintProperty(`routeLineLayer-${shapeId}`, 'line-opacity', shapeId === activeShapeVariant ? 1.0 : 0.2);
+        }
+      });
+    }
   } else {
     // Simple route: use the split lit/faded layers as before
     resetRouteSplit();
@@ -2400,9 +2409,9 @@ function resetRouteSplit() {
         map.setPaintProperty(layerId, 'line-opacity', 0.3);
       }
     });
-    // Hide stops — they only show when a specific bus/shape is selected
     if (map.getLayer('route-stops-layer')) {
-      map.setFilter('route-stops-layer', ['literal', false]);
+      map.setFilter('route-stops-layer', ['in', activeShapeId, ['get', 'directions']]);
+      map.setPaintProperty('route-stops-layer', 'icon-opacity', 0.25);
     }
     map.getSource("route-lit")?.setData({ type: "Feature", geometry: { type: "LineString", coordinates: [] } });
     map.getSource("route-faded")?.setData({ type: "Feature", geometry: { type: "LineString", coordinates: [] } });
@@ -3026,9 +3035,13 @@ map.on("click", (e) => {
       if (map.getLayer(litLayerId)) {
         map.setPaintProperty(litLayerId, 'line-opacity', 1.0);
       }
-      // Show only stops that belong to this exact shape
       if (map.getLayer('route-stops-layer')) {
-        map.setFilter('route-stops-layer', ['in', busShapeId, ['get', 'shapeIds']]);
+        map.setFilter('route-stops-layer', ['in', selectedDirection, ['get', 'directions']]);
+        map.setPaintProperty('route-stops-layer', 'icon-opacity', [
+          'case',
+          ['in', busShapeId, ['get', 'shapeIds']], 1,
+          0.1
+        ]);
       }
     }
 
