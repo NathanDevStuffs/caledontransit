@@ -999,6 +999,7 @@ const route = e.currentTarget.getAttribute('data-route');
 </script>
 
 
+
 <!-- <select id="routeSelect" style="
     padding: 10px;
     border: none;
@@ -1030,7 +1031,28 @@ const route = e.currentTarget.getAttribute('data-route');
   <option value="810002">Route 81: Southbound</option>
 </select>Show My Location Button -->
 <br>
-
+<!-- ══ Stop Departures Modal ══ -->
+<div id="stop-modal-overlay" class="stop-modal-overlay" aria-modal="true" aria-hidden="true" role="dialog" aria-labelledby="stop-modal-title">
+  <div id="stop-modal" class="stop-modal" role="document">
+    <div class="stop-modal-handle"></div>
+    <div class="stop-modal-header">
+      <div class="stop-modal-title-group">
+        <span id="stop-modal-title" class="stop-modal-title">Stop</span>
+        <span id="stop-modal-direction" class="stop-modal-direction-badge"></span>
+      </div>
+      <button id="stop-modal-close" class="stop-modal-close" aria-label="Close departures">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="stop-modal-body">
+      <ul id="stop-modal-list" class="stop-modal-list"></ul>
+      <div class="stop-modal-footer">
+        <span id="stop-modal-updated" class="stop-modal-updated"></span>
+        <img src="/transit-api-badge.png" class="stop-modal-badge" alt="Transit">
+      </div>
+    </div>
+  </div>
+</div>
 <div id="map"></div>
 <!-- Scripts -->
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
@@ -2202,30 +2224,14 @@ async function loadRoute41Stops() {
                 </div>
               </li>`;
           } else {
-            depHtml = `<li style="list-style: none; text-align: center; width: 330px; color: #666;">No upcoming departures</li>`;
+            depHtml = `<li style="list-style: none;text-align: center;width: 330px;color: #666;list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;font-family: Outfit;height: unset!important;">No upcoming departures</li>`;
           }
         } catch (err) {
-          depHtml = `<li style="list-style: none; text-align: center; width: 330px; color: #666;">No upcoming departures</li>`;
+          depHtml = `<li style="list-style: none;text-align: center;width: 330px;color: #666;list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;font-family: Outfit;height: unset!important;">No upcoming departures</li>`;
         }
       }
 
-      const popupHTML = `
-        <div style="font-family: 'Outfit'; min-width:350px; background: white; border-radius: 16px; padding: 12px;">
-          <div style="margin-bottom:8px; padding: 0 5px;">
-            <b style="font-size:15px; color: #1a1a1a; display: block;">${stopName}</b>
-            <span style="padding:2px 6px;border-radius:10px;background:#f1f1f1;font-weight:500;font-weight:500;color:#777;">${directionLabel}</span>
-          </div>
-          <ul style="list-style:none; padding:0; margin:0;">${depHtml}</ul>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top:8px; padding: 0 5px;">
-            <div style="font-size: 10px; color:#aaa;">Updated ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
-            <img src="/transit-api-badge.png" style="width: 80px; opacity: 0.7;">
-          </div>
-        </div>`;
-
-      new mapboxgl.Popup({ maxWidth: 'none', focusAfterOpen: false })
-        .setLngLat([lon, lat])
-        .setHTML(popupHTML)
-        .addTo(map);
+      openStopModal(stopName, directionLabel, depHtml);
     });
 
   } else {
@@ -4261,5 +4267,216 @@ chat='true'>
     setTimeout(() => {
         window.fcWidget.hide();
     }, 5000); // Hide after 10 seconds
+</script>
+
+
+
+<style>
+/* ── Stop Departures Modal ── */
+.stop-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999999999999999999999999999999999;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  /* hidden by default */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+
+.stop-modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.stop-modal {
+  background: #fff;
+  width: 100%;
+  max-width: 540px;
+  border-radius: 22px 22px 0 0;
+  padding: 10px 20px 32px;
+  max-height: 80vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  -webkit-overflow-scrolling: touch;
+}
+
+.stop-modal-overlay.open .stop-modal {
+  transform: translateY(0);
+}
+
+.stop-modal-handle {
+  width: 36px;
+  height: 4px;
+  background: #dde1e7;
+  border-radius: 2px;
+  margin: 0 auto 18px;
+}
+
+.stop-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.stop-modal-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+}
+
+.stop-modal-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.stop-modal-direction-badge {
+  display: inline-block;
+  background: #f1f1f1;
+  color: #666;
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 8px;
+  width: fit-content;
+}
+
+.stop-modal-close {
+  flex-shrink: 0;
+  background: #f1f3f5;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #555;
+  transition: background 0.15s ease;
+}
+
+.stop-modal-close:hover {
+  background: #e2e5e9;
+}
+
+.stop-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.stop-modal-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Override the inline width on departure <li> items so they fill the modal */
+.stop-modal-list li {
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.stop-modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding: 0 2px;
+}
+
+.stop-modal-updated {
+  font-family: 'Outfit', sans-serif;
+  font-size: 11px;
+  color: #aaa;
+}
+
+.stop-modal-badge {
+  width: 80px;
+  opacity: 0.65;
+}
+
+@media (max-width: 600px) {
+  .stop-modal {
+    border-radius: 18px 18px 0 0;
+    padding: 10px 16px 28px;
+  }
+}
+</style>
+
+<script>
+(function () {
+  const overlay = document.getElementById('stop-modal-overlay');
+  const modal   = document.getElementById('stop-modal');
+  const closeBtn = document.getElementById('stop-modal-close');
+
+  function closeStopModal() {
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+    // Restore map interaction
+    map.getCanvas().style.cursor = '';
+    resetRouteSplit();
+  }
+
+  // Close on backdrop click (only if the click lands directly on the overlay, not the modal)
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) closeStopModal();
+  });
+
+  // Close button
+  closeBtn.addEventListener('click', closeStopModal);
+
+  // Escape key
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) {
+      closeStopModal();
+    }
+  });
+
+  // Prevent touch scroll on the modal from propagating to the map
+  modal.addEventListener('touchmove', function (e) {
+    e.stopPropagation();
+  }, { passive: true });
+
+  // Expose opener globally so the map click handler can call it
+  window.openStopModal = function (stopName, directionLabel, depHtml) {
+    // -- Sanitize stopName to plain text to prevent XSS --
+    const titleEl = document.getElementById('stop-modal-title');
+    titleEl.textContent = stopName;
+
+    const dirEl = document.getElementById('stop-modal-direction');
+    dirEl.textContent = directionLabel;
+
+    // depHtml is built entirely from GTFS/worker data (no user input),
+    // but we still restrict it to the list container only.
+    const listEl = document.getElementById('stop-modal-list');
+    listEl.innerHTML = depHtml;
+
+    document.getElementById('stop-modal-updated').textContent =
+      'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    overlay.setAttribute('aria-hidden', 'false');
+    overlay.classList.add('open');
+  };
+})();
 </script>
 </body></html>
