@@ -2095,144 +2095,172 @@ async function loadRoute41Stops() {
     });
 
 // CLICK HANDLER (GTFS fix + Title/Subtext Swap)
-    map.on("click", "route-stops-layer", async (e) => {
-      if (!e.features || !e.features.length) return;
-      const feature = e.features[0];
+map.on("click", "route-stops-layer", async (e) => {
+  if (!e.features || !e.features.length) return;
+  const feature = e.features[0];
 
-      const stopId = feature.properties.stop_id;
-      const stopName = feature.properties.stop_name;
-      const lat = Number(feature.properties.stop_lat);
-      const lon = Number(feature.properties.stop_lon);
+  const stopId = feature.properties.stop_id;
+  const stopName = feature.properties.stop_name;
+  const lat = Number(feature.properties.stop_lat);
+  const lon = Number(feature.properties.stop_lon);
 
-      map.flyTo({ center: [lon, lat], zoom: 16, duration: 900, essential: true });
+  map.flyTo({ center: [lon, lat], zoom: 16, duration: 900, essential: true });
 
-      // For multi-shape routes use the currently lit variant; for simple routes look up normally
-      const shapeId = activeShapeVariant || getShapeIdForDirection(selectedDirection) || selectedDirection;
-      const coords = routeShapes[shapeId] || [];
-      if (coords.length >= 2) {
-        const { before, after } = splitLineAtPoint(coords, lon, lat);
-        const color = routeColors[shapeId] || "#3366CC";
+  const shapeId = activeShapeVariant || getShapeIdForDirection(selectedDirection) || selectedDirection;
+  const coords = routeShapes[shapeId] || [];
+  if (coords.length >= 2) {
+    const { before, after } = splitLineAtPoint(coords, lon, lat);
+    const color = routeColors[shapeId] || "#3366CC";
+    const shapes = directionShapes[selectedDirection];
+    if (shapes && shapes.length) {
+      shapes.forEach(sid => {
+        const layerId = `routeLineLayer-${sid}`;
+        if (map.getLayer(layerId)) map.setLayoutProperty(layerId, 'visibility', 'none');
+      });
+      map.setPaintProperty("route-lit-layer", "line-color", color);
+      map.setPaintProperty("route-faded-layer", "line-color", color);
+    }
+    map.getSource("route-faded")?.setData({ type: "Feature", geometry: { type: "LineString", coordinates: before } });
+    map.getSource("route-lit")?.setData({ type: "Feature", geometry: { type: "LineString", coordinates: after } });
+  }
 
-        // For multi-shape routes: fade all other shapes, then apply the split to the active one
-        const shapes = directionShapes[selectedDirection];
-        if (shapes && shapes.length) {
-          shapes.forEach(sid => {
-            const layerId = `routeLineLayer-${sid}`;
-            if (map.getLayer(layerId)) {
-              map.setLayoutProperty(layerId, 'visibility', sid === shapeId ? 'none' : 'none');
-            }
-          });
-          // Use the split layers for the active shape
-          map.setPaintProperty("route-lit-layer", "line-color", color);
-          map.setPaintProperty("route-faded-layer", "line-color", color);
-        }
+  const info = shapeInfo[selectedDirection] || { route: "", dir: "Unknown" };
+  const directionLabel = info.route ? `Route ${info.route} — ${info.dir}` : info.dir;
 
-        map.getSource("route-faded")?.setData({ type: "Feature", geometry: { type: "LineString", coordinates: before } });
-        map.getSource("route-lit")?.setData({ type: "Feature", geometry: { type: "LineString", coordinates: after } });
+  // ── Open modal IMMEDIATELY with skeleton shimmer ──
+  const skeletonHtml = `
+    <li style="list-style-type: none !important; margin-bottom: unset !important; background-color: unset !important; border-radius: unset !important; width: unset !important; text-align: unset !important; font-family: unset !important; height: unset !important; padding: 0 !important;">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid #eee;border-radius:12px;min-height:65px;">
+        <div class="skel" style="width:50px;height:34px;border-radius:10px;flex-shrink:0;"></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+          <div class="skel" style="height:14px;width:70%;border-radius:6px;"></div>
+          <div class="skel" style="height:11px;width:40%;border-radius:6px;"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;">
+          <div class="skel" style="height:14px;width:60px;border-radius:6px;"></div>
+          <div class="skel" style="height:11px;width:80px;border-radius:6px;"></div>
+        </div>
+      </div>
+    </li>
+    <li style="list-style-type: none !important; margin-bottom: unset !important; background-color: unset !important; border-radius: unset !important; width: unset !important; text-align: unset !important; font-family: unset !important; height: unset !important; padding: 0 !important;">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid #eee;border-radius:12px;min-height:65px;">
+        <div class="skel" style="width:50px;height:34px;border-radius:10px;flex-shrink:0;"></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+          <div class="skel" style="height:14px;width:55%;border-radius:6px;"></div>
+          <div class="skel" style="height:11px;width:35%;border-radius:6px;"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;">
+          <div class="skel" style="height:14px;width:50px;border-radius:6px;"></div>
+          <div class="skel" style="height:11px;width:70px;border-radius:6px;"></div>
+        </div>
+      </div>
+    </li>
+    <li style="list-style-type: none !important; margin-bottom: unset !important; background-color: unset !important; border-radius: unset !important; width: unset !important; text-align: unset !important; font-family: unset !important; height: unset !important; padding: 0 !important;">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid #eee;border-radius:12px;min-height:65px;">
+        <div class="skel" style="width:50px;height:34px;border-radius:10px;flex-shrink:0;"></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+          <div class="skel" style="height:14px;width:65%;border-radius:6px;"></div>
+          <div class="skel" style="height:11px;width:45%;border-radius:6px;"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;">
+          <div class="skel" style="height:14px;width:55px;border-radius:6px;"></div>
+          <div class="skel" style="height:11px;width:75px;border-radius:6px;"></div>
+        </div>
+      </div>
+    </li>
+  `;
+  openStopModal(stopName, directionLabel, skeletonHtml);
+
+  // ── Fetch in background, then swap in real data ──
+  const stop = { stop_id: stopId, stop_name: stopName, stop_lat: lat, stop_lon: lon };
+  let departures = [];
+  try {
+    departures = await fetchTransitDeparturesForGtfsStop(stop);
+  } catch (err) {
+    console.error("Transit API error:", err);
+  }
+
+  if (!departures.length) {
+    departures = await getStopDepartures(stopId);
+  }
+
+  const now = new Date();
+  let depHtml = "";
+
+  if (departures.length) {
+    depHtml = departures.map(d => {
+      let routeName = d.route_long_name;
+      if (!routeName || routeName === "—" || routeName.trim() === "") {
+        const names = { "41": "Bolton", "81": "Mayfield West", "25": "Edenbrooke", "18": "Dixie", "501": "Zum Queen", "502": "Zum Main", "505": "Zum Bovaird", "30": "Airport Road" };
+        routeName = names[d.routeId] || "Unknown Route";
       }
+      const depTime = d.time;
+      const diffMs = depTime - now;
+      const minutesAway = Math.floor(diffMs / (1000 * 60));
+      const routeColor = d.route_raw?.route_color ? `#${d.route_raw.route_color}` : "#2d3399";
+      const routeTextColor = d.route_raw?.route_text_color ? `#${d.route_raw.route_text_color}` : "#ffffff";
 
-      const stop = { stop_id: stopId, stop_name: stopName, stop_lat: lat, stop_lon: lon };
-      const info = shapeInfo[selectedDirection] || { route: "", dir: "Unknown" };
-      const directionLabel = info.route ? `Route ${info.route} — ${info.dir}` : info.dir;
+      let titleText = "";
+      let subText = "";
+      let subStyle = "font-size: 11px; margin: 0px; color: #666;";
 
-      let departures = [];
-      try {
-        departures = await fetchTransitDeparturesForGtfsStop(stop);
-      } catch (err) {
-        console.error("Transit API error:", err);
-        departures = [];
-      }
-
-      // If no live departures, check GTFS
-      if (!departures.length) {
-        departures = await getStopDepartures(stopId);
-      }
-
-      let depHtml = "";
-      const now = new Date();
-
-      if (departures.length) {
-        depHtml = departures.map(d => {
-          let routeName = d.route_long_name;
-          if (!routeName || routeName === "—" || routeName.trim() === "") {
-            const names = { "41": "Bolton", "81": "Mayfield West", "25": "Edenbrooke", "18": "Dixie", "501": "Zum Queen", "502": "Zum Main", "505": "Zum Bovaird", "30": "Airport Road" };
-            routeName = names[d.routeId] || "Unknown Route";
-          }
-
-          const depTime = d.time; 
-          const diffMs = depTime - now;
-          const minutesAway = Math.floor(diffMs / (1000 * 60));
-          
-          const routeColor = d.route_raw?.route_color ? `#${d.route_raw.route_color}` : "#2d3399";
-          const routeTextColor = d.route_raw?.route_text_color ? `#${d.route_raw.route_text_color}` : "#ffffff";
-
-          let titleText = "";
-          let subText = "";
-          let subStyle = "font-size: 11px; margin: 0px; color: #666;";
-
-          // --- FIXED LOGIC: Relative time if < 60 mins, otherwise Time/Date ---
-          if (minutesAway >= 0 && minutesAway < 60 && depTime.toDateString() === now.toDateString()) {
-            // Coming soon: Title is relative, hide subtext
-            titleText = minutesAway <= 0 ? "Due" : `In ${minutesAway} min`;
-            subStyle += " display: none;"; 
-          } else {
-            // Further away: Title is Time, Subtext is Date
-            titleText = depTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-            subText = depTime.toLocaleDateString("en-US", {
-              weekday: "long",
-              month: "long",
-              day: "numeric",
-              year: "numeric"
-            });
-          }
-
-          return `
-            <li style="border: 1px solid #D9D9D9; background: white; padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; font-family: Outfit !important; width: 330px; min-height: 65px; margin-bottom: 8px; list-style-type: none !important;">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <button class="pill" style="width: 50px; height: 34px; background: ${routeColor}; color: ${routeTextColor}; border: none; border-radius: 10px; font-weight: 600; font-family: Outfit; font-size: 14px;">
-                  ${d.routeId}
-                </button>
-                <p style="font-weight: 600; font-size: 14px; margin: 0; color: #1a1a1a;">${routeName}</p>
-              </div>
-              <div style="display: flex; flex-direction: column; align-items: flex-end; text-align: right; min-width: 140px;">
-                <span style="font-size: 13px; font-family: Outfit; font-weight: 600; color: #1a1a1a;">${titleText}</span>
-                <p style="${subStyle}">${subText}</p>
-              </div>
-            </li>`;
-        }).join("");
+      if (minutesAway >= 0 && minutesAway < 60 && depTime.toDateString() === now.toDateString()) {
+        titleText = minutesAway <= 0 ? "Due" : `In ${minutesAway} min`;
+        subStyle += " display: none;";
       } else {
-        // --- GTFS FALLBACK (Shows Route Info + Swapped Date/Time) ---
-        try {
-          const stopTimesWithRoutes = await loadStopTimesWithRouteIds();
-          const routeId = info.route || "—";
-          const routeName = info.dir.split(" to ")[0] || "Route"; 
-          let nextDate = getNextScheduledDepartureDate(routeId, stopTimesWithRoutes);
-
-          if (nextDate) {
-            const dateStr = nextDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
-            const timeStr = nextDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-
-            depHtml = `
-              <li style="border: 1px solid #D9D9D9; background: white; padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; font-family: Outfit !important; width: 330px; min-height: 65px; list-style-type: none !important;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <button class="pill" style="width: 50px; height: 34px; background: #2d3399; color: #fff; border: none; border-radius: 10px; font-weight: 600; font-size: 14px;">${routeId}</button>
-                  <p style="font-weight: 600; font-size: 14px; margin: 0;">${routeName}</p>
-                </div>
-                <div style="display: flex; flex-direction: column; align-items: flex-end; text-align: right;">
-                  <span style="font-size: 13px; font-weight: 600;">${timeStr}</span>
-                  <p style="font-size: 11px; margin: 0; color: #666;">${dateStr}</p>
-                </div>
-              </li>`;
-          } else {
-            depHtml = `<li style="list-style: none;text-align: center;width: 330px;color: #666;list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;font-family: Outfit;height: unset!important;">No upcoming departures</li>`;
-          }
-        } catch (err) {
-          depHtml = `<li style="list-style: none;text-align: center;width: 330px;color: #666;list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;font-family: Outfit;height: unset!important;">No upcoming departures</li>`;
-        }
+        titleText = depTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        subText = depTime.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
       }
 
-      openStopModal(stopName, directionLabel, depHtml);
-    });
+      return `
+        <li style="border: 1px solid #D9D9D9; background: white; padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; font-family: Outfit !important; width: 330px; min-height: 65px; margin-bottom: 8px; list-style-type: none !important;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <button class="pill" style="width: 50px; height: 34px; background: ${routeColor}; color: ${routeTextColor}; border: none; border-radius: 10px; font-weight: 600; font-family: Outfit; font-size: 14px;">${d.routeId}</button>
+            <p style="font-weight: 600; font-size: 14px; margin: 0; color: #1a1a1a;">${routeName}</p>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; text-align: right; min-width: 140px;">
+            <span style="font-size: 13px; font-family: Outfit; font-weight: 600; color: #1a1a1a;">${titleText}</span>
+            <p style="${subStyle}">${subText}</p>
+          </div>
+        </li>`;
+    }).join("");
+  } else {
+    try {
+      const stopTimesWithRoutes = await loadStopTimesWithRouteIds();
+      const routeId = info.route || "—";
+      const routeName = info.dir.split(" to ")[0] || "Route";
+      let nextDate = await getNextScheduledDepartureDate(routeId, stopTimesWithRoutes);
+
+      if (nextDate) {
+        const dateStr = nextDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+        const timeStr = nextDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        depHtml = `
+          <li style="border: 1px solid #D9D9D9; background: white; padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; font-family: Outfit !important; width: 330px; min-height: 65px; list-style-type: none !important;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <button class="pill" style="width: 50px; height: 34px; background: #2d3399; color: #fff; border: none; border-radius: 10px; font-weight: 600; font-size: 14px;">${routeId}</button>
+              <p style="font-weight: 600; font-size: 14px; margin: 0;">${routeName}</p>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; text-align: right;">
+              <span style="font-size: 13px; font-weight: 600;">${timeStr}</span>
+              <p style="font-size: 11px; margin: 0; color: #666;">${dateStr}</p>
+            </div>
+          </li>`;
+      } else {
+        depHtml = `<li style="list-style: none;text-align: center;width: 330px;color: #666;list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;font-family: Outfit;height: unset!important;">No upcoming departures</li>`;
+      }
+    } catch (err) {
+      depHtml = `<li style="list-style: none;text-align: center;width: 330px;color: #666;list-style-type: unset !important;margin-bottom: unset !important;background-color: unset !important;border-radius: unset !important;font-family: Outfit;height: unset!important;">No upcoming departures</li>`;
+    }
+  }
+
+  // ── Swap skeleton → real content ──
+  const listEl = document.getElementById('stop-modal-list');
+  if (listEl) {
+    listEl.innerHTML = depHtml;
+    document.getElementById('stop-modal-updated').textContent =
+      'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+});
 
   } else {
     // If you ever need to refresh data without re-adding source
@@ -4272,6 +4300,17 @@ chat='true'>
 
 
 <style>
+  @keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skel {
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 400px 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
+}
 /* ── Stop Departures Modal ── */
 .stop-modal-overlay {
   position: fixed;
