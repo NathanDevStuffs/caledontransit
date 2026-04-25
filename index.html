@@ -1896,61 +1896,330 @@ async function fetchTransitDeparturesForGtfsStop(stop) {
   }
 }
 
-// Fallback: get scheduled departures from GTFS files
-// Fallback: get scheduled departures from GTFS files (supports route 41 & 81)
+const gtfsCache = {
+  stopTimes: null,
+  stopTimesTs: 0,
+  trips: null,
+  tripsTs: 0,
+  calendar: null,
+  calendarTs: 0,
+  calendarDates: null,
+  calendarDatesTs: 0
+};
+
+const CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours for GTFS (changes rarely)
+
+/**
+ * Simple CSV parser that handles quoted fields
+ */
+function parseCSVSafely(csv) {
+  if (!csv || typeof csv !== 'string') return [];
+  
+  const lines = csv.trim().split('\n');
+  if (lines.length < 2) return [];
+
+  // Parse header
+  const headerLine = lines[0];
+  const headers = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < headerLine.length; i++) {
+    const char = headerLine[i];
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      headers.push(current.trim().replace(/^"|"$/g, ''));
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  headers.push(current.trim().replace(/^"|"$/g, ''));
+
+  // Parse rows
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line.trim()) continue;
+
+    const values = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let j = 0; j < line.length; j++) {
+      const char = line[j];
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        values.push(current.trim().replace(/^"|"$/g, ''));
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    values.push(current.trim().replace(/^"|"$/g, ''));
+
+    const row = {};
+    headers.forEach((h, idx) => {
+      row[h] = values[idx] || '';
+    });
+    rows.push(row);
+  }
+
+  return rows;
+}
+
+/**
+ * Convert GTFS time (HH:MM:SS, can be 24+) to minutes since midnight
+ * Returns: { minutes: number, nextDay: boolean }
+ */
+function gtfsTimeToMinutes(timeStr) {
+  if (!timeStr || !timeStr.includes(':')) return null;
+
+  const [h, m, s] = timeStr.split(':').map(x => parseInt(x, 10) || 0);
+  if (isNaN(h) || isNaN(m)) return null;
+
+  const totalMinutes = h * 60 + m;
+  const nextDay = h >= 24;
+
+  return {
+    minutes: totalMinutes,
+    nextDay: nextDay
+  };
+}
+
+/**
+ * Create a Date from GTFS time on a specific date
+ * dateObj: Date object (the base date)
+ * timeStr: "HH:MM:SS" (can be 24+)
+ */
+function gtfsTimeToDate(dateObj, timeStr) {
+  const parsed = gtfsTimeToMinutes(timeStr);
+  if (!parsed) return null;
+
+  const result = new Date(dateObj);
+  const actualMinutes = parsed.minutes % (24 * 60);
+  const actualHours = Math.floor(actualMinutes / 60);
+  const actualMins = actualMinutes % 60;
+
+  result.setHours(actualHours, actualMins, 0, 0);
+
+  if (parsed.nextDay) {
+    result.setDate(result.getDate() + 1);
+  }
+
+  return result;
+}
+
+/**
+ * Check if a service_id runs on a specific date
+ * Returns true if: calendar.txt says it runs + no exceptions in calendar_dates.txt
+ */
+function isServiceRunningOnDate(serviceId, dateObj, calendar, calendarDates) {
+  if (!serviceId) return false;
+
+  // Get day of week (0=Sunday, 1=Monday, ..., 6=Saturday)
+  const dayOfWeek = dateObj.getDay();
+  const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const dayName = dayNames[dayOfWeek];
+
+  // Format date as YYYYMMDD for calendar_dates lookup
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  const dateStr = `${year}${month}${day}`;
+
+  // Check calendar_dates first (exceptions take precedence)
+  if (calendarDates) {
+    for (const row of calendarDates) {
+      if (row.service_id === serviceId && row.date === dateStr) {
+        const exceptionType = parseInt(row.exception_type, 10);
+        if (exceptionType === 1) return true;   // Service added on this date
+        if (exceptionType === 2) return false;  // Service removed on this date
+      }
+    }
+  }
+
+  // Check calendar.txt
+  if (calendar) {
+    for (const row of calendar) {
+      if (row.service_id === serviceId) {
+        // Check date range
+        if (row.start_date) {
+          const startDate = new Date(
+            parseInt(row.start_date.slice(0, 4), 10),
+            parseInt(row.start_date.slice(4, 6), 10) - 1,
+            parseInt(row.start_date.slice(6, 8), 10)
+          );
+          if (dateObj < startDate) return false;
+        }
+
+        if (row.end_date) {
+          const endDate = new Date(
+            parseInt(row.end_date.slice(0, 4), 10),
+            parseInt(row.end_date.slice(4, 6), 10) - 1,
+            parseInt(row.end_date.slice(6, 8), 10)
+          );
+          if (dateObj > endDate) return false;
+        }
+
+        // Check day of week
+        const dayValue = row[dayName];
+        if (dayValue === '1') return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Fetch and cache GTFS files
+ */
+async function fetchGTFSFile(url, cacheKey) {
+  const cache = gtfsCache[cacheKey];
+  const now = Date.now();
+
+  // Return cached data if fresh
+  if (cache && cache.data && (now - cache.ts) < CACHE_MAX_AGE) {
+    return cache.data;
+  }
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    const data = parseCSVSafely(text);
+
+    gtfsCache[cacheKey] = { data, ts: now };
+    return data;
+  } catch (err) {
+    console.error(`Failed to fetch ${url}:`, err);
+    return cache?.data || [];
+  }
+}
+
+/**
+ * MAIN FUNCTION: Get next scheduled departures for a stop
+ */
 async function getStopDepartures(stopId) {
   try {
-    const [stopTimesRes, tripsRes] = await Promise.all([
-      // fetch("/gtfs-files/stop_times.txt"),
-      fetch("https://busapi.caledontransit.com/stoptimes"),
-      fetch("/gtfs-files/trips.txt")
+    if (!stopId) return [];
+
+    // Allowed routes
+    const allowedRoutes = new Set(['41', '81', '25', '18', '501', '502', '505', '30']);
+
+    // Fetch GTFS files in parallel (with caching)
+    const [stopTimes, trips, calendar, calendarDates] = await Promise.all([
+      fetchGTFSFile('https://busapi.caledontransit.com/stoptimes', 'stopTimes'),
+      fetchGTFSFile('/gtfs-files/trips.txt', 'trips'),
+      fetchGTFSFile('/gtfs-files/calendar.txt', 'calendar'),
+      fetchGTFSFile('/gtfs-files/calendar_dates.txt', 'calendarDates')
     ]);
 
-    const stopTimes = parseCSV(await stopTimesRes.text());
-    const trips = parseCSV(await tripsRes.text());
+    if (!stopTimes.length || !trips.length) {
+      console.warn('No GTFS data available');
+      return [];
+    }
 
-    // Build trip_id -> route_id AND trip_id -> service_id maps
-    const tripRouteMap = {};
-    const tripServiceMap = {};
-    trips.forEach(t => {
-      tripRouteMap[t.trip_id] = t.route_id;
-      tripServiceMap[t.trip_id] = t.service_id;
-    });
-
-    const now = new Date();
-    const allowedRoutes = new Set(['41', '81', '25', '18', '501', '502', '505', '30']); // allow both routes
-    const departures = stopTimes
-      // .filter(st => st.stop_id === stopId && allowedRoutes.has(tripRouteMap[st.trip_id]) && isTripRunningToday(st.trip_id, tripServiceMap))
-	.filter(st => st.stop_id === stopId && allowedRoutes.has(tripRouteMap[st.trip_id]))
-
-      .map(st => {
-        const depTime = parseTimeToDate(st.departure_time);
-        const minutesAway = Math.round((depTime - now) / 60000);
-        let displayTime;
-
-        if (minutesAway <= 0) displayTime = "Due • scheduled";
-        else if (minutesAway < 60) displayTime = `In ${minutesAway} min • scheduled`;
-        else displayTime = depTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + " • Scheduled";
-
-        return {
-          tripId: st.trip_id,
-          routeId: tripRouteMap[st.trip_id], // will be "41" or "81"
-          time: depTime,
-          displayTime
+    // Build lookup map: trip_id → { route_id, service_id }
+    const tripMap = {};
+    for (const trip of trips) {
+      if (trip.trip_id && allowedRoutes.has(trip.route_id)) {
+        tripMap[trip.trip_id] = {
+          route_id: trip.route_id,
+          service_id: trip.service_id
         };
-      })
-      .filter(d => d.time > now)
-      .sort((a, b) => a.time - b.time)
-      .slice(0, 3);
+      }
+    }
 
-    console.log("GTFS departures (fallback):", departures);
-    return departures;
+    // Get current time
+    const now = new Date();
+    const results = [];
 
-  } catch (e) {
-    console.error("Failed to load stop_times departures (fallback):", e);
+    // Strategy: look forward up to 7 days to find departures
+    // (handles late-night scenarios where today has no service)
+    for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+      const searchDate = new Date(now);
+      searchDate.setDate(searchDate.getDate() + dayOffset);
+      searchDate.setHours(0, 0, 0, 0);
+
+      // Find all departures on this date
+      for (const stopTime of stopTimes) {
+        // Skip if wrong stop
+        if (stopTime.stop_id !== stopId) continue;
+
+        // Skip if trip not in our map (wrong route or trip_id mismatch)
+        const tripInfo = tripMap[stopTime.trip_id];
+        if (!tripInfo) continue;
+
+        // Check if this service runs on this date
+        if (!isServiceRunningOnDate(tripInfo.service_id, searchDate, calendar, calendarDates)) {
+          continue;
+        }
+
+        // Convert GTFS time to actual Date
+        const departureTime = gtfsTimeToDate(searchDate, stopTime.departure_time);
+        if (!departureTime) continue;
+
+        // Only include future departures
+        if (departureTime <= now) continue;
+
+        // Calculate how many minutes away
+        const minutesAway = Math.round((departureTime.getTime() - now.getTime()) / 60000);
+
+        // Format display time
+        let displayTime = '';
+        if (minutesAway <= 0) {
+          displayTime = 'Due';
+        } else if (minutesAway < 60) {
+          displayTime = `In ${minutesAway} min`;
+        } else {
+          displayTime = departureTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Look up route name
+        const routeNames = {
+          '41': 'Bolton',
+          '81': 'Mayfield West',
+          '25': 'Edenbrooke',
+          '18': 'Dixie',
+          '501': 'Zum Queen',
+          '502': 'Zum Main',
+          '505': 'Zum Bovaird',
+          '30': 'Airport Road'
+        };
+
+        results.push({
+          tripId: stopTime.trip_id,
+          routeId: tripInfo.route_id,
+          routeName: routeNames[tripInfo.route_id] || 'Unknown',
+          time: departureTime,
+          displayTime: `${displayTime} • scheduled`,
+          minutesAway: minutesAway,
+          serviceId: tripInfo.service_id
+        });
+      }
+
+      // If we found departures on this date, we can stop searching
+      if (results.length > 0) break;
+    }
+
+    // Sort by time and return top 5
+    const sorted = results
+      .sort((a, b) => a.time.getTime() - b.time.getTime())
+      .slice(0, 5);
+
+    console.log(`Found ${sorted.length} departures for stop ${stopId}:`, sorted);
+    return sorted;
+
+  } catch (err) {
+    console.error('getStopDepartures error:', err);
     return [];
   }
 }
+
 
 
 
