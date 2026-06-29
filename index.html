@@ -745,8 +745,8 @@ It looks like you’re offline right now. Live updates aren’t available, so we
   </select>
 
   <select id="direction505select" class="direction-select" style="display:none;">
-    <option value="505-0">Eastbound</option>
-    <option value="505-1">Westbound</option>
+    <option value="505-0">Eastbound to Viscount Station</option>
+    <option value="505-1">Westbound to Mount Pleasant GO Station</option>
   </select>
 
   <select id="direction30select" class="direction-select" style="display:none;">
@@ -1544,9 +1544,9 @@ let serviceMap = {};
 const tripShapeMap = {}; // trip_id → shape_id (for polyline drawing only)
 
 // Simple routes: direction_id alone is enough (2 shapes max)
-const SIMPLE_ROUTES = ["41", "81", "25", "501", "502"];
+const SIMPLE_ROUTES = ["41", "81", "25", "501", "502","505"];
 // Multi-shape routes: multiple shape variants per direction
-const MULTI_SHAPE_ROUTES = ["505", "30","18"];
+const MULTI_SHAPE_ROUTES = ["30","18"];
 // Populated during buildTripDirectionMap: "505-0" → ["5050005","5050008"], etc.
 const directionShapes = {};
 
@@ -2273,8 +2273,8 @@ async function loadRoute41Stops() {
     '501-1': { route: '501', dir: 'Westbound to Downtown Brampton' },
     '502-1': { route: '502', dir: 'Southbound to Square One' },
     '502-0': { route: '502', dir: 'Northbound to Sandalwood Loop' },
-    '505-0': { route: '505', dir: 'Eastbound' },
-    '505-1': { route: '505', dir: 'Westbound' },
+    '505-0': { route: '505', dir: 'Eastbound to Viscount Station' },
+    '505-1': { route: '505', dir: 'Westbound to Mount Pleasant GO Station' },
     '30-0': { route: '30', dir: 'Northbound' },
     '30-1': { route: '30', dir: 'Southbound' }
   };
@@ -2559,10 +2559,8 @@ async function loadRoutes() {
     { id: '5010072', color: '#c24947', label: 'Westbound' },
     { id: '5020016', color: '#c24947', label: 'Southbound' },
     { id: '5020013', color: '#c24947', label: 'Northbound' },
-    { id: '5050005', color: '#c24947', label: 'East to Malton GO Station' },
-    { id: '5050008', color: '#c24947', label: 'East to Viscount Station (A)' },
-    { id: '5050006', color: '#c24947', label: 'West to Mount Pleasant GO Station' },
-    { id: '5050010', color: '#c24947', label: 'West to Trinity Commons Terminal (A)' },
+    { id: '5050016', color: '#c24947', label: 'East to Viscount Station' },
+    { id: '5050015', color: '#c24947', label: 'West to Mount Pleasant GO Station' },
     { id: '300086', color: '#FF3399', label: 'North to Mayfield Road' },
     { id: '300087', color: '#FF3399', label: 'North to Caledon' },
     { id: '300083', color: '#3399FF', label: 'South to Westwood Mall Terminal' },
