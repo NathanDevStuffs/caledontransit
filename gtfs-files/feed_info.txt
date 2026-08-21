@@ -1,2 +1,2 @@
 feed_publisher_name,feed_publisher_url,feed_lang,feed_start_date,feed_end_date,feed_version
-"Brampton Transit",http://www.bramptontransit.com,en,20260427,20260802,20260629
+"Brampton Transit",http://www.bramptontransit.com,en,20260629,20260906,20260803
